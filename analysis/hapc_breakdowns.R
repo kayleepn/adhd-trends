@@ -19,7 +19,10 @@ gender_measures <- c(
   "FCE_Female_Sum",
   "FCE_FEMALE_SUM",
   "FCE_UNKNOWN_GENDER_Sum",
-  "FCE_UNKNOWN_GENDER_SUM"
+  "FCE_UNKNOWN_GENDER_SUM",
+  "Male",
+  "Female",
+  "Unknown"
 )
 
 age_measures <- c(
@@ -70,7 +73,31 @@ age_measures <- c(
   "Age_85_89_Sum",
   "AGE_85_89_SUM",
   "Age_90_120_Sum",
-  "AGE_90_120_SUM"
+  "AGE_90_120_SUM",
+  "0",
+  "1_4",
+  "5_9",
+  "10_14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20_24",
+  "25_29",
+  "30_34",
+  "35_39",
+  "40_44",
+  "45_49",
+  "50_54",
+  "55_59",
+  "60_64",
+  "65_69",
+  "70_74",
+  "75_79",
+  "80_84",
+  "85_89",
+  "90+"
 )
 
 # Filter data to (1) only include all measures defined above, and (2) all codes starting with "F90".
@@ -93,7 +120,6 @@ df_2324_icd10_breakdowns <- read_csv(
 )
 
 # Change 'attribute' to 'measure' to match column names
-
 df_2324_icd10_f90_breakdowns <- df_2324_icd10_breakdowns |>
   filter(measure %in% c(gender_measures, age_measures)) |>
   filter(str_detect(code, "^F90"))
@@ -120,4 +146,38 @@ write_csv(
   here("data", "temp_icd10_breakdowns", "df_2223_icd10_f90_breakdowns.csv")
 )
 
-# 2021-22: data not available in usual format
+# 2014-15 to 2021-22: data not available as csv
+
+# Repeat for 2013-14
+url_201314 <- "61/E07E65/hes_apc_national_diagnosis_2013_14.csv"
+
+df_1314_icd10_breakdowns <- read_csv(
+  paste0(url_start, url_201314),
+  name_repair = janitor::make_clean_names
+)
+
+df_1314_icd10_f90_breakdowns <- df_1314_icd10_breakdowns |>
+  filter(measure_sub_category %in% c(gender_measures, age_measures)) |>
+  filter(str_detect(dimension_code, "^F90"))
+
+write_csv(
+  df_1314_icd10_f90_breakdowns,
+  here("data", "temp_icd10_breakdowns", "df_1314_icd10_f90_breakdowns.csv")
+)
+
+# Repeat for 2012-13
+url_201213 <- "77/E81C5C/hes_apc_national_diagnosis_2012_13.csv"
+
+df_1213_icd10_breakdowns <- read_csv(
+  paste0(url_start, url_201213),
+  name_repair = janitor::make_clean_names
+)
+
+df_1213_icd10_f90_breakdowns <- df_1213_icd10_breakdowns |>
+  filter(measure_sub_category %in% c(gender_measures, age_measures)) |>
+  filter(str_detect(dimension_code, "^F90"))
+
+write_csv(
+  df_1213_icd10_f90_breakdowns,
+  here("data", "temp_icd10_breakdowns", "df_1213_icd10_f90_breakdowns.csv")
+)
