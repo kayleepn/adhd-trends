@@ -1,0 +1,35 @@
+# Exploratory analysis for codelist development
+
+Setup
+```{r}
+library(opencodecounts)
+library(here)
+library(tibble)
+library(dplyr)
+library(ggplot2)
+```
+
+Load codelist
+```{r}
+#Import codelist from OpenCodelists.org
+adhd_snomed_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/snomed-adhd-test/2586ce25/")
+as_tibble(adhd_snomed_codelist)
+```
+
+Filter code usage data
+
+```{r}
+#Filter SNOMED-CT code usage to include codes from SNOMED-CT codelist
+df_adhd_snomed_usage <- snomed_usage |>
+    filter(snomed_code %in% adhd_snomed_codelist$code)
+``` 
+
+Show code usage table for all codes with usage data
+```{r}
+all_adhd_snomed_codes <- df_adhd_snomed_usage |>
+    group_by(snomed_code, description) |>
+    summarise(total_usage = sum(usage)) |>
+    ungroup() |>
+    slice_max(total_usage, n=29, na_rm=F)
+print(all_adhd_snomed_codes)
+```
