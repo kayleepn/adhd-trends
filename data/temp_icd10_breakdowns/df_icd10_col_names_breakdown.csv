@@ -1,0 +1,38 @@
+col_number,fy24to25,fy23to24,fy22to23,fy21to22,fy20to21,fy19to20,fy18to19,fy17to18,fy16to17,fy15to16,fy14to15,fy13to14,fy12to13
+x,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description,All diagnoses: 4 character code and description
+x_2,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+x_3,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,All diagnoses,All diagnoses
+x_4,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,Main diagnosis,Main diagnosis
+x_5,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,Male,Male
+x_6,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,Female,Female
+x_7,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,Gender Unknown,Gender Unknown
+x_8,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,All diagnoses,Mean age,Mean age
+x_9,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Main diagnosis,Age 0,Age 0
+x_10,Male,Male,Male,Male,Male,Male,Male,Male,Male,Male,Male,Age 1-4,Age 1-4
+x_11,Female,Female,Female,Female,Female,Female,Female,Female,Female,Female,Female,Age 5-9,Age 5-9
+x_12,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Gender Unknown,Age 10-14,Age 10-14
+x_13,Mean age,Mean age,Mean age,Mean age,Mean age,Mean age,Mean age,Mean age,Mean age,Mean age,Mean age,Age 15,Age 15
+x_14,Age 0,Age 0,Age 0,Age 0,Age 0,Age 0,Age 0,Age 0,Age 0,Age 0,Age 0,Age 16,Age 16
+x_15,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 1-4,Age 17,Age 17
+x_16,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 5-9,Age 18,Age 18
+x_17,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 10-14,Age 19,Age 19
+x_18,Age 15,Age 15,Age 15,Age 15,Age 15,Age 15,Age 15,Age 15,Age 15,Age 15,Age 15,Age 20-24,Age 20-24
+x_19,Age 16,Age 16,Age 16,Age 16,Age 16,Age 16,Age 16,Age 16,Age 16,Age 16,Age 16,Age 25-29,Age 25-29
+x_20,Age 17,Age 17,Age 17,Age 17,Age 17,Age 17,Age 17,Age 17,Age 17,Age 17,Age 17,Age 30-34,Age 30-34
+x_21,Age 18,Age 18,Age 18,Age 18,Age 18,Age 18,Age 18,Age 18,Age 18,Age 18,Age 18,Age 35-39,Age 35-39
+x_22,Age 19,Age 19,Age 19,Age 19,Age 19,Age 19,Age 19,Age 19,Age 19,Age 19,Age 19,Age 40-44,Age 40-44
+x_23,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 20-24,Age 45-49,Age 45-49
+x_24,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 25-29,Age 50-54,Age 50-54
+x_25,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 30-34,Age 55-59,Age 55-59
+x_26,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 35-39,Age 60-64,Age 60-64
+x_27,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 40-44,Age 65-69,Age 65-69
+x_28,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 45-49,Age 70-74,Age 70-74
+x_29,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 50-54,Age 75-79,Age 75-79
+x_30,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 55-59,Age 80-84,Age 80-84
+x_31,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 60-64,Age 85-89,Age 85-89
+x_32,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 65-69,Age 90+,Age 90+
+x_33,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,Age 70-74,NA,NA
+x_34,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,Age 75-79,NA,NA
+x_35,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,Age 80-84,NA,NA
+x_36,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,Age 85-89,NA,NA
+x_37,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,Age 90+,NA,NA

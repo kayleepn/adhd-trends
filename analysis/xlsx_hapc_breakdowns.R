@@ -5,6 +5,22 @@ library(janitor)
 library(here)
 library(httr)
 
+# Check excel file structure
+temp_file <- tempfile(fileext = ".xlsx")
+GET(
+  "https://files.digital.nhs.uk/publicationimport/pub19xxx/pub19124/hosp-epis-stat-admi-diag-2014-15-tab.xlsx",
+  write_disk(temp_file, overwrite = TRUE)
+)
+
+df <- readxl::read_xlsx(
+  path = temp_file,
+  sheet = 6,
+  range = "A17:AK16"
+)
+
+df
+
+# Might be a good idea to make a dataframe with the first 5 usable rows of each year's excel data
 
 # Create url list for icd10 data
 url_start <- "https://files.digital.nhs.uk/"
@@ -52,7 +68,7 @@ select_all_diag_breakdowns <- function(data, url_list) {
     remove_empty("rows") |>
     # Fix janitor turning "age 90+" into age_90
     rename(
-      age_over_90 = age_90
+      age_90plus = age_90
     )
 }
 
@@ -79,7 +95,7 @@ icd10_usage <- icd10_code_usage_urls |>
 # Pivot main/all diagnosis, age, and sex breakdowns into tidy form. Turn usage column into integers.
 tidy_icd_10_usage <- icd10_usage |>
   pivot_longer(
-    cols = main_diagnosis:age_over_90,
+    cols = main_diagnosis:age_90plus,
     names_to = "breakdown",
     values_to = "usage"
   ) |>

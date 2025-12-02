@@ -156,9 +156,19 @@ df_1314_icd10_breakdowns <- read_csv(
   name_repair = janitor::make_clean_names
 )
 
+# Filter data to (1) only include all measures defined above, (2) all 4-character codes starting with "F90." and (3) remove irrelevant columns.
 df_1314_icd10_f90_breakdowns <- df_1314_icd10_breakdowns |>
   filter(measure_sub_category %in% c(gender_measures, age_measures)) |>
-  filter(str_detect(dimension_code, "^F90"))
+  filter(str_detect(dimension_code, "^F90.")) |>
+  select(
+    -one_of(
+      'summary_name',
+      'activity_type',
+      'aggregation_type',
+      'suppressed_flag',
+      'gender_dq_flag'
+    )
+  )
 
 write_csv(
   df_1314_icd10_f90_breakdowns,
@@ -173,9 +183,17 @@ df_1213_icd10_breakdowns <- read_csv(
   name_repair = janitor::make_clean_names
 )
 
-df_1213_icd10_f90_breakdowns <- df_1213_icd10_breakdowns |>
-  filter(measure_sub_category %in% c(gender_measures, age_measures)) |>
-  filter(str_detect(dimension_code, "^F90"))
+filter(measure_sub_category %in% c(gender_measures, age_measures)) |>
+  filter(str_detect(dimension_code, "^F90.")) |>
+  select(
+    -one_of(
+      'summary_name',
+      'activity_type',
+      'aggregation_type',
+      'suppressed_flag',
+      'gender_dq_flag'
+    )
+  )
 
 write_csv(
   df_1213_icd10_f90_breakdowns,
