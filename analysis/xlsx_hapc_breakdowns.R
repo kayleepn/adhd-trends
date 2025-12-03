@@ -5,27 +5,12 @@ library(janitor)
 library(here)
 library(httr)
 
-# Check excel file structure
-temp_file <- tempfile(fileext = ".xlsx")
-GET(
-  "https://files.digital.nhs.uk/publicationimport/pub19xxx/pub19124/hosp-epis-stat-admi-diag-2014-15-tab.xlsx",
-  write_disk(temp_file, overwrite = TRUE)
-)
-
-df <- readxl::read_xlsx(
-  path = temp_file,
-  sheet = 6,
-  range = "A17:AK16"
-)
-
-df
-
-# Might be a good idea to make a dataframe with the first 5 usable rows of each year's excel data
+# This approach reads in the column headers, then uses column names to select the correct columns. Empty rows are removed. This produces a shorter script, but it will break if column names become different (different order of words, different spelling etc).
 
 # Create url list for icd10 data
 url_start <- "https://files.digital.nhs.uk/"
 
-# Compared to opencodecounts, I've skipped 2 fewer rows so I can select using column names later, and selected my columns at a later point
+# Compared to opencodecounts, I've skipped 2 fewer rows so I can select using column names later, and selected my columns at a later point. Also modified to specify range.
 icd10_code_usage_urls <- list(
   "fy24to25" = list(
     url = paste0(
@@ -33,7 +18,23 @@ icd10_code_usage_urls <- list(
       "CC/EA025D/hosp-epis-stat-admi-diag-2024-25-tab.xlsx"
     ),
     sheet = 6,
-    skip_rows = 10
+    range = "A11:AK11359"
+  ),
+  "fy19to20" = list(
+    url = paste0(
+      url_start,
+      "37/8D9781/hosp-epis-stat-admi-diag-2019-20-tab%20supp.xlsx"
+    ),
+    sheet = 6,
+    range = "A11:AK11390"
+  ),
+  "fy12to13" = list(
+    url = paste0(
+      url_start,
+      "publicationimport/pub12xxx/pub12566/hosp-epis-stat-admi-diag-2012-13-tab.xlsx"
+    ),
+    sheet = 6,
+    range = "A18:AF11400"
   )
 )
 
@@ -49,7 +50,7 @@ read_icd10_usage_xlsx_from_url <- function(url_list, ...) {
     col_names = TRUE,
     .name_repair = janitor::make_clean_names,
     sheet = url_list$sheet,
-    skip = url_list$skip,
+    range = url_list$range,
     ...
   )
 }
@@ -61,7 +62,7 @@ select_all_diag_breakdowns <- function(data, url_list) {
     data,
     icd10_code = 1,
     description = 2,
-    c("main_diagnosis", "all_diagnoses"),
+    c("all_diagnoses", "main_diagnosis"),
     c("male", "female", "gender_unknown"),
     starts_with("age")
   ) |>
@@ -95,7 +96,7 @@ icd10_usage <- icd10_code_usage_urls |>
 # Pivot main/all diagnosis, age, and sex breakdowns into tidy form. Turn usage column into integers.
 tidy_icd_10_usage <- icd10_usage |>
   pivot_longer(
-    cols = main_diagnosis:age_90plus,
+    cols = all_diagnoses:age_90plus,
     names_to = "breakdown",
     values_to = "usage"
   ) |>
@@ -109,5 +110,5 @@ f90_icd_10_breakdowns <- tidy_icd_10_usage |>
 
 write_csv(
   f90_icd_10_breakdowns,
-  here("data", "temp_icd10_breakdowns", "df_all_2425_icd10_f90_breakdowns.csv")
+  here("data", "temp_icd10_breakdowns", "df_icd10_f90_breakdowns.csv")
 )
