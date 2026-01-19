@@ -1,271 +1,217 @@
-year,summary_name,dimension_code,dimension_description,activity_type,aggregation_type,measure_category,measure_sub_category,measure_value,suppressed_flag,gender_dq_flag
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Gender,Male,210,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Gender,Female,94,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,0,1,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,1_4,11,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,5_9,40,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,10_14,54,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,15,22,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,16,24,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,17,27,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,18,18,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,19,15,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,20_24,41,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,25_29,17,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,30_34,15,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,35_39,3,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,40_44,3,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,45_49,5,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,50_54,1,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,55_59,1,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,60_64,6,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,75_79,0,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisPrimary3Char,F90,Hyperkinetic disorders,FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Gender,Male,170,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Gender,Female,65,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,0,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,1_4,5,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,5_9,34,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,10_14,44,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,15,19,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,16,15,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,17,24,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,18,17,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,19,13,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,20_24,29,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,25_29,14,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,30_34,10,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,35_39,3,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,40_44,3,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,45_49,3,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,50_54,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,55_59,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,60_64,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,75_79,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Gender,Male,7,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Gender,Female,6,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,0,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,1_4,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,5_9,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,10_14,4,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,15,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,16,5,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,17,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,18,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,19,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,20_24,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,25_29,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,30_34,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,35_39,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,40_44,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,45_49,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,50_54,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,55_59,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,60_64,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,75_79,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Gender,Male,4,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Gender,Female,2,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,0,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,1_4,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,5_9,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,10_14,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,15,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,16,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,17,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,18,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,19,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,20_24,2,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,25_29,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,30_34,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,35_39,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,40_44,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,45_49,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,50_54,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,55_59,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,60_64,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,75_79,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Gender,Male,29,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Gender,Female,21,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,0,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,1_4,5,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,5_9,5,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,10_14,5,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,15,2,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,16,4,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,17,2,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,18,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,19,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,20_24,10,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,25_29,2,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,30_34,5,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,35_39,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,40_44,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,45_49,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,50_54,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,55_59,1,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,60_64,6,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,75_79,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisPrimary4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Gender,Male,10095,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Gender,Female,3755,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Gender,Unknown,3,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,0,7,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,1_4,228,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,5_9,2061,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,10_14,3316,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,15,939,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,16,863,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,17,744,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,18,697,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,19,681,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,20_24,2161,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,25_29,914,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,30_34,445,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,35_39,270,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,40_44,202,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,45_49,120,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,50_54,76,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,55_59,34,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,60_64,21,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,65_69,14,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,70_74,10,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,75_79,5,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,80_84,4,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,85_89,1,NA,NA
-2013-14,DiagnosisAll3Char,F90,Hyperkinetic disorders,FCE,Count,Age,90+,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Gender,Male,9763,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Gender,Female,3608,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Gender,Unknown,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,0,7,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,1_4,165,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,5_9,1983,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,10_14,3221,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,15,928,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,16,842,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,17,729,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,18,677,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,19,667,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,20_24,2078,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,25_29,895,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,30_34,436,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,35_39,261,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,40_44,188,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,45_49,115,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,50_54,75,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,55_59,32,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,60_64,14,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,65_69,12,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,70_74,7,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,75_79,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,80_84,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.0,Disturbance of activity and attention,FCE,Count,Age,90+,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Gender,Male,33,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Gender,Female,16,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,0,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,1_4,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,5_9,4,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,10_14,6,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,15,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,16,6,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,17,4,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,18,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,19,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,20_24,9,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,25_29,7,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,30_34,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,35_39,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,40_44,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,45_49,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,50_54,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,55_59,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,60_64,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,75_79,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.1,Hyperkinetic conduct disorder,FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Gender,Male,37,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Gender,Female,11,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,0,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,1_4,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,5_9,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,10_14,29,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,15,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,16,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,17,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,18,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,19,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,20_24,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,25_29,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,30_34,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,35_39,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,40_44,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,45_49,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,50_54,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,55_59,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,60_64,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,65_69,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,70_74,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,75_79,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,80_84,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,85_89,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.8,Other hyperkinetic disorders,FCE,Count,Age,90+,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Gender,Male,265,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Gender,Female,122,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Gender,Unknown,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,0,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,1_4,59,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,5_9,72,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,10_14,60,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,15,9,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,16,14,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,17,11,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,18,16,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,19,12,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,20_24,71,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,25_29,14,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,30_34,7,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,35_39,8,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,40_44,11,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,45_49,4,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,50_54,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,55_59,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,60_64,6,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,65_69,2,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,70_74,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,75_79,1,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,80_84,3,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,85_89,0,NA,NA
-2013-14,DiagnosisAll4Char,F90.9,"Hyperkinetic disorder, unspecified",FCE,Count,Age,90+,1,NA,NA
+year,dimension_code,dimension_description,measure_category,measure_sub_category,measure_value
+2013-14,F90.0,Disturbance of activity and attention,Gender,Male,170
+2013-14,F90.0,Disturbance of activity and attention,Gender,Female,65
+2013-14,F90.0,Disturbance of activity and attention,Gender,Unknown,0
+2013-14,F90.0,Disturbance of activity and attention,Age,0,1
+2013-14,F90.0,Disturbance of activity and attention,Age,1_4,5
+2013-14,F90.0,Disturbance of activity and attention,Age,5_9,34
+2013-14,F90.0,Disturbance of activity and attention,Age,10_14,44
+2013-14,F90.0,Disturbance of activity and attention,Age,15,19
+2013-14,F90.0,Disturbance of activity and attention,Age,16,15
+2013-14,F90.0,Disturbance of activity and attention,Age,17,24
+2013-14,F90.0,Disturbance of activity and attention,Age,18,17
+2013-14,F90.0,Disturbance of activity and attention,Age,19,13
+2013-14,F90.0,Disturbance of activity and attention,Age,20_24,29
+2013-14,F90.0,Disturbance of activity and attention,Age,25_29,14
+2013-14,F90.0,Disturbance of activity and attention,Age,30_34,10
+2013-14,F90.0,Disturbance of activity and attention,Age,35_39,3
+2013-14,F90.0,Disturbance of activity and attention,Age,40_44,3
+2013-14,F90.0,Disturbance of activity and attention,Age,45_49,3
+2013-14,F90.0,Disturbance of activity and attention,Age,50_54,1
+2013-14,F90.0,Disturbance of activity and attention,Age,55_59,0
+2013-14,F90.0,Disturbance of activity and attention,Age,60_64,0
+2013-14,F90.0,Disturbance of activity and attention,Age,65_69,0
+2013-14,F90.0,Disturbance of activity and attention,Age,70_74,0
+2013-14,F90.0,Disturbance of activity and attention,Age,75_79,0
+2013-14,F90.0,Disturbance of activity and attention,Age,80_84,0
+2013-14,F90.0,Disturbance of activity and attention,Age,85_89,0
+2013-14,F90.0,Disturbance of activity and attention,Age,90+,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Gender,Male,7
+2013-14,F90.1,Hyperkinetic conduct disorder,Gender,Female,6
+2013-14,F90.1,Hyperkinetic conduct disorder,Gender,Unknown,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,0,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,1_4,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,5_9,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,10_14,4
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,15,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,16,5
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,17,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,18,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,19,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,20_24,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,25_29,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,30_34,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,35_39,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,40_44,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,45_49,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,50_54,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,55_59,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,60_64,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,65_69,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,70_74,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,75_79,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,80_84,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,85_89,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,90+,0
+2013-14,F90.8,Other hyperkinetic disorders,Gender,Male,4
+2013-14,F90.8,Other hyperkinetic disorders,Gender,Female,2
+2013-14,F90.8,Other hyperkinetic disorders,Gender,Unknown,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,0,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,1_4,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,5_9,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,10_14,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,15,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,16,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,17,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,18,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,19,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,20_24,2
+2013-14,F90.8,Other hyperkinetic disorders,Age,25_29,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,30_34,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,35_39,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,40_44,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,45_49,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,50_54,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,55_59,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,60_64,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,65_69,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,70_74,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,75_79,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,80_84,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,85_89,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,90+,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Gender,Male,29
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Gender,Female,21
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Gender,Unknown,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,0,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,1_4,5
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,5_9,5
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,10_14,5
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,15,2
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,16,4
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,17,2
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,18,1
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,19,1
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,20_24,10
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,25_29,2
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,30_34,5
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,35_39,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,40_44,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,45_49,1
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,50_54,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,55_59,1
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,60_64,6
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,65_69,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,70_74,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,75_79,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,80_84,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,85_89,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,90+,0
+2013-14,F90.0,Disturbance of activity and attention,Gender,Male,9763
+2013-14,F90.0,Disturbance of activity and attention,Gender,Female,3608
+2013-14,F90.0,Disturbance of activity and attention,Gender,Unknown,3
+2013-14,F90.0,Disturbance of activity and attention,Age,0,7
+2013-14,F90.0,Disturbance of activity and attention,Age,1_4,165
+2013-14,F90.0,Disturbance of activity and attention,Age,5_9,1983
+2013-14,F90.0,Disturbance of activity and attention,Age,10_14,3221
+2013-14,F90.0,Disturbance of activity and attention,Age,15,928
+2013-14,F90.0,Disturbance of activity and attention,Age,16,842
+2013-14,F90.0,Disturbance of activity and attention,Age,17,729
+2013-14,F90.0,Disturbance of activity and attention,Age,18,677
+2013-14,F90.0,Disturbance of activity and attention,Age,19,667
+2013-14,F90.0,Disturbance of activity and attention,Age,20_24,2078
+2013-14,F90.0,Disturbance of activity and attention,Age,25_29,895
+2013-14,F90.0,Disturbance of activity and attention,Age,30_34,436
+2013-14,F90.0,Disturbance of activity and attention,Age,35_39,261
+2013-14,F90.0,Disturbance of activity and attention,Age,40_44,188
+2013-14,F90.0,Disturbance of activity and attention,Age,45_49,115
+2013-14,F90.0,Disturbance of activity and attention,Age,50_54,75
+2013-14,F90.0,Disturbance of activity and attention,Age,55_59,32
+2013-14,F90.0,Disturbance of activity and attention,Age,60_64,14
+2013-14,F90.0,Disturbance of activity and attention,Age,65_69,12
+2013-14,F90.0,Disturbance of activity and attention,Age,70_74,7
+2013-14,F90.0,Disturbance of activity and attention,Age,75_79,2
+2013-14,F90.0,Disturbance of activity and attention,Age,80_84,1
+2013-14,F90.0,Disturbance of activity and attention,Age,85_89,0
+2013-14,F90.0,Disturbance of activity and attention,Age,90+,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Gender,Male,33
+2013-14,F90.1,Hyperkinetic conduct disorder,Gender,Female,16
+2013-14,F90.1,Hyperkinetic conduct disorder,Gender,Unknown,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,0,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,1_4,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,5_9,4
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,10_14,6
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,15,2
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,16,6
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,17,4
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,18,2
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,19,2
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,20_24,9
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,25_29,7
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,30_34,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,35_39,1
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,40_44,2
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,45_49,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,50_54,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,55_59,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,60_64,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,65_69,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,70_74,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,75_79,2
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,80_84,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,85_89,0
+2013-14,F90.1,Hyperkinetic conduct disorder,Age,90+,0
+2013-14,F90.8,Other hyperkinetic disorders,Gender,Male,37
+2013-14,F90.8,Other hyperkinetic disorders,Gender,Female,11
+2013-14,F90.8,Other hyperkinetic disorders,Gender,Unknown,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,0,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,1_4,3
+2013-14,F90.8,Other hyperkinetic disorders,Age,5_9,3
+2013-14,F90.8,Other hyperkinetic disorders,Age,10_14,29
+2013-14,F90.8,Other hyperkinetic disorders,Age,15,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,16,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,17,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,18,3
+2013-14,F90.8,Other hyperkinetic disorders,Age,19,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,20_24,3
+2013-14,F90.8,Other hyperkinetic disorders,Age,25_29,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,30_34,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,35_39,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,40_44,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,45_49,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,50_54,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,55_59,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,60_64,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,65_69,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,70_74,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,75_79,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,80_84,0
+2013-14,F90.8,Other hyperkinetic disorders,Age,85_89,1
+2013-14,F90.8,Other hyperkinetic disorders,Age,90+,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Gender,Male,265
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Gender,Female,122
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Gender,Unknown,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,0,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,1_4,59
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,5_9,72
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,10_14,60
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,15,9
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,16,14
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,17,11
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,18,16
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,19,12
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,20_24,71
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,25_29,14
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,30_34,7
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,35_39,8
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,40_44,11
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,45_49,4
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,50_54,1
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,55_59,2
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,60_64,6
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,65_69,2
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,70_74,3
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,75_79,1
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,80_84,3
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,85_89,0
+2013-14,F90.9,"Hyperkinetic disorder, unspecified",Age,90+,1
