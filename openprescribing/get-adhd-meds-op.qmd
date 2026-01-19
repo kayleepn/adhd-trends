@@ -1,0 +1,48 @@
+---
+title: "Get ADHD medications from OpenPrescribing"
+format: html
+---
+
+```{r}
+#| label: setup
+#| echo: false
+library(DBI)
+library(bigrquery)
+library(dplyr)
+library(dbplyr)
+library(here)
+library(tidyverse)
+
+source(here("functions", "opr.R"))
+```
+
+
+
+```{r}
+#| label: connect-bq
+con <- connect_openprescribing()
+```
+
+
+```{r}
+#| label: get-gp-prescribing
+
+adhd_med_bnf_codes <- c(
+    "0404000S0AAAHAH"
+)
+
+query_gp_prescribing <- get_gp_prescribing(
+    con,
+    bnf_codes = adhd_med_bnf_codes,
+    start_date = "2025-04-01",
+    end_date = "2025-07-01"
+)
+
+df_gp_prescribing <- query_gp_prescribing |> 
+    collect()
+
+write_csv(
+    df_gp_prescribing, 
+    here("output", "openprescribing", "adhd_gp_prescribing.csv")
+)
+```
