@@ -41,7 +41,7 @@ icd10_breakdowns_xlsx_urls <- list(
       "0E/E70963/hosp-epis-stat-admi-diag-2021-22-tab.xlsx"
     ),
     sheet = 6,
-    range = "A11:AL11341"
+    range = "A11:AK11341"
   ),
   "fy20to21" = list(
     url = paste0(
