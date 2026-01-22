@@ -1,0 +1,61 @@
+# Exploratory analysis for ADHD diagnosis ICD-10 code usage in hospital admitted patient care
+
+This data comes from ICD-10 xlsx files. The following breakdowns are available:
+
+* Age
+* Sex
+* Diagnosis position 
+
+## Setup and load data
+
+```{r}
+#| output: false
+library(tidyverse)
+library(here)
+icd10_f90_breakdowns <- read_csv(here("output", "opencodecounts", "icd10_f90_breakdowns.csv"))
+```
+
+
+# Age breakdowns (all diagnosis positions)
+
+```{r}
+icd10_f90_breakdowns |> 
+#O nly looking at F900 now since it makes up most of the coding activity
+  filter(icd10_code == "F900") |> 
+  # filter(breakdown %in% c("male", "female")) |> 
+  filter(str_starts(breakdown, "age")) |>
+  ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
+  geom_point() +
+  geom_line(alpha = .3) +
+  facet_wrap(~breakdown)
+```
+
+Note that the "age-5_9" group is positioned between the "age_45_49" and "age_50_54" groups but this can be fixed later.
+Also interesting to see what happens if we aggregate ages 15-19.
+
+# Sex breakdowns (all diagnosis positions)
+
+```{r}
+icd10_f90_breakdowns |> 
+  filter(icd10_code == "F900") |> 
+  filter(breakdown %in% c("male", "female", "gender_unknown")) |> 
+  ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
+  geom_point() +
+  geom_line(alpha = .3)
+```
+
+# Diagnosis position breakdowns
+
+```{r}
+icd10_f90_breakdowns |> 
+  filter(icd10_code == "F900") |> 
+  # filter(breakdown %in% c("male", "female")) |> 
+  filter(breakdown %in% c("main_diagnosis", "all_diagnoses")) |> 
+  # filter(str_starts(breakdown, "age")) |>
+  ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
+  geom_point() +
+  geom_line(alpha = .3) +
+  facet_wrap(~breakdown, scales = "free_y")
+```
+
+As expected, the majority of code usage is recorded in other diagnosis positions. This is because ADHD being the primary reason for inpatient care is rare.
