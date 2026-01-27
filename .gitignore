@@ -1,3 +1,4 @@
-openprescribing/get-adhd-meds-op_files/*
-openprescribing/get-adhd-meds-op.html
-analysis/icd10_breakdown_analysis_files/*
+openprescribing/*_files/*
+openprescribing/*.html
+analysis/*_files/*
+analysis/*.html
