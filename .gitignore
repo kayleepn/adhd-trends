@@ -2,3 +2,4 @@ openprescribing/*_files/*
 openprescribing/*.html
 analysis/*_files/*
 analysis/*.html
+analysis/icd10_breakdown_analysis.html
