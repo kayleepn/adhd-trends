@@ -1,35 +1,241 @@
-# Exploratory analysis for codelist development
+---
+title: "Exploratory analysis (OpenCodeCounts) for codelist development"
+format:
+    html:
+        toc: true
+        toc-location: body
+execute:
+  message: false
+---
 
-Setup
+# Setup
 ```{r}
+#| output: false
 library(opencodecounts)
 library(here)
 library(tibble)
 library(dplyr)
 library(ggplot2)
+library(gt)
 ```
 
-Load codelist
+# GP records (SNOMED CT)
+## ADHD diagnosis code usage
+### Get usage data for each code in codelist
 ```{r}
-#Import codelist from OpenCodelists.org
-adhd_snomed_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/snomed-adhd-test/2586ce25/")
-as_tibble(adhd_snomed_codelist)
+# Import codelist from OpenCodelists.org
+snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone1/62ec200e/")
+as_tibble(snomed_diag_codelist)
+
+# Filter code usage data to include codes from SNOMED-CT diagnosis codelist
+df_snomed_diag_usage <- snomed_usage |>
+    filter(snomed_code %in% snomed_diag_codelist$code)
 ```
 
-Filter code usage data
-
+### Show code usage table for all codes with usage data
 ```{r}
-#Filter SNOMED-CT code usage to include codes from SNOMED-CT codelist
-df_adhd_snomed_usage <- snomed_usage |>
-    filter(snomed_code %in% adhd_snomed_codelist$code)
-``` 
+#| message: false
 
-Show code usage table for all codes with usage data
-```{r}
-all_adhd_snomed_codes <- df_adhd_snomed_usage |>
+# Summarise total code usage for each code
+all_snomed_diag_codes <- df_snomed_diag_usage |>
     group_by(snomed_code, description) |>
     summarise(total_usage = sum(usage)) |>
-    ungroup() |>
-    slice_max(total_usage, n=29, na_rm=F)
-print(all_adhd_snomed_codes)
+    ungroup() |> 
+    arrange(desc(total_usage))
+
+# Create list of borderline codes
+borderline_snomed_diag_codes <- c(
+    192132008,
+    229715008,
+    192131001,
+    28271000087107,
+    46745001
+)
+
+# Create code usage table with borderline codes highlighted. 
+all_snomed_diag_usage <- all_snomed_diag_codes |> 
+    gt() |> 
+    tab_header(
+        title = "SNOMED ADHD diagnosis code usage") |> 
+    tab_style(
+        cell_fill(color = "lightblue"),
+        locations = cells_body(
+            rows = snomed_code %in% borderline_snomed_diag_codes
+        )
+    )
+
+all_snomed_diag_usage
+```
+
+Borderline codes that may not be relevant for the thesis are highlighted in light blue. We may also want to consider if we are including codes related to drug treatment of ADHD. 
+
+### Select top 5 codes with most usage
+
+```{r}
+top5_snomed_diag_codes <- all_snomed_diag_codes |> 
+    slice_max(total_usage, n = 5) |> 
+    pull(snomed_code)
+```
+
+### Visualise trends over time (top 5 codes)
+```{r}
+#| fig-width: 10
+#| fig-height: 6
+plot_snomed_diag_usage <- df_snomed_diag_usage |> 
+    filter(snomed_code %in% top5_snomed_diag_codes) |> 
+    ggplot(aes(
+        x = end_date,
+        y = usage,
+        colour = paste0(description, "(", snomed_code, ")"),
+        shape = paste0(description, "(", snomed_code, ")" )
+    )) +
+    geom_line(alpha = .3) +
+    geom_point() +
+    scale_y_continuous(labels = scales::label_number(accuracy = 1)) +
+    scale_x_date(date_breaks = "2 years",
+    date_labels = "%Y") +
+    scale_colour_viridis_d(end = .7) +
+    labs(
+        x = NULL, y = "Usage count", 
+        colour = NULL, shape = NULL
+    ) +
+    theme(legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.box = "vertical")
+plot_snomed_diag_usage    
+```
+
+## ADHD admin-related code usage
+
+### Get usage data for each code in codelist
+This codelist contains codes related to referral, assessment, and administrative activity for ADHD, but not diagnosis or treatment.
+```{r}
+# Import codelist from OpenCodelists.org
+snomed_admin_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-referral-assessment-and-admin-related-codes/38f84b80/")
+as_tibble(snomed_admin_codelist)
+
+# Filter code usage data to include codes from SNOMED-CT admin codelist
+df_snomed_admin_usage <- snomed_usage |>
+    filter(snomed_code %in% snomed_admin_codelist$code)
+```
+
+### Show code usage table for all codes with usage data
+```{r}
+#| message: false
+all_snomed_admin_codes <- df_snomed_admin_usage |>
+    group_by(snomed_code, description) |>
+    summarise(total_usage = sum(usage)) |>
+    ungroup() |> 
+    arrange(desc(total_usage))
+print(all_snomed_admin_codes)
+```
+
+### Select top 5 codes with most usage
+
+```{r}
+top5_snomed_admin_codes <- all_snomed_admin_codes |> 
+    slice_max(total_usage, n = 5) |> 
+    pull(snomed_code)
+```
+
+### Visualise trends over time (top 5 codes)
+```{r}
+#| fig-width: 10
+#| fig-height: 6
+plot_snomed_admin_usage <- df_snomed_admin_usage |> 
+    filter(snomed_code %in% top5_snomed_admin_codes) |> 
+    ggplot(aes(
+        x = end_date,
+        y = usage,
+        colour = paste0(description, "(", snomed_code, ")"),
+        shape = paste0(description, "(", snomed_code, ")" )
+    )) +
+    geom_line(alpha = .3) +
+    geom_point() +
+    scale_y_continuous(labels = scales::label_number(accuracy = 1)) +
+    scale_x_date(date_breaks = "2 years",
+    date_labels = "%Y") +
+    scale_colour_viridis_d(end = .7) +
+    labs(
+        x = NULL, y = "Usage count", 
+        colour = NULL, shape = NULL
+    ) +
+    theme(legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.box = "vertical")
+plot_snomed_admin_usage    
+```
+
+# Hospital admitted patient care (ICD-10) ADHD diagnosis code usage
+
+## Get usage data for each code in codelist
+```{r}
+# Import codelist from OpenCodelists.org
+icd10_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/")
+as_tibble(icd10_diag_codelist)
+
+# Filter code usage data to include codes from SNOMED-CT codelist
+df_icd10_diag_usage <- icd10_usage |>
+    filter(icd10_code %in% icd10_diag_codelist$code)
+```
+
+## Show code usage table for all codes with usage data
+```{r}
+#| message: false
+all_icd10_diag_codes <- df_icd10_diag_usage |>
+    group_by(icd10_code, description) |>
+    summarise(total_usage = sum(usage)) |>
+    ungroup() |> 
+    arrange(desc(total_usage))
+
+# Create list of borderline codes
+borderline_icd10_diag_codes <- c(
+    "F90",
+    "F901",
+    "F908",
+    "F909"
+)
+
+# Create code usage table with borderline codes highlighted. 
+all_icd10_diag_usage <- all_icd10_diag_codes |> 
+    gt() |> 
+    tab_header(
+        title = "ICD-10 ADHD diagnosis code usage") |> 
+    tab_style(
+        cell_fill(color = "lightblue"),
+        locations = cells_body(
+            rows = icd10_code %in% borderline_icd10_diag_codes
+        )
+    )
+
+all_icd10_diag_usage
+```
+
+Borderline codes that may not be relevant for the thesis are highlighted in light blue.
+
+## Visualise trends over time (all codes)
+```{r}
+#| fig-width: 10
+#| fig-height: 6
+plot_icd10_diag_usage <- df_icd10_diag_usage |> 
+    ggplot(aes(
+        x = end_date,
+        y = usage,
+        colour = paste0(description, "(", icd10_code, ")"),
+        shape = paste0(description, "(", icd10_code, ")" )
+    )) +
+    geom_line(alpha = .3) +
+    geom_point() +
+    scale_y_continuous(labels = scales::label_number(accuracy = 1)) +
+    scale_x_date(date_breaks = "2 years",
+    date_labels = "%Y") +
+    scale_colour_viridis_d(end = .7) +
+    labs(
+        x = NULL, y = "Usage count", 
+        colour = NULL, shape = NULL
+    ) +
+    theme(legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.box = "vertical")
+plot_icd10_diag_usage    
 ```
