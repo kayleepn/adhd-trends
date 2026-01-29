@@ -1,4 +1,13 @@
-# Exploratory analysis for ADHD diagnosis ICD-10 code usage in hospital admitted patient care
+---
+title: "Exploratory analysis for ICD-10 age, sex, and diagnosis position breakdowns"
+format:
+    html:
+        toc: true
+        toc-location: body
+execute:
+  message: false
+---
+
 
 This data comes from ICD-10 xlsx files. The following breakdowns are available:
 
@@ -16,22 +25,28 @@ icd10_f90_breakdowns <- read_csv(here("output", "opencodecounts", "icd10_f90_bre
 ```
 
 
-# Age breakdowns (all diagnosis positions)
+# Age breakdowns (all age groups and diagnosis positions)
 
 ```{r}
 icd10_f90_breakdowns |> 
-#O nly looking at F900 now since it makes up most of the coding activity
+# Only looking at F900 now since it makes up most of the coding activity
   filter(icd10_code == "F900") |> 
-  # filter(breakdown %in% c("male", "female")) |> 
   filter(str_starts(breakdown, "age")) |>
+  # Turn age bands into factor to ensure correct display order
+  mutate(breakdown = factor(
+      breakdown,
+      levels = unique(breakdown)[order(
+        parse_number(unique(breakdown))
+      )]
+    )) |> 
   ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
   geom_point() +
   geom_line(alpha = .3) +
-  facet_wrap(~breakdown)
+  theme(legend.position = "none") +
+  facet_wrap(~breakdown, ncol = 4)
 ```
 
-Note that the "age-5_9" group is positioned between the "age_45_49" and "age_50_54" groups but this can be fixed later.
-Also interesting to see what happens if we aggregate ages 15-19.
+Interesting to see what happens if we aggregate ages 15-19. May also want to do separate graphs for <18 and >=18 age groups.
 
 # Sex breakdowns (all diagnosis positions)
 
