@@ -99,8 +99,16 @@ get_normalised_prescribing <- function(
 
   # Filter by BNF codes if provided
   if (!is.null(bnf_codes)) {
+    # Build SQL LIKE conditions with OR
+    like_sql <- paste0(
+      "bnf_code LIKE '", 
+      bnf_codes, 
+      "'",
+      collapse = " OR "
+    )
+    
     np_query <- np_query |>
-      dplyr::filter(bnf_code %in% !!bnf_codes)
+      dplyr::filter(sql(like_sql))
   }
 
   # Filter by start date if provided
@@ -117,7 +125,6 @@ get_normalised_prescribing <- function(
 
   np_query
 }
-
 
 get_gp_prescribing <- function(con, bnf_codes, start_date, end_date) {
   query_practices <- get_practices(con, filter_setting = 4)

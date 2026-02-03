@@ -28,18 +28,54 @@ con <- connect_openprescribing()
 #| label: get-gp-prescribing
 
 adhd_med_bnf_codes <- c(
-    "0404000S0AAAHAH"
+    # Dexamfetamine 
+    # pseudoBNF code: Dexamfetamine sulfate (0404000L0)
+    "0404000L0%",
+    # Methylphenidate
+    # pseudo BNF code: Methylphenidate hydrochloride (0404000M0)
+    "0404000M0%",
+    # Atomoxetine 
+    # pseudoBNF code: Atomoxetine hydrochloride (0404000S0)
+    "0404000S0%",
+    # Lisdexamfetamine 
+    # pseudoBNF code: Lisdexamfetamine dimesylate (0404000U0)
+    "0404000U0%",
+    # Guanfacine 
+    # pseudoBNF code: Guanfacine (0404000V0)
+    "0404000V0%"
 )
 
 query_gp_prescribing <- get_gp_prescribing(
     con,
     bnf_codes = adhd_med_bnf_codes,
-    start_date = "2025-04-01",
+    start_date = "2015-08-01",
     end_date = "2025-07-01"
 )
 
 df_gp_prescribing <- query_gp_prescribing |> 
+    select(sha, regional_team,stp, pct, practice, bnf_code, bnf_name, items, quantity, month, name, postcode, ccg_id, pcn_id, setting, status_code) |> 
     collect()
+
+df_gp_prescribing <- df_gp_prescribing |> 
+    mutate(bnf_chemical =  substr(bnf_code, 1, 9)) |> 
+    group_by(practice, month, bnf_chemical) |> 
+    mutate(quantity_by_chemical = sum(quantity)) |> 
+    ungroup() |> 
+    arrange(month, bnf_chemical, practice) |> 
+    select(-c(bnf_code, bnf_name, items, quantity)) |> 
+    distinct() |> 
+    mutate(
+        bnf_chemical_name = case_when(
+            bnf_chemical == "0404000L0" ~ "Dexamfetamine",
+            bnf_chemical == "0404000M0" ~ "Methylphenidate",
+            bnf_chemical == "0404000S0" ~ "Atomoxetine",
+            bnf_chemical == "0404000U0" ~ "Lisdexamfetamine",
+            bnf_chemical == "0404000V0" ~ "Guanfacine",
+            ),
+        month = as.Date(month)
+        ) |> 
+    relocate(quantity_by_chemical, .after = bnf_chemical_name)
+    
 
 write_csv(
     df_gp_prescribing, 
