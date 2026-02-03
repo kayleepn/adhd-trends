@@ -4,6 +4,7 @@ format:
     html:
         toc: true
         toc-location: body
+        code-fold: true
 execute:
   message: false
 ---
@@ -46,7 +47,66 @@ icd10_f90_breakdowns |>
   facet_wrap(~breakdown, ncol = 4)
 ```
 
-Interesting to see what happens if we aggregate ages 15-19. May also want to do separate graphs for <18 and >=18 age groups.
+## Age breakdowns (ages 15-19 aggregated)
+
+```{r}
+icd10_f90_breakdowns |> 
+  filter(icd10_code == "F900") |> 
+  filter(str_starts(breakdown, "age")) |>
+  mutate(breakdown = factor(
+      breakdown,
+      levels = unique(breakdown)[order(
+        parse_number(unique(breakdown))
+      )]
+    )) |> 
+  # Aggregate factor levels age_15 to age_19
+  mutate(breakdown = fct_collapse(
+    breakdown,
+    "age_15_19" = c("age_15", "age_16", "age_17", "age_18", "age_19")
+  )) |> 
+  # Need to also group by end_date to plot over time
+  group_by(breakdown, end_date) |> 
+  summarise(usage = sum(usage), .groups = "drop") |> 
+  ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
+  geom_point() +
+  geom_line(alpha = .3) +
+  theme(legend.position = "none") +
+  facet_wrap(~breakdown, ncol = 4)
+```
+
+Once ages 15-19 have been aggregated, we can see similar increases in ICD-10 coding over time compared to ages 10-14 and 20-24. 
+
+## Age breakdowns (<18 and >=18)
+```{r}
+icd10_f90_breakdowns |> 
+  filter(icd10_code == "F900") |> 
+  filter(str_starts(breakdown, "age")) |>
+  mutate(breakdown = factor(
+      breakdown,
+      levels = unique(breakdown)[order(
+        parse_number(unique(breakdown))
+      )]
+    )) |> 
+  # Aggregate factor levels <18 and >=18 
+  mutate(breakdown = fct_collapse(
+    breakdown,
+    "age <18" = c(
+      "age_0", "age_1_4", "age_5_9", "age_10_14", 
+      "age_15", "age_16", "age_17"),
+    "age >=18" = c(
+      "age_18", "age_19", "age_20_24", "age_25_29",
+      "age_30_34", "age_35_39", "age_40_44", "age_45_49",
+      "age_50_54", "age_55_59", "age_60_64", "age_65_69",
+      "age_70_74", "age_75_79", "age_80_84", "age_85_89",
+      "age_90plus"
+    )
+  )) |> 
+  group_by(breakdown, end_date) |> 
+  summarise(usage = sum(usage), .groups = "drop") |> 
+  ggplot(aes(x = end_date, y = usage, shape = breakdown, colour = breakdown)) +
+  geom_point() +
+  geom_line(alpha = .3)
+```
 
 # Sex breakdowns (all diagnosis positions)
 
@@ -54,7 +114,7 @@ Interesting to see what happens if we aggregate ages 15-19. May also want to do 
 icd10_f90_breakdowns |> 
   filter(icd10_code == "F900") |> 
   filter(breakdown %in% c("male", "female", "gender_unknown")) |> 
-  ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
+  ggplot(aes(x = end_date, y = usage, shape = breakdown, colour = breakdown)) +
   geom_point() +
   geom_line(alpha = .3)
 ```
@@ -70,7 +130,8 @@ icd10_f90_breakdowns |>
   ggplot(aes(x = end_date, y = usage, colour = breakdown)) +
   geom_point() +
   geom_line(alpha = .3) +
-  facet_wrap(~breakdown, scales = "free_y")
+  facet_wrap(~breakdown, scales = "free_y") + 
+  theme(legend.position = "bottom")
 ```
 
-As expected, the majority of code usage is recorded in other diagnosis positions. This is because ADHD being the primary reason for inpatient care is rare.
+As expected, the majority of code usage is recorded in other diagnosis positions (note different y axis scales). This is because ADHD being the primary reason for inpatient care is rare.
