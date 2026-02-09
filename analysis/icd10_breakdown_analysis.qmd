@@ -78,11 +78,11 @@ ratio_all_vs_main <- sum(df_icd10_codes_tbl$main_diagnosis, na.rm = TRUE) / sum(
 ```
 
 @tbl-icd10-codes shows that F900 accounts for `r round(ratio_f900_vs_f90x * 100, 2)`% of all F90 code usage. 
-Main diagnoses represent only `r round(ratio_all_vs_main * 100, 2)`% of all diagnoses for F900, indicating that ADHD is rarely the primary reason for inpatient admission. Therefore, the following analyses focus on F900 only and do not differentiate between diagnosis positions.
+Main diagnoses represent only `r round(ratio_all_vs_main * 100, 2)`% of all F90 diagnosis codes, indicating that ADHD is rarely the primary reason for inpatient admission. Therefore, the following analyses focus on F900 only and do not differentiate between diagnosis positions.
 
 ```{r}
 #| label: tbl-icd10-codes
-#| tbl-cap: "ICD-10 F90 codes with total usage by diagnosis position. Main diagnoses as percentage of all diagnoses: F900 <1%; F909 = 6%; F901 = 8.5%. Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
+#| tbl-cap: "ICD-10 F90 codes with total usage by diagnosis position. Main diagnoses as percentage of all diagnoses: F900 <1%; F901 = 8.5%; F909 = 6%. Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
 
 options(knitr.kable.NA = 0)
 
@@ -121,6 +121,7 @@ df_f90_age_breakdowns_fig <- icd10_f90_breakdowns |>
   summarise(usage = sum(usage), .groups = "drop") |>
   ungroup() |>
   group_by(breakdown) |>
+  # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
   mutate(
     breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
     breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),

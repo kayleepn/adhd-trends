@@ -21,6 +21,7 @@ plot_breakdown_facet <- function(
   y_label = NULL,
   n_breaks = 4
 ) {
+  # Get unique dates and pick 4 evenly spaced ones for x-axis labels
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
   scale_x_date_breaks <- all_dates[idx]
@@ -28,9 +29,11 @@ plot_breakdown_facet <- function(
   ggplot(data, aes(x = end_date, y = usage, colour = breakdown)) +
     geom_point(size = point_size) +
     geom_line(alpha = .3) +
+    # y-axis scale: continuous starting with 0 and automatic upper limit
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
       breaks = scale_x_date_breaks,
+      # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
     scale_colour_viridis_d(end = .75) +
@@ -38,6 +41,7 @@ plot_breakdown_facet <- function(
     theme(
       text = element_text(size = text_size),
       legend.position = "none",
+      # Enable markdown in facet labels and sets strip text size
       strip.text = element_markdown(size = strip_size),
       panel.spacing = unit(1.5, "lines")
     ) +
