@@ -2,3 +2,4 @@ openprescribing/*_files/*
 openprescribing/*.html
 analysis/*_files/*
 analysis/*.html
+output/openprescribing/adhd_gp_prescribing.csv
