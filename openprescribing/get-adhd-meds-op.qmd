@@ -59,7 +59,7 @@ df_gp_prescribing <- query_gp_prescribing |>
 df_gp_prescribing <- df_gp_prescribing |> 
     mutate(bnf_chemical =  substr(bnf_code, 1, 9)) |> 
     group_by(practice, month, bnf_chemical) |> 
-    mutate(quantity_by_chemical = sum(quantity)) |> 
+    mutate(items_by_chemical = sum(items)) |> 
     ungroup() |> 
     arrange(month, bnf_chemical, practice) |> 
     select(-c(bnf_code, bnf_name, items, quantity)) |> 
@@ -74,7 +74,7 @@ df_gp_prescribing <- df_gp_prescribing |>
             ),
         month = as.Date(month)
         ) |> 
-    relocate(quantity_by_chemical, .after = bnf_chemical_name)
+    relocate(items_by_chemical, .after = bnf_chemical_name)
     
 
 write_csv(
