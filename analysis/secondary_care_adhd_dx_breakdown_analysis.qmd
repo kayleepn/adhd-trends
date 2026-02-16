@@ -1,5 +1,5 @@
 ---
-title: "Age and sex breakdowns for ADHD in NHS England open Hospital Admitted Patient Care Activity data (2012-2025)"
+title: "Age and sex breakdowns for ADHD diagnosis in NHS England open Hospital Admitted Patient Care Activity data (2012-2025)"
 author:
   - Kaylee Poon
 format:
@@ -10,6 +10,8 @@ format:
         toc: false
         fig-pos: "H"
         tbl-pos: "H"
+        margin-top: 1in
+        margin-bottom: 1in
     docx:
         toc: false
 execute:
@@ -30,8 +32,8 @@ This analysis explores age, sex, and diagnosis position breakdowns for ICD-10 F9
 
 library(tidyverse)
 library(here)
-library(gt)
 library(ggtext)
+library(kableExtra)
 
 source(here("functions", "create_plots.R"))
 
@@ -50,9 +52,17 @@ Data extraction methods are based on the [opencodecounts](https://bennettoxford.
 For this analysis we extended the methods to also extract procedural and demographic breakdowns of the counts from publicly available [NHS England Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity) data.
 Activity is captured in Finished Consultant Episodes (FCEs), where each FCE can have up to 20 recorded ICD-10 diagnoses. 
 
+## Codelists
+
+A draft ICD-10 codelist[^icd10-codelist-adhd-dx] including codes that likely indicate an ADHD diagnosis was developed using OpenCodelists. 
+
+This codelist is preliminary and may require refinement based on clinical review. The diagnosis codelist includes some codes under review (highlighted in @tbl-icd10-codes) where clinical relevance requires further discussion.
+
+[^icd10-codelist-adhd-dx]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/
+
 ### Breakdown variables
 
-**Diagnostic codes**: The following four-character ICD-10 codes were included: Disturbance of activity and attention (F900); _Hyperkinetic conduct disorder_ (F901); _Other hyperkinetic disorders_ (F908); _Hyperkinetic disorder_, _Hyperkinetic disorder, unspecified_ (F909).
+**Diagnostic codes**: The following four-character ICD-10 codes were included: Disturbance of activity and attention (F900); _Hyperkinetic conduct disorder_ (F901); _Other hyperkinetic disorders_ (F908); _Hyperkinetic disorder, unspecified_ (F909).
 
 **Diagnostic position**: Usage counts represent FCEs with a specific code in any diagnostic position ("all diagnoses") or as the primary reason for admission ("main diagnosis").
 
@@ -81,8 +91,20 @@ ratio_all_vs_main <- sum(df_icd10_codes_tbl$main_diagnosis, na.rm = TRUE) / sum(
 Main diagnoses represent only `r round(ratio_all_vs_main * 100, 2)`% of all F90 diagnosis codes, indicating that ADHD is rarely the primary reason for inpatient admission. Therefore, the following analyses focus on F900 only and do not differentiate between diagnosis positions.
 
 ```{r}
+#| label: codes-under-review
+
+codes_under_review <- c(
+  "F901",
+  "F908",
+  "F909"
+)
+```
+
+```{r}
 #| label: tbl-icd10-codes
 #| tbl-cap: "ICD-10 F90 codes with total usage by diagnosis position. Main diagnoses as percentage of all diagnoses: F900 <1%; F901 = 8.5%; F909 = 6%. Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
+
+rows_under_review <- which(df_icd10_codes_tbl$icd10_code %in% codes_under_review)
 
 options(knitr.kable.NA = 0)
 
@@ -90,8 +112,10 @@ knitr::kable(
   df_icd10_codes_tbl,
   col.names = c("Code", "Description", "All diagnoses", "Main diagnosis"),
   align = c("l", "l", "r", "r"),
-  format.args = list(big.mark = ",")
-)
+  format.args = list(big.mark = ","),
+) |> 
+  kable_styling() |>
+  row_spec(rows_under_review, background = "#ADD8E6")
 ```
 
 ### Age breakdowns

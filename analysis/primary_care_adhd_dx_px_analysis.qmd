@@ -1,0 +1,234 @@
+---
+title: "Trends in SNOMED CT code usage indicating ADHD diagnosis and procedures in publicly available NHS primary care data (2012-2025)"
+author:
+  - Kaylee Poon
+format:
+    html:
+        toc: false
+        toc-location: body
+    pdf:
+        toc: false
+        fig-pos: "H"
+        tbl-pos: "H"
+        margin-top: 1in
+        margin-bottom: 1in
+    docx:
+        toc: false
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+# Overview
+
+This analysis examines SNOMED CT coding activity related to ADHD in English primary care. The aim is to understand which clinical codes are used to record ADHD diagnoses and related administrative activity, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic.
+
+# Methods
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+library(kableExtra)
+library(opencodecounts)
+```
+
+## Data source
+
+We used publicly available clinical code usage data from NHS England accessed via the [opencodecounts](https://bennettoxford.github.io/opencodecounts/) R package. The annual usage count (from 1st August to  31st July) reflects how many times each listed SNOMED CT code was added to a GP electronic health record in England during the reporting period.
+
+## Codelists
+
+Two draft SNOMED CT codelists were developed using OpenCodelists. These codelists are preliminary and may require refinement based on clinical review.
+
+1. **ADHD diagnosis**[^codelist-adhd-dx]: Codes that likely indicate an ADHD diagnosis. The diagnosis codelist includes some codes under review (highlighted in @tbl-diagnosis-codes) where clinical relevance requires further discussion.
+2. **ADHD administrative activity**[^codelist-adhd-px]: Codes that capture referral, assessment, and other administrative activity related to ADHD (excluding diagnosis and treatment codes).
+
+[^codelist-adhd-dx]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone1/62ec200e/
+[^codelist-adhd-px]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-referral-assessment-and-admin-related-codes/38f84b80/
+
+# Results
+
+## ADHD diagnosis
+
+```{r}
+#| label: load-diagnosis-codelist
+#| output: false
+
+snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone1/62ec200e/")
+
+df_snomed_diag_usage <- snomed_usage |>
+  filter(snomed_code %in% snomed_diag_codelist$code)
+```
+
+@tbl-diagnosis-codes shows total usage for each diagnosis code. Codes under review are highlighted; these include broader parent codes (e.g., 'Deficits in attention motor control and perception (disorder)').
+
+```{r}
+#| label: calc-diagnosis-totals
+
+df_snomed_diag_codes_tbl <- df_snomed_diag_usage |>
+  group_by(snomed_code, description) |>
+  summarise(total_usage = sum(usage), .groups = "drop") |>
+  arrange(desc(total_usage))
+
+codes_under_review <- c(
+  192132008,
+  229715008,
+  192131001,
+  28271000087107,
+  46745001
+)
+```
+
+```{r}
+#| label: tbl-diagnosis-codes
+#| tbl-cap: "SNOMED CT diagnosis codes with total usage. Codes under review highlighted. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+
+rows_under_review <- which(df_snomed_diag_codes_tbl$snomed_code %in% codes_under_review)
+
+knitr::kable(
+  df_snomed_diag_codes_tbl,
+  col.names = c("Code", "Description", "Total usage"),
+  align = c("l", "l", "r"),
+  format.args = list(big.mark = ",")
+) |>
+  kable_styling(latex_options = c("scale_down", "HOLD_position")) |>
+  column_spec(2, width = "10cm") |>
+  row_spec(rows_under_review, background = "#ADD8E6")
+```
+
+@fig-diagnosis-trends shows usage trends for the five most frequently used diagnosis codes. All codes show a sharp increase from approximately 2021 onwards except 'child attention deficit disorder'.
+
+```{r}
+#| label: fig-diagnosis-trends
+#| fig-cap: "SNOMED CT diagnosis code usage over time (top 5 codes). Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+#| fig-width: 10
+#| fig-height: 6
+
+top5_snomed_diag_codes <- df_snomed_diag_codes_tbl |>
+  slice_max(total_usage, n = 5) |>
+  pull(snomed_code)
+
+df_snomed_diag_fig <- df_snomed_diag_usage |>
+  filter(snomed_code %in% top5_snomed_diag_codes) |>
+  mutate(code_label = description)
+
+all_dates <- sort(unique(df_snomed_diag_fig$end_date))
+scale_x_date_breaks <- all_dates[round(seq(1, length(all_dates), length.out = 4))]
+
+fig_snomed_diag_trends <- ggplot(
+  df_snomed_diag_fig,
+  aes(
+    x = end_date,
+    y = usage,
+    colour = code_label,
+    shape = code_label
+  )
+) +
+  geom_line(alpha = .3) +
+  geom_point(size = 2) +
+  scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+  scale_x_date(
+    breaks = scale_x_date_breaks,
+    labels = scales::label_date("%b\n%Y")
+  ) +
+  scale_colour_viridis_d(end = .75) +
+  labs(x = "End date of yearly reporting period", y = "Usage count", colour = NULL, shape = NULL) +
+  theme(
+    text = element_text(size = 16),
+    legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.text = element_text(size = 12)
+  )
+
+fig_snomed_diag_trends
+```
+
+## ADHD administrative activity
+
+```{r}
+#| label: load-admin-codelist
+#| output: false
+
+snomed_admin_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-referral-assessment-and-admin-related-codes/38f84b80/")
+
+df_snomed_admin_usage <- snomed_usage |>
+  filter(snomed_code %in% snomed_admin_codelist$code)
+```
+
+@tbl-admin-codes shows total usage for each administrative activity code.
+
+```{r}
+#| label: calc-admin-totals
+
+df_snomed_admin_codes_tbl <- df_snomed_admin_usage |>
+  group_by(snomed_code, description) |>
+  summarise(total_usage = sum(usage), .groups = "drop") |>
+  arrange(desc(total_usage))
+```
+
+```{r}
+#| label: tbl-admin-codes
+#| tbl-cap: "SNOMED CT administrative activity codes with total usage. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+
+options(knitr.kable.NA = 0)
+
+knitr::kable(
+  df_snomed_admin_codes_tbl,
+  col.names = c("Code", "Description", "Total usage"),
+  align = c("l", "l", "r"),
+  format.args = list(big.mark = ",")
+) |>
+  kable_styling(latex_options = c("scale_down", "HOLD_position")) |>
+  column_spec(2, width = "10cm")
+```
+
+@fig-admin-trends shows usage trends for the five most frequently used administrative codes. These codes were rarely used before 2022. Some codes, such as 'Diagnostic assessment for ADHD' and 'Referral for diagnostic assessment for ADHD', only appear in the data from 2024 onwards, suggesting recent adoption of more specific coding practices.
+
+```{r}
+#| label: fig-admin-trends
+#| fig-cap: "SNOMED CT administrative activity code usage over time (top 5 codes). Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+#| fig-width: 10
+#| fig-height: 6
+
+top5_snomed_admin_codes <- df_snomed_admin_codes_tbl |>
+  slice_max(total_usage, n = 5) |>
+  pull(snomed_code)
+
+df_snomed_admin_fig <- df_snomed_admin_usage |>
+  filter(snomed_code %in% top5_snomed_admin_codes) |>
+  mutate(code_label = description)
+
+all_dates <- sort(unique(df_snomed_admin_fig$end_date))
+scale_x_date_breaks <- all_dates[round(seq(1, length(all_dates), length.out = 4))]
+
+fig_snomed_admin_trends <- ggplot(
+  df_snomed_admin_fig,
+  aes(
+    x = end_date,
+    y = usage,
+    colour = code_label,
+    shape = code_label
+  )
+) +
+  geom_line(alpha = .3) +
+  geom_point(size = 2) +
+  scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+  scale_x_date(
+    breaks = scale_x_date_breaks,
+    labels = scales::label_date("%b\n%Y")
+  ) +
+  scale_colour_viridis_d(end = .75) +
+  labs(x = "End date of yearly reporting period", y = "Usage count", colour = NULL, shape = NULL) +
+  theme(
+    text = element_text(size = 16),
+    legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.text = element_text(size = 12)
+  )
+
+fig_snomed_admin_trends
+```
