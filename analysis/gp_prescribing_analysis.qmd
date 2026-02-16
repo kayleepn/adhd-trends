@@ -1,0 +1,57 @@
+---
+title: "GP Prescribing (OpenPrescribing) analysis"
+author:
+  - Kaylee Poon
+format: html
+---
+# Overview
+This analysis explores GP prescribing records for ADHD medications using OpenPrescribing/English Prescribing Dataset data from 2015-08-01 to 2025-07-01. 
+
+# Methods
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+
+adhd_gp_prescribing <- read_csv(
+  here(
+    "output",
+    "openprescribing",
+    "adhd_gp_prescribing.csv"
+    )
+)
+```
+
+## Data source and processing
+
+Data extraction methods are based on the [OpenPrescribing](https://github.com/bennettoxford/openprescribing) web app.
+
+For this analysis we extracted GP prescribing data from the [English Prescribing Dataset](https://opendata.nhsbsa.net/dataset/english-prescribing-dataset-epd-with-snomed-code/resource/9ab2d5e6-76eb-4bbc-acc1-789952ae3454) through BigQuery.
+
+Data for the following 5 ADHD medications recommended by NICE were extracted using the chemical's pseudoBNF code:
+
+1. Dexamfetamine / Dexamfetamine sulfate (0404000L0)
+2. Methylphenidate / Methylphenidate hydrochloride (0404000M0)
+3. Atomoxetine / Atomoxetine hydrochloride (0404000S0)
+4. Lisdexamfetamine / Lisdexamfetamine dimesylate (0404000U0)
+5. Guanfacine / Guanfacine (0404000V0)
+
+We then summed the number of items for each chemical at each practice.
+
+# Initial analysis
+
+```{r}
+# get unique number of ccg_id
+unique(adhd_gp_prescribing$ccg_id)
+# 213
+unique(adhd_gp_prescribing$pct)
+# 213
+
+# are ccg_id and pct columns the same?
+identical(adhd_gp_prescribing$ccg_id,adhd_gp_prescribing$pct)
+# [1] TRUE
+
+```
