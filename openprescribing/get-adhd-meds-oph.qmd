@@ -1,0 +1,86 @@
+---
+title: "Get ADHD medications from OpenPrescribing Hospital (SCMD)"
+format: html
+---
+
+```{r}
+#| label: setup
+#| echo: false
+library(DBI)
+library(bigrquery)
+library(dplyr)
+library(dbplyr)
+library(here)
+library(tidyverse)
+library(opencodecounts)
+
+source(here("functions", "ophr.R"))
+
+# ADHD medication codelist URLs from OpenCodelists
+adhd_codelist_urls <- list(
+  methylphenidate = "https://www.opencodelists.org/codelist/opensafely/methylphenidate-dmd/40bac3af/",
+  lisdexamfetamine = "https://www.opencodelists.org/codelist/opensafely/lisdexamfetamine-dmd/27ab507a/",
+  dexamfetamine = "https://www.opencodelists.org/codelist/opensafely/dexamfetamine-dmd/6dd2cf76/",
+  atomoxetine = "https://www.opencodelists.org/codelist/opensafely/atomoxetine-dmd/436d83a5/",
+  guanfacine = "https://www.opencodelists.org/codelist/opensafely/guanfacine-dmd/2a5e1070/"
+)
+
+```
+
+```{r}
+#| label: connect-bq
+con <- connect_scmd()
+```
+
+```{r}
+#| label: get-codelists
+# Get ADHD medication codelists from OpenCodelists
+codelists <- purrr::map(
+  adhd_codelist_urls,
+  ~ get_codelist(.x)
+)
+```
+
+```{r}
+#| label: get-vmp-codes
+
+# Extract VMP codes from codelists (filter to VMP entries only)
+vmp_codes <- codelists |>
+  purrr::map(~ as_tibble(.x) |> 
+  filter(str_detect(term, "\\(VMP\\)"))) |>
+  bind_rows() |>
+  pull(code) |>
+  as.character()
+```
+
+```{r}
+#| label: get-hospital-prescribing
+
+df_hospital_prescribing <- get_scmd_prescribing(con, vmp_codes) |>
+  collect()
+
+df_trusts <- get_scmd_trusts(con) |>
+  collect()
+```
+
+```{r}
+#| label: process-data
+
+# Join with trust data
+df_hospital_prescribing <- df_hospital_prescribing |>
+  left_join(
+    df_trusts |> select(ods_code, ods_name),
+    by = "ods_code"
+  ) |>
+  mutate(year_month = as.Date(year_month)) |>
+  arrange(year_month, vmp_name, ods_code)
+```
+
+```{r}
+#| label: write-data
+
+write_csv(
+  df_hospital_prescribing,
+  here("output", "openprescribing", "adhd_hospital_prescribing.csv")
+)
+```
