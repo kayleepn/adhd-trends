@@ -10,6 +10,8 @@ format:
         toc: false
         fig-pos: "H"
         tbl-pos: "H"
+        margin-top: 1in
+        margin-bottom: 1in
     docx:
         toc: false
 execute:
@@ -98,7 +100,7 @@ knitr::kable(
   row_spec(rows_under_review, background = "#ADD8E6")
 ```
 
-@fig-diagnosis-trends shows usage trends for the five most frequently used diagnosis codes. All codes show a sharp increase from approximately 2021 onwards.
+@fig-diagnosis-trends shows usage trends for the five most frequently used diagnosis codes. All codes show a sharp increase from approximately 2021 onwards except 'child attention deficit disorder'.
 
 ```{r}
 #| label: fig-diagnosis-trends
