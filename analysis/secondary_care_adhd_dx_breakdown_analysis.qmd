@@ -1,5 +1,5 @@
 ---
-title: "Age and sex breakdowns for ADHD in NHS England open Hospital Admitted Patient Care Activity data (2012-2025)"
+title: "Age and sex breakdowns for ADHD diagnosis in NHS England open Hospital Admitted Patient Care Activity data (2012-2025)"
 author:
   - Kaylee Poon
 format:
@@ -30,7 +30,6 @@ This analysis explores age, sex, and diagnosis position breakdowns for ICD-10 F9
 
 library(tidyverse)
 library(here)
-library(gt)
 library(ggtext)
 
 source(here("functions", "create_plots.R"))
