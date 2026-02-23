@@ -1,4 +1,4 @@
-connect_openprescribing <- function(dataset = "hscic") {
+Bigconnect_openprescribing <- function(dataset = "hscic") {
   # Get BigQuery credentials path from environment variable
   credentials_path <- Sys.getenv("OP_CREDENTIALS")
 
@@ -101,12 +101,12 @@ get_normalised_prescribing <- function(
   if (!is.null(bnf_codes)) {
     # Build SQL LIKE conditions with OR
     like_sql <- paste0(
-      "bnf_code LIKE '", 
-      bnf_codes, 
+      "bnf_code LIKE '",
+      bnf_codes,
       "'",
       collapse = " OR "
     )
-    
+
     np_query <- np_query |>
       dplyr::filter(sql(like_sql))
   }
