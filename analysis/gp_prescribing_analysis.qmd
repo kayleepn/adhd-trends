@@ -44,6 +44,28 @@ We then summed the number of items for each chemical at each practice.
 
 # Results
 
+## Total prescribing over time
+
+```{r}
+#| label: fig-total-over-time
+#| fig-cap: "Total ADHD prescribing by GP practices over time"
+
+fig_total_gp_over_time <- adhd_gp_prescribing |> 
+  select(month, items_by_chemical) |>
+  group_by(month) |> 
+  summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = monthly_items)) +
+  geom_line(alpha = .5) 
+
+fig_total_gp_over_time
+
+ggsave(
+  here("output", "figures", "fig_total_gp_over_time.png"),
+  plot = fig_total_gp_over_time,
+  height = 6,
+  width = 10
+)
+```
 ## Monthly items per chemical for each practice
 
 @fig-op-by-practice shows monthly items per chemical for each practice. We can visually identify that some individual practices are 'outliers' and prescribe many more items than others. We will probably not put this graph in the thesis as it looks messy but it's useful to keep in mind that some individual practices have much higher prescribing activity. 
