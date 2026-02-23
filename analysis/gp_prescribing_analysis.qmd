@@ -1,0 +1,281 @@
+---
+title: "GP Prescribing (OpenPrescribing) analysis"
+author:
+  - Kaylee Poon
+format: html
+---
+# Overview
+This analysis explores GP prescribing records for ADHD medications using OpenPrescribing/English Prescribing Dataset data from 2015-08-01 to 2025-07-01. 
+
+# Methods
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+library(nhstt)
+
+adhd_gp_prescribing <- read_csv(
+  here(
+    "output",
+    "openprescribing",
+    "adhd_gp_prescribing.csv"
+    )
+)
+```
+
+## Data source and processing
+
+Data extraction methods are based on the [OpenPrescribing](https://github.com/bennettoxford/openprescribing) web app.
+
+For this analysis we extracted GP prescribing data from the [English Prescribing Dataset](https://opendata.nhsbsa.net/dataset/english-prescribing-dataset-epd-with-snomed-code/resource/9ab2d5e6-76eb-4bbc-acc1-789952ae3454) through BigQuery.
+
+Data for the following 5 ADHD medications recommended by NICE were extracted using the chemical's pseudoBNF code:
+
+1. Dexamfetamine / Dexamfetamine sulfate (0404000L0)
+2. Methylphenidate / Methylphenidate hydrochloride (0404000M0)
+3. Atomoxetine / Atomoxetine hydrochloride (0404000S0)
+4. Lisdexamfetamine / Lisdexamfetamine dimesylate (0404000U0)
+5. Guanfacine / Guanfacine (0404000V0)
+
+We then summed the number of items for each chemical at each practice.
+
+# Results
+
+## Total prescribing over time
+
+```{r}
+#| label: fig-total-over-time
+#| fig-cap: "Total ADHD prescribing by GP practices over time"
+
+fig_total_gp_over_time <- adhd_gp_prescribing |> 
+  select(month, items_by_chemical) |>
+  group_by(month) |> 
+  summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = monthly_items)) +
+  geom_line(alpha = .5) 
+
+fig_total_gp_over_time
+
+ggsave(
+  here("output", "figures", "fig_total_gp_over_time.png"),
+  plot = fig_total_gp_over_time,
+  height = 6,
+  width = 10
+)
+```
+## Monthly items per chemical for each practice
+
+@fig-op-by-practice shows monthly items per chemical for each practice. We can visually identify that some individual practices are 'outliers' and prescribe many more items than others. We will probably not put this graph in the thesis as it looks messy but it's useful to keep in mind that some individual practices have much higher prescribing activity. 
+
+```{r}
+#| label: fig-op-by-practice
+#| fig-cap: "Regional total items by chemical" 
+
+fig_op_by_practice <- adhd_gp_prescribing |>
+  select(month, practice, bnf_chemical_name, items_by_chemical) |>
+  ggplot(aes(x = month, y = items_by_chemical, group = practice)) +
+  geom_line(alpha = .1) +
+  facet_wrap(~bnf_chemical_name, scales = "free_y")
+
+fig_op_by_practice
+
+ggsave(
+  here("output", "figures", "fig_op_by_practice.png"),
+  plot = fig_op_by_practice,
+  height = 6,
+  width = 10
+)
+```
+
+
+## Prescribing by chemical and regional team
+
+Regional team codes are taken from the [Office for National Statistics website](https://geoportal.statistics.gov.uk/documents/46b634b42ceb45cbbfbe9c960fb77ec9/about).
+
+ccg_id and pct columns are identical.
+
+@fig-op-by-region shows total items for each chemical by regional team.
+
+```{r}
+#| label: fig-op-by-region
+#| fig-cap: "Items by region" 
+region_names <- c(
+  "Y56" = "London",
+  "Y58" = "South West","Y59" = "South East",
+  "Y60" = "Midlands",
+  "Y61" = "East of England",
+  "Y62" = "North West",
+  "Y63" = "North East and Yorkshire"
+)
+
+fig_op_by_region <- adhd_gp_prescribing |>
+  select(month, regional_team, bnf_chemical_name, items_by_chemical) |>
+  filter(!regional_team %in% c("Y54", "Y55", "Y57")) |> 
+  group_by(regional_team, month, bnf_chemical_name) |> 
+  summarise(items_by_region = sum(items_by_chemical, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(
+    x = month, 
+    y = items_by_region, 
+    colour = bnf_chemical_name, 
+    group = bnf_chemical_name
+  )) +
+  geom_point(alpha = .1, size = .5) +
+  geom_line(alpha = .5) +
+  facet_wrap(~regional_team, labeller = as_labeller(region_names, label_wrap_gen(width = 20)))
+fig_op_by_region
+
+ggsave(
+  here("output", "figures", "fig_op_by_region.png"),
+  plot = fig_op_by_region,
+  height = 6,
+  width = 10
+)
+```
+
+## Functions needed for decile charts
+```{r}
+#| label: write-functions
+
+get_percentiles <- function(data, period_col, value_col, group_by) {
+  data |>
+    nhstt:::summarise_percentiles(
+      period_col = {{ period_col }},
+      value_col = {{ value_col }},
+      group_by = {{ group_by }}
+    ) |>
+    pivot_wider(
+      names_from = percentile,
+      values_from = value,
+      names_prefix = "p"
+    )
+}
+
+
+plot_percentiles <- function(
+  data,
+  x_col,
+  title = NULL,
+  y_label = "Value",
+  ribbon_colour = "#6baed6",
+  median_colour = "#ff000d"
+) {
+  decile_colours <- c(
+    "10th-90th" = alpha(ribbon_colour, 0.2),
+    "20th-80th" = alpha(ribbon_colour, 0.3),
+    "30th-70th" = alpha(ribbon_colour, 0.4),
+    "40th-60th" = alpha(ribbon_colour, 0.5),
+    "Median" = median_colour
+  )
+
+  p <- ggplot(data, aes(x = {{ x_col }})) +
+    # Ribbons first (background)
+    geom_ribbon(aes(ymin = p10, ymax = p90, fill = "10th-90th")) +
+    geom_ribbon(aes(ymin = p20, ymax = p80, fill = "20th-80th")) +
+    geom_ribbon(aes(ymin = p30, ymax = p70, fill = "30th-70th")) +
+    geom_ribbon(aes(ymin = p40, ymax = p60, fill = "40th-60th")) +
+    # Median line and points on top
+    geom_line(aes(y = p50, colour = "Median"), linewidth = 0.5) +
+    geom_point(aes(y = p50, colour = "Median"), size = 1) +
+    # Scales
+    scale_fill_manual(
+      values = decile_colours,
+      breaks = c("10th-90th", "20th-80th", "30th-70th", "40th-60th"),
+      name = NULL
+    ) +
+    scale_colour_manual(
+      values = decile_colours,
+      breaks = "Median",
+      name = NULL
+    ) +
+    scale_y_continuous(
+      labels = scales::number_format(),
+      name = y_label
+    ) +
+    scale_x_date(
+      breaks = unique(pull(data, {{ x_col }}))[seq(
+        1,
+        length(unique(pull(data, {{ x_col }}))),
+        by = 6
+      )],
+      date_labels = "%b\n%Y",
+      name = NULL
+    ) +
+    guides(
+      fill = guide_legend(order = 1),
+      colour = guide_legend(order = 2)
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right")
+
+  if (!is.null(title)) {
+    p <- p + labs(title = title)
+  }
+
+  p
+}
+
+```
+
+## Decile chart of total items per chemical (practice level)
+
+@fig-deciles-by-practice is not very useful as median items are quite low for atomoxetine, dexamfetamine, and guanfacine. There is also little practice variation so it is more useful to look at regional team or ICB-level data instead. 
+
+```{r}
+#| label: fig-deciles-by-practice
+#| fig-cap: "Decile chart of monthly total items per chemical." 
+
+fig_op_deciles_by_med_practice <- adhd_gp_prescribing |>
+  select(month, practice, bnf_chemical_name, items_by_chemical) |>
+  get_percentiles(
+    period_col = month,
+    value_col = items_by_chemical,
+    group_by = bnf_chemical_name
+  ) |>
+  plot_percentiles(
+    x_col = month,
+    y_label = "Total items"
+  ) +
+  facet_wrap(~bnf_chemical_name, ncol = 1, scales = "free_y")
+
+fig_op_deciles_by_med_practice
+
+ggsave(
+  here("output", "figures", "fig_op_deciles_by_med_practice.png"),
+  plot = fig_op_deciles_by_med_practice,
+  height = 12,
+  width = 10
+)
+```
+
+## Decile chart of total items per practice 
+
+@fig-practice-deciles shows a small increase (from 3 to 5) prescribing items per practice over time. This change is largely driven by the top 20% of prescribers. Not a very good graph for the thesis but shows that median monthly total items is quite low and top prescribers show larger increases.
+
+```{r}
+#| label: fig-practice-deciles
+#| fig-cap: "Decile chart of monthly total items." 
+
+fig_op_deciles_by_practice <- adhd_gp_prescribing |>
+  select(month, practice, bnf_chemical_name, items_by_chemical) |>
+  get_percentiles(
+    period_col = month,
+    value_col = items_by_chemical
+  ) |>
+  plot_percentiles(
+    x_col = month,
+    y_label = "Total items"
+  ) 
+
+fig_op_deciles_by_practice
+
+ggsave(
+  here("output", "figures", "fig_op_deciles_by_practice.png"),
+  plot = fig_op_deciles_by_practice,
+  height = 4,
+  width = 10
+)
+```
+
