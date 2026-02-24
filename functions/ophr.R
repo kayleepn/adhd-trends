@@ -19,9 +19,17 @@ connect_scmd <- function(dataset = "scmd_pipeline") {
 
 get_scmd_prescribing <- function(
   con,
-  vmp_codes,
-  table_name = "ddd_quantity"
+  table_name = c(
+    "scmd_processed",
+    "dose",
+    "ingredient_quantity",
+    "ddd_quantity"
+  ),
+  vmp_codes
 ) {
+
+  table_name <- match.arg(table_name)
+
   dplyr::tbl(con, table_name) |>
     dplyr::filter(vmp_code %in% vmp_codes)
 }

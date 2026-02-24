@@ -18,19 +18,33 @@ source(here("functions", "ophr.R"))
 
 # ADHD medication codelist URLs from OpenCodelists
 adhd_codelist_urls <- list(
-  methylphenidate = "https://www.opencodelists.org/codelist/opensafely/methylphenidate-dmd/40bac3af/",
-  lisdexamfetamine = "https://www.opencodelists.org/codelist/opensafely/lisdexamfetamine-dmd/27ab507a/",
-  dexamfetamine = "https://www.opencodelists.org/codelist/opensafely/dexamfetamine-dmd/6dd2cf76/",
-  atomoxetine = "https://www.opencodelists.org/codelist/opensafely/atomoxetine-dmd/436d83a5/",
-  guanfacine = "https://www.opencodelists.org/codelist/opensafely/guanfacine-dmd/2a5e1070/"
+  methylphenidate = "https://www.opencodelists.org/codelist/user/kayleepn/methylphenidate-dmd/2affab72/",
+  lisdexamfetamine = "https://www.opencodelists.org/codelist/user/kayleepn/lisdexamfetamine-dmd/6e61987e/",
+  dexamfetamine = "https://www.opencodelists.org/codelist/user/kayleepn/dexamfetamine-dmd/20807ee9/",
+  atomoxetine = "https://www.opencodelists.org/codelist/user/kayleepn/atomoxetine-dmd/529f6553/",
+  guanfacine = "https://www.opencodelists.org/codelist/user/kayleepn/guanfacine-dmd/3c42b214/"
 )
 
 ```
+
+# Connect to BitQuery
 
 ```{r}
 #| label: connect-bq
 con <- connect_scmd()
 ```
+
+# Preview tables from SCMD pipeline from Louis
+
+```{r}
+#| label: check-scmd-pipeline-tables
+dplyr::tbl(con, "scmd_processed")
+dplyr::tbl(con, "dose")
+dplyr::tbl(con, "ingredient_quantity")
+dplyr::tbl(con, "ddd_quantity")
+```
+
+# Get list of codelists
 
 ```{r}
 #| label: get-codelists
@@ -39,7 +53,14 @@ codelists <- purrr::map(
   adhd_codelist_urls,
   ~ get_codelist(.x)
 )
+
+codelists |> 
+  map(as_tibble) |> 
+  bind_rows(.id = "codelist") |> 
+  write_csv(here("codelists", "adhd-dmd-codelists.csv"))
 ```
+
+# Extract all VMP codes
 
 ```{r}
 #| label: get-vmp-codes
@@ -53,34 +74,77 @@ vmp_codes <- codelists |>
   as.character()
 ```
 
+# Download data for selected VMP codes
+
 ```{r}
 #| label: get-hospital-prescribing
 
-df_hospital_prescribing <- get_scmd_prescribing(con, vmp_codes) |>
+df_oph_scmd_processed <- get_scmd_prescribing(
+  con,
+  "scmd_processed",
+  vmp_codes
+) |>
   collect()
+
+df_oph_dose <- get_scmd_prescribing(
+  con,
+  "dose",
+  vmp_codes
+) |>
+  collect()
+
+df_oph_ingredient_quantity <- get_scmd_prescribing(
+  con,
+  "ingredient_quantity",
+  vmp_codes
+) |>
+  collect()
+
+df_oph_ddd_quantity <- get_scmd_prescribing(
+  con,
+  "ddd_quantity",
+  vmp_codes
+) |>
+  collect()
+```
+
+# Get trusts
+
+```{r}
+#| label: get-hospital-orgs
 
 df_trusts <- get_scmd_trusts(con) |>
   collect()
+
 ```
 
-```{r}
-#| label: process-data
-
-# Join with trust data
-df_hospital_prescribing <- df_hospital_prescribing |>
-  left_join(
-    df_trusts |> select(ods_code, ods_name),
-    by = "ods_code"
-  ) |>
-  mutate(year_month = as.Date(year_month)) |>
-  arrange(year_month, vmp_name, ods_code)
-```
+# Write data
 
 ```{r}
 #| label: write-data
 
 write_csv(
-  df_hospital_prescribing,
-  here("output", "openprescribing", "adhd_hospital_prescribing.csv")
+  arrange(df_oph_scmd_processed, desc(year_month), vmp_name, ods_code),
+  here("output", "openprescribing-hospitals", "adhd_scmd_processed.csv")
+)
+
+write_csv(
+  arrange(df_oph_dose, desc(year_month), vmp_name, ods_code),
+  here("output", "openprescribing-hospitals", "adhd_scmd_dose.csv")
+)
+
+write_csv(
+  arrange(df_oph_ingredient_quantity, desc(year_month), vmp_name, ods_code),
+  here("output", "openprescribing-hospitals", "adhd_scmd_ingredient_quantity.csv")
+)
+
+write_csv(
+  arrange(df_oph_ddd_quantity, desc(year_month), vmp_name, ods_code),
+  here("output", "openprescribing-hospitals", "adhd_scmd_df_oph_ddd_quantity.csv")
+)
+
+write_csv(
+  arrange(df_trusts, ods_code),
+  here("output", "openprescribing-hospitals", "scmd_trusts.csv")
 )
 ```
