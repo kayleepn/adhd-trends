@@ -147,6 +147,129 @@ fig_snomed_diag_trends <- ggplot(
 fig_snomed_diag_trends
 ```
 
+@fig-snomed-adhd-vs-all shows code usage for all SNOMED CT ADHD diagnosis codes next to that of all SNOMED CT codes. Code usage for all codes is much higher than that for ADHD diagnosis codes so facets are used to plot this. 
+
+```{r}
+#| label: fig-snomed-adhd-vs-all
+#| fig-cap: "SNOMED CT ADHD diagnosis code usage compared to all SNOMED CT codes. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+#| fig-width: 10
+#| fig-height: 6
+
+# The helper function summarise_yearly is in usage_plots.R
+df_snomed_yearly_usage <- bind_rows(
+  summarise_yearly(snomed_usage, "all_codes"),
+  summarise_yearly(df_snomed_diag_usage, "adhd_codes")
+)  
+
+# Plot as graph
+fig_snomed_adhd_vs_all <- ggplot(
+  df_snomed_yearly_usage,
+  aes(
+    x = end_date,
+    y = yearly_usage,
+    colour = group
+  )
+ ) +
+  geom_line(alpha = .5) +
+  scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+  scale_x_date(
+    breaks = scale_x_date_breaks,
+    labels = scales::label_date("%b\n%Y")
+  ) +
+  scale_colour_viridis_d(end = .75) +
+  labs(x = "End date of yearly reporting period", y = "Usage count", colour = NULL, shape = NULL) +
+  theme(
+    text = element_text(size = 16),
+    legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.text = element_text(size = 12)
+  ) +
+  facet_wrap(vars(group), scales = "free_y")
+
+fig_snomed_adhd_vs_all
+```
+
+@fig-snomed-adhd-all-dual-y compares code usage for all SNOMED CT ADHD diagnosis codes next to that of all SNOMED CT codes but with a dual y axis. A dual y axis can be useful but some people think it's misleading. For this project the facet plot above might work better. 
+
+```{r}
+#| label: fig-snomed-adhd-all-dual
+#| fig-cap: "SNOMED CT ADHD diagnosis code usage compared to all SNOMED CT codes. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+#| fig-width: 10
+#| fig-height: 6
+
+# Value used to transform the data (2nd y axis)
+coeff <- 10000
+
+fig_snomed_adhd_all_dual <- df_snomed_yearly_usage |> 
+  pivot_wider(
+    names_from = group,
+    values_from = yearly_usage
+  ) |> 
+  ggplot(
+  aes(x = end_date)
+) +
+  geom_line(aes(y = adhd_codes), alpha = .5) +
+  geom_point(aes(y = adhd_codes), alpha = .3) +
+  geom_col(aes(y = all_codes/coeff), alpha = .3) +
+  scale_y_continuous(
+    name = "ADHD diagnosis codes", 
+    labels = scales::comma,
+    sec.axis = sec_axis(~.*coeff, 
+    name = "All codes",
+    labels = scales::comma)
+  )
+
+fig_snomed_adhd_all_dual
+```
+
+@fig-pct-change-comparison compares year-on-year percentage changes in code usage for ADHD diagnosis codes and all SNOMED CT codes. There was a decrease in coding activity in 2020 for all codes combined but not for ADHD codes. The rate of increase in code usage is also higher for ADHD codes after 2022.
+
+```{r}
+#| label: fig-pct-change-comparison
+#| fig-cap: "Year-on-year percentage changes in code usage. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+
+df_snomed_pct_change <- df_snomed_yearly_usage |> 
+  arrange(end_date, yearly_usage) |> 
+  group_by(group) |> 
+  mutate(pct_change = (
+    (yearly_usage - lag(yearly_usage, n = 1)) / lag(yearly_usage, n=1)
+  )) |> 
+  mutate(pct_change = round((pct_change*100), digits = 2))
+
+fig_pct_change_comparison <- ggplot(
+  df_snomed_pct_change,
+  aes(
+    x = end_date,
+    y = pct_change,
+    colour = group
+  )
+) +
+  geom_line(alpha = .5) +
+  geom_point(alpha = .5) +
+  scale_y_continuous(limits = NULL, labels = scales::comma) +
+  scale_x_date(
+    breaks = scale_x_date_breaks,
+    labels = scales::label_date("%b\n%Y")
+  ) +
+  scale_colour_viridis_d(end = .75) +
+  labs(x = "End date of yearly reporting period", y = "Yearly % change in usage", colour = NULL, shape = NULL) +
+  theme(
+    text = element_text(size = 16),
+    legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.text = element_text(size = 12)
+  )
+
+fig_pct_change_comparison
+
+ggsave(
+  here("output", "figures", "fig_snomed_pct_change_comparison.png"),
+  plot = fig_pct_change_comparison,
+  height = 6,
+  width = 10
+)
+```
+
 ## ADHD administrative activity
 
 ```{r}
