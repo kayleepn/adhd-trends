@@ -78,7 +78,9 @@ select_foi_rx_cols <- function(data, url_list) {
     icb_code = 2,
     icb_name = 3,
     bnf_chemical = 4,
-    bnf_name = 5,
+    bnf_chemical_name = 5,
+    bnf_presentation_code = 6,
+    bnf_presentation = 7,
     items = 8
   ) |>
     dplyr::mutate(
@@ -113,9 +115,9 @@ df_adhd_foi_rx <- foi_adhd_rx_urls |>
   relocate(month, .before = icb_code) |>
   filter(between(month, as.Date("2015-08-01"), as.Date("2025-07-01"))) |>
   # Fix BNF names and remove irrelevant medications
-  mutate(bnf_name = str_extract(bnf_name, "(\\w+)")) |>
+  mutate(bnf_chemical_name = str_extract(bnf_chemical_name, "(\\w+)")) |>
   filter(
-    bnf_name %in%
+    bnf_chemical_name %in%
       c(
         "Methylphenidate",
         "Lisdexamfetamine",
@@ -129,10 +131,14 @@ df_adhd_foi_rx <- foi_adhd_rx_urls |>
 n_distinct(df_adhd_foi_rx$month)
 # [1] 120
 
-# Check for correct BNF names
+# Check for correct BNF chemical names
 unique(df_adhd_foi_rx$bnf_name)
 # [1] "Methylphenidate"  "Dexamfetamine"    "Lisdexamfetamine"
 # [4] "Atomoxetine"      "Guanfacine"
+
+# Check BNF presentation names
+unique(df_adhd_foi_rx$bnf_presentation)
+# 158 unique presentations
 
 # Write data
 write_csv(
