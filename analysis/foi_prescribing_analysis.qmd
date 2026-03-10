@@ -1,0 +1,92 @@
+---
+title: "FOI ADHD prescribing analysis"
+author:
+  - Kaylee Poon
+format: html
+---
+# Overview
+This analysis explores FP34PCD prescribing for ADHD medications using FOI request data from 2015-08-01 to 2025-07-01. Note that FP34PCD data may include both NHS-funded Right to Choose and non-NHS private prescribing activity. 
+
+# Methods
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+library(nhstt)
+
+adhd_foi_prescribing <- read_csv(
+  here(
+    "output",
+    "foi_prescribing",
+    "adhd_foi_prescribing.csv"
+    )
+)
+```
+
+## Data source and processing
+
+Data extraction methods are similar to that used for OpenCodeCounts.
+
+For this analysis we downloaded FOI response data from the NHSBSA FOI disclosure log:
+- https://opendata.nhsbsa.net/dataset/foi-02082
+- https://opendata.nhsbsa.net/dataset/foi-02360
+- https://opendata.nhsbsa.net/dataset/foi-02722
+- https://opendata.nhsbsa.net/dataset/foi-02847
+- https://opendata.nhsbsa.net/dataset/foi-03492 
+
+Data for the following 5 ADHD medications recommended by NICE were analysed.
+1. Dexamfetamine / Dexamfetamine sulfate (0404000L0)
+2. Methylphenidate / Methylphenidate hydrochloride (0404000M0)
+3. Atomoxetine / Atomoxetine hydrochloride (0404000S0)
+4. Lisdexamfetamine / Lisdexamfetamine dimesylate (0404000U0)
+5. Guanfacine / Guanfacine (0404000V0) 
+
+As the NICE-approved ADHD medications atomoxetine and guanfacine are not controlled drugs and do not need to be reported using FP34PCD forms, FP34PCD data may underestimate atomoxetine and guanfacine prescription counts.
+
+# Results
+
+## Total monthly prescribing for all chemicals 
+
+@fig-total-foi-over-time shows large increases in total monthly prescribing starting in roughly 2021. 
+
+```{r}
+#| label: fig-total-foi-over-time
+#| fig-cap: "Total ADHD prescribing from FOI data over time"
+
+fig_total_foi_over_time <- adhd_foi_prescribing |> 
+  select(month, items) |>
+  group_by(month) |> 
+  summarise(monthly_items = sum(items, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = monthly_items)) +
+  geom_line(alpha = .5) 
+
+fig_total_foi_over_time
+
+# ggsave(
+#   here("output", "figures", "fig_total_gp_over_time.png"),
+#   plot = fig_total_gp_over_time,
+#   height = 6,
+#   width = 10
+# )
+```
+
+## By chemical
+
+@fig-by-chemical-over-time shows that there was a lot more prescribing for atomoxetine and guanfacine between 2022 and 2024 compared to other years. Prescribing ativity for dexamfetamine, lisdexamfetamine, and methylphenidate has increased after 2011. A dip in prescribing for lisdexamfetamine (and for methylphenidate to a smaller extent) can be seen around the last quarter of 2023, which coincides with the beginning of ADHD medication shortages (lisdexamfetamine supplies were the most affected initially). 
+
+```{r}
+#| label: fig-by-chemical-over-time
+#| fig-cap: "ADHD prescribing from FOI data by chemical over time"
+fig_foi_by_chemical <- adhd_foi_prescribing |> 
+    group_by(icb_code, month, bnf_chemical_name) |> 
+    mutate(items_by_chemical = sum(items)) |> 
+    ungroup() |> 
+    ggplot(aes(x = month, y = items_by_chemical, group = bnf_chemical_name)) +
+    geom_line(alpha = .5) +
+    facet_wrap(~bnf_chemical_name, scales = "free_y")
+
+fig_foi_by_chemical
+```
