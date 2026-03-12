@@ -4,3 +4,4 @@ analysis/*_files/*
 analysis/*.html
 output/openprescribing/adhd_gp_prescribing.csv
 .vscode/
+output/openprescribing/adhd_gp_full_bnf.csv
