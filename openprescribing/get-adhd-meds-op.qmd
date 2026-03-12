@@ -20,7 +20,7 @@ source(here("functions", "opr.R"))
 
 ```{r}
 #| label: connect-bq
-con <- connect_openprescribing()
+con <- Bigconnect_openprescribing()
 ```
 
 
@@ -80,5 +80,66 @@ df_gp_prescribing <- df_gp_prescribing |>
 write_csv(
     df_gp_prescribing, 
     here("output", "openprescribing", "adhd_gp_prescribing.csv")
+)
+```
+
+# Get full BNF codes for GP prescribing
+
+```{r}
+#| label: get-gp-prescribing-full-bnf
+
+adhd_med_bnf_codes <- c(
+    # Dexamfetamine 
+    # pseudoBNF code: Dexamfetamine sulfate (0404000L0)
+    "0404000L0%",
+    # Methylphenidate
+    # pseudo BNF code: Methylphenidate hydrochloride (0404000M0)
+    "0404000M0%",
+    # Atomoxetine 
+    # pseudoBNF code: Atomoxetine hydrochloride (0404000S0)
+    "0404000S0%",
+    # Lisdexamfetamine 
+    # pseudoBNF code: Lisdexamfetamine dimesylate (0404000U0)
+    "0404000U0%",
+    # Guanfacine 
+    # pseudoBNF code: Guanfacine (0404000V0)
+    "0404000V0%"
+)
+
+query_gp_full_bnf <- get_gp_prescribing(
+    con,
+    bnf_codes = adhd_med_bnf_codes,
+    start_date = "2015-08-01",
+    end_date = "2025-07-01"
+)
+
+df_gp_full_bnf <- query_gp_full_bnf |> 
+    select(sha, regional_team, stp, pct, practice, bnf_code, bnf_name, items, quantity, month, name, postcode, ccg_id, pcn_id, setting, status_code) |> 
+    collect()
+
+df_gp_full_bnf <- df_gp_full_bnf |> 
+    # Create column for BNF chemical name and convert month to date format
+    mutate(
+        bnf_chemical =  substr(bnf_code, 1, 9),
+        bnf_chemical_name = case_when(
+            bnf_chemical == "0404000L0" ~ "Dexamfetamine",
+            bnf_chemical == "0404000M0" ~ "Methylphenidate",
+            bnf_chemical == "0404000S0" ~ "Atomoxetine",
+            bnf_chemical == "0404000U0" ~ "Lisdexamfetamine",
+            bnf_chemical == "0404000V0" ~ "Guanfacine",
+            ),
+        month = as.Date(month)
+    ) |> 
+    select(-c(bnf_chemical)) |>
+    # Items*quantity gives the total units of each preparation prescribed by a practice for DDD calculations
+    mutate(items_x_quantity = items*quantity) |> 
+    relocate(items_x_quantity, .after = quantity) |>
+    relocate(bnf_chemical_name, .before = bnf_code) |> 
+    arrange(month, bnf_code, practice) |> 
+    distinct() 
+    
+write_csv(
+    df_gp_full_bnf, 
+    here("output", "openprescribing", "adhd_gp_full_bnf.csv")
 )
 ```
