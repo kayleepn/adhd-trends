@@ -1,19 +1,18 @@
-# This script downloads all available FOI ADHD prescribing data from the NHSBSA FOI disclosure log https://opendata.nhsbsa.net/theme/freedom-of-information-disclosure-log
-# and combines them into one file
+# Downloads ADHD prescribing data from the NHSBSA FOI disclosure log
+# https://opendata.nhsbsa.net/theme/freedom-of-information-disclosure-log
 
 library(tidyverse)
 library(janitor)
 library(here)
-library(httr)
 
 url_start <- "https://opendata.nhsbsa.net/dataset/"
 
-# use skip and n_max to remove irrelevant rows at top and bottom of csv file; note skip reduces n_max by 1
-# remove_empty doesn't work for some reason so I'm forced to use n_max, even though I needed it anyway to remove a final total row
-
-# change list item name to foi request number
+# Each entry is one FOI request. 'skip' removes leading non-data rows, and 'n_max'
+# limits rows to exclude a trailing total row. Note: skip counts against n_max,
+# so n_max must account for skipped rows. Skipping empty rows is not an option
+# here as the total row is non-empty and should not be loaded here.
 foi_adhd_rx_urls <- list(
-  "01_2015to05_2024" = list(
+  "foi02082" = list(
     url = paste0(
       url_start,
       "bb2a890c-aefc-47dc-98a4-9e3f8dad884d/resource/2608dfdc-e8df-4d99-ad86-3f35f9aed27c/download/foi-02082-data.csv"
@@ -21,7 +20,7 @@ foi_adhd_rx_urls <- list(
     skip = 1,
     n_max = 73866
   ),
-  "06_2024to08_2024" = list(
+  "foi02360" = list(
     url = paste0(
       url_start,
       "971a7ca0-11a9-41cb-a556-4bc8d06515b1/resource/3dcbcda6-7368-467f-bc27-df332791ae06/download/foi-02360-completed-request.csv"
@@ -29,7 +28,7 @@ foi_adhd_rx_urls <- list(
     skip = 1,
     n_max = 5111
   ),
-  "09_2024to02_2025" = list(
+  "foi02722" = list(
     url = paste0(
       url_start,
       "47c34fce-9199-43b2-930e-9bf34a27d55c/resource/efe89a92-1d25-46ee-8e9e-3349759c34c5/download/foi-02722_data.csv"
@@ -37,7 +36,7 @@ foi_adhd_rx_urls <- list(
     skip = 1,
     n_max = 10656
   ),
-  "03_2025to04_2025" = list(
+  "foi02847" = list(
     url = paste0(
       url_start,
       "435dee00-ad71-4ac3-a613-e17cea25ef64/resource/463bf0bd-e68d-4dac-b696-ccb5059bb4c1/download/foi-02847-compeleted-request.csv"
@@ -45,7 +44,7 @@ foi_adhd_rx_urls <- list(
     skip = 0,
     n_max = 3699
   ),
-  "05_2025to10_2025" = list(
+  "foi03492" = list(
     url = paste0(
       url_start,
       "9066d0bc-3f32-44b8-ad8a-b57ce073caa1/resource/42ce67ae-50ea-44ed-8cf2-4cde9bece9cd/download/foi_03492.csv"
@@ -55,16 +54,10 @@ foi_adhd_rx_urls <- list(
   )
 )
 
-# Function to read csv from url, same logic as reading xlsx files for OpenCodeCounts
-
-read_foi_rx_csv_from_url <- function(url_list, ...) {
-  temp_file <- tempfile(fileext = ".csv")
-  GET(
-    url_list$url,
-    write_disk(temp_file, overwrite = TRUE)
-  )
+# Read raw CSV from URL
+read_foi_rx_data <- function(url_list, ...) {
   read_csv(
-    temp_file,
+    url_list$url,
     col_names = TRUE,
     skip = url_list$skip,
     n_max = url_list$n_max,
@@ -72,77 +65,79 @@ read_foi_rx_csv_from_url <- function(url_list, ...) {
   )
 }
 
-# Function to give columns correct names and change column types
-select_foi_rx_cols <- function(data, url_list) {
-  dplyr::select(
-    data,
-    year_month = 1,
-    icb_code = 2,
-    icb_name = 3,
-    bnf_chemical = 4,
-    bnf_chemical_name = 5,
-    bnf_presentation_code = 6,
-    bnf_presentation = 7,
-    items = 8
-  ) |>
+# Select and rename columns by position, parse month, and clean BNF chemical name
+clean_foi_rx_data <- function(data) {
+  data |>
+    dplyr::select(
+      year_month = 1,
+      icb_code = 2,
+      icb_name = 3,
+      bnf_chemical = 4,
+      bnf_chemical_name = 5,
+      bnf_presentation_code = 6,
+      bnf_presentation = 7,
+      items = 8
+    ) |>
     dplyr::mutate(
-      year_month = as.character(year_month),
-      items = as.integer(items)
-    )
+      month = as.Date(paste0(
+        str_extract(year_month, "\\d{4}"),
+        "-",
+        str_extract(year_month, "\\d{2}$"),
+        "-01"
+      )),
+      items = as.integer(items),
+      bnf_chemical_name = str_extract(bnf_chemical_name, "\\w+")
+    ) |>
+    dplyr::select(-year_month) |>
+    dplyr::relocate(month, .before = icb_code)
 }
 
-# Combine both functions
+# Read and clean a single FOI request
 get_foi_rx_data <- function(url_list, ...) {
-  df_temp <- read_foi_rx_csv_from_url(url_list, ...)
-  select_foi_rx_cols(df_temp, url_list)
+  read_foi_rx_data(url_list, ...) |>
+    clean_foi_rx_data()
 }
 
-# Get FOI prescribing data
+# ADHD medications to include
+adhd_bnf_chemical_names <- c(
+  "Methylphenidate",
+  "Lisdexamfetamine",
+  "Dexamfetamine",
+  "Atomoxetine",
+  "Guanfacine"
+)
+
+# Download, combine, and filter all FOI requests
 df_adhd_foi_rx <- foi_adhd_rx_urls |>
   map(get_foi_rx_data) |>
-  bind_rows(.id = NULL) |>
-  # Fix date format and filter for correct time period
-  # Month recorded as first day of month as with OpenPrescribing
-  mutate(
-    month = as.Date(
-      paste0(
-        str_extract_all(year_month, "\\d{4}"),
-        "-",
-        str_extract_all(year_month, "\\d{2}$"),
-        "-01"
-      )
-    ),
-  ) |>
-  select(-c(year_month)) |>
-  relocate(month, .before = icb_code) |>
+  bind_rows(.id = "foi_id") |>
   filter(between(month, as.Date("2015-08-01"), as.Date("2025-07-01"))) |>
-  # Fix BNF names and filter for the correct medications
-  mutate(bnf_chemical_name = str_extract(bnf_chemical_name, "(\\w+)")) |>
-  filter(
-    bnf_chemical_name %in%
-      c(
-        "Methylphenidate",
-        "Lisdexamfetamine",
-        "Dexamfetamine",
-        "Atomoxetine",
-        "Guanfacine"
-      )
-  )
+  filter(bnf_chemical_name %in% adhd_bnf_chemical_names)
 
-# Check for correct time period
+# Check expected number of months (120 = Aug 2015 to Jul 2025)
 n_distinct(df_adhd_foi_rx$month)
 # [1] 120
 
-# Check for correct BNF chemical names
-unique(df_adhd_foi_rx$bnf_name)
+# Check no months appear in more than one FOI request
+df_adhd_foi_rx |>
+  distinct(foi_id, month) |>
+  count(month) |>
+  filter(n > 1)
+# should return 0 rows
+
+# Check all 5 BNF chemical names are present
+unique(df_adhd_foi_rx$bnf_chemical_name)
 # [1] "Methylphenidate"  "Dexamfetamine"    "Lisdexamfetamine"
 # [4] "Atomoxetine"      "Guanfacine"
+
+# Check no NAs in key columns
+df_adhd_foi_rx |>
+  summarise(across(c(month, bnf_chemical_name, items), ~ sum(is.na(.x))))
 
 # Check BNF presentation names
 unique(df_adhd_foi_rx$bnf_presentation)
 # 158 unique presentations
 
-# Write data
 write_csv(
   df_adhd_foi_rx,
   here("output", "foi_prescribing", "adhd_foi_prescribing.csv")
