@@ -68,7 +68,7 @@ read_foi_rx_data <- function(url_list, ...) {
 # Select and rename columns by position, parse month, and clean BNF chemical name
 clean_foi_rx_data <- function(data) {
   data |>
-    dplyr::select(
+    select(
       year_month = 1,
       icb_code = 2,
       icb_name = 3,
@@ -78,7 +78,7 @@ clean_foi_rx_data <- function(data) {
       bnf_presentation = 7,
       items = 8
     ) |>
-    dplyr::mutate(
+    mutate(
       month = as.Date(paste0(
         str_extract(year_month, "\\d{4}"),
         "-",
@@ -88,8 +88,8 @@ clean_foi_rx_data <- function(data) {
       items = as.integer(items),
       bnf_chemical_name = str_extract(bnf_chemical_name, "\\w+")
     ) |>
-    dplyr::select(-year_month) |>
-    dplyr::relocate(month, .before = icb_code)
+    select(-year_month) |>
+    relocate(month, .before = icb_code)
 }
 
 # Read and clean a single FOI request
