@@ -3,5 +3,5 @@ analysis/*_files/*
 analysis/*.html
 openprescribing/*_files/*
 openprescribing/*.html
-output/openprescribing/adhd_gp_prescribing_bnf.csv
-output/openprescribing/adhd_gp_prescribing_chemical.csv
+output/openprescribing/adhd_gp_prescribing_bnf.parquet
+output/openprescribing/adhd_gp_prescribing_chemical.parquet
