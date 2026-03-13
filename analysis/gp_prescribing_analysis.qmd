@@ -21,7 +21,7 @@ adhd_gp_prescribing <- read_csv(
   here(
     "output",
     "openprescribing",
-    "adhd_gp_prescribing.csv"
+    "adhd_gp_prescribing_chemical.csv"
     )
 )
 ```
