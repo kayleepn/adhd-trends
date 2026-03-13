@@ -1,4 +1,4 @@
-Bigconnect_openprescribing <- function(dataset = "hscic") {
+connect_openprescribing <- function(dataset = "hscic") {
   # Get BigQuery credentials path from environment variable
   credentials_path <- Sys.getenv("OP_CREDENTIALS")
 
