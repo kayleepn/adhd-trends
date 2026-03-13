@@ -1,7 +1,7 @@
-openprescribing/*_files/*
-openprescribing/*.html
+.vscode/
 analysis/*_files/*
 analysis/*.html
-output/openprescribing/adhd_gp_prescribing.csv
-.vscode/
-output/openprescribing/adhd_gp_full_bnf.csv
+openprescribing/*_files/*
+openprescribing/*.html
+output/openprescribing/adhd_gp_prescribing_bnf.csv
+output/openprescribing/adhd_gp_prescribing_chemical.csv
