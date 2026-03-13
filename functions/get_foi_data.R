@@ -9,7 +9,9 @@ library(httr)
 url_start <- "https://opendata.nhsbsa.net/dataset/"
 
 # use skip and n_max to remove irrelevant rows at top and bottom of csv file; note skip reduces n_max by 1
+# remove_empty doesn't work for some reason so I'm forced to use n_max, even though I needed it anyway to remove a final total row
 
+# change list item name to foi request number
 foi_adhd_rx_urls <- list(
   "01_2015to05_2024" = list(
     url = paste0(
@@ -70,7 +72,7 @@ read_foi_rx_csv_from_url <- function(url_list, ...) {
   )
 }
 
-# Function to select the correct columns
+# Function to give columns correct names and change column types
 select_foi_rx_cols <- function(data, url_list) {
   dplyr::select(
     data,
@@ -114,7 +116,7 @@ df_adhd_foi_rx <- foi_adhd_rx_urls |>
   select(-c(year_month)) |>
   relocate(month, .before = icb_code) |>
   filter(between(month, as.Date("2015-08-01"), as.Date("2025-07-01"))) |>
-  # Fix BNF names and remove irrelevant medications
+  # Fix BNF names and filter for the correct medications
   mutate(bnf_chemical_name = str_extract(bnf_chemical_name, "(\\w+)")) |>
   filter(
     bnf_chemical_name %in%
