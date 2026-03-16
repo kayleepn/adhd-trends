@@ -1,0 +1,98 @@
+---
+title: "Get ADHD medications from OpenPrescribing Hospitals Webpage"
+format: html
+---
+# Overview
+
+Instead of downloading trust-level SCMD data from BigQuery and then linking them to ICBs using other tables, we can directly create queries using the analysis builder on the [OpenPrescribing Hospitals website](https://hospitals.openprescribing.net/) and download processed linked SCMD data. 
+
+# Methods
+
+## Using the online analysis builder
+
+Navigate to the ["Analyse"](https://hospitals.openprescribing.net/analyse/) page. Under "select product(s)", select "Product" and enter the following product groups in the box provided: 
+
+- Dexamfetamine 
+- Amfetamine + Dexamfetamine 
+- Methylphenidate
+- Atomoxetine
+- Lisdexamfetamine
+- Guanfacine
+
+According to the [OpenPrescribing Hospitals FAQ page](https://hospitals.openprescribing.net/faq/#how-does-product-search-work), product search looks for matches by product name or dm+d code across the medicine name, code, virtual therapeutic group (VTM), and ingredients. Results are grouped by VTM where applicable, and ordered by how well they match your search. You can pick a whole group (all products in a VTM) or individual products (VMPs). We are picking a whole group (all products in a VTM) here. As of 2026-03-13, the above selections will analyse 44 unique products. 
+
+It is also possible to search by ingredient or ATC code, or by typing dm+d codes into the box. At the time of writing (2026-03-13) there is no way to import a dm+d codelist for a query. The above method using product search seems to be the most robust and comprehensive for now. 
+
+Since we are interested in all NHS trusts, there is no need to select NHS trusts.
+
+Pressing "show advanced options" lets you choose between Defined Daily Dose (DDD) quantity, SCMD quantity, unit dose quantity, and ingredient quantity for quantity type. DDD quantity is the most appropriate for our analysis and is automatically selected. 
+
+Finally, press "run analysis" to see the results. The unique link for sharing this analysis is: https://hospitals.openprescribing.net/analyse/?vtms=776752004,774531008,775504000,774690000,785373000,776162002&quantity=ddd
+
+# Downloading the results
+
+**Important note**: DDD quantity could not be calculated for products containing both amfetamine and dexamfetamine and were automatically excluded from the analysis. Can't seem to find these products in the [ATC/DDD index](https://atcddd.fhi.no/atc_ddd_index/). Note that these products are included in the dm+d codelist and OpenPrescribing GP data. 
+
+Trusts are only included if they have issued any of the selected products during the time period. For the selected products above, this is 216/227 trusts. Variation can reflect differences in hospital size rather than genuine variation. Data from Jan 2019 to Dec 2025 is included.
+
+Scroll down to the percentile chart and click on the hamburger menu icon. Then click "Download Raw Data". A .zip file will be downloaded. 
+
+# Unzipping and renaming files
+
+The default .zip file name is analysis_YYYY-MM-DD.zip, so you will likely need to modify the code below. The following code unzips the .zip file in output/web-openprescribing-hospitals.
+
+```{r}
+#| label: unzip-file
+#| output: false
+
+library(here)
+
+unzip(
+    here("openprescribing", "oph_web_data", 
+    # Change this to match the file name
+    "analysis_2026-03-13.zip"),
+    exdir = here("output", "web-openprescribing-hospitals")
+)
+```
+
+3 .csv files should appear after unzipping with the following names and content: 
+
+1. analysis_YYYY-MM-DD_data.csv - contains DDD quantities for each product issued by each NHS trust every month. This is what we want for analysis
+2. analysis_YYYY-MM-DD_percentiles.csv - contains percentile ranges every month across all NHS Trusts with data for the selected products
+3. analysis_YYYY-MM-DD_trusts_summary.csv - contains total DDD quantity issued by each trust (all products and months combined). Not very useful for this thesis
+
+Finally, the code below gives the csv files more descriptive names. 
+
+```{r}
+#| label: rename-csvs
+#| output: false
+
+file.rename(
+  from = c(
+    here("output", "web-openprescribing-hospitals", "analysis_2026-03-13_data.csv"),
+    here("output", "web-openprescribing-hospitals", "analysis_2026-03-13_percentiles.csv"),
+    here("output", "web-openprescribing-hospitals", "analysis_2026-03-13_trusts_summary.csv")
+  ),
+  to = c(
+    here("output", "web-openprescribing-hospitals", "adhd_oph_web_ddd_quantity.csv"),
+    here("output", "web-openprescribing-hospitals", "adhd_oph_web_trusts_percentiles.csv"),
+    here("output", "web-openprescribing-hospitals", "adhd_oph_web_trusts_summary.csv")
+  )
+)
+```
+
+Optional: zip the files again for easier sharing.
+
+```{r}
+#| label: zip-csvs
+#| output: false
+
+zip(
+  zipfile = here("openprescribing", "oph_web_data", "oph_web_data.zip"),
+  files = c(
+    here("output", "web-openprescribing-hospitals", "adhd_oph_web_ddd_quantity.csv"),
+    here("output", "web-openprescribing-hospitals", "adhd_oph_web_trusts_percentiles.csv"),
+    here("output", "web-openprescribing-hospitals", "adhd_oph_web_trusts_summary.csv")
+  )
+)
+```
