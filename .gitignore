@@ -5,3 +5,5 @@ openprescribing/*_files/*
 openprescribing/*.html
 output/openprescribing/adhd_gp_prescribing_bnf.csv
 output/openprescribing/adhd_gp_prescribing_chemical.csv
+output/web-openprescribing-hospitals/*.csv
+openprescribing/oph_web_data/analysis_2026-03-13.zip
