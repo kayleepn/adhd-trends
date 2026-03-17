@@ -13,10 +13,12 @@ This project aims to comprehensively review publicly available ADHD data to:
 
 # Data Setup
 
-To download Secondary Care Medicines Data (SCMD) data from the OpenPrescribing Hospitals website, you will need to manually download from https://hospitals.openprescribing.net/analyse/?vtms=776752004,774531008,775504000,774690000,785373000,776162002&quantity=ddd as follows: 
+## Secondary Care Medicines Data (SCMD)
+
+To download Secondary Care Medicines Data (SCMD) data from the OpenPrescribing Hospitals website, you will need to manually download from https://hospitals.openprescribing.net/analyse/?vtms=776752004,774531008,775504000,774690000,785373000,776162002&quantity=ddd. We describe our process in more detail in `openprescribing/get-web-oph-adhd-meds.qmd`, here is a short summary: 
 
 1. Scroll down to the percentile chart and click on the hamburger menu icon.
 2. Click "Download Raw Data"
-3. Place the downloaded .zip file in `openprescribing/oph_web_data/` and manually rename it to "oph_web_adhd_meds.zip".
+3. Place the downloaded .zip file in `openprescribing/oph_web_data/`.
 
-See [openprescribing/get-web-oph-adhd-meds.qmd](openprescribing/get-web-oph-adhd-meds.qmd) for a more detailed explanation and run the code to unzip the file. 
+See `openprescribing/get-web-oph-adhd-meds.qmd` for a more detailed explanation and run the code to unzip the file. 

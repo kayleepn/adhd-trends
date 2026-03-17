@@ -10,14 +10,14 @@ Instead of downloading trust-level SCMD data from BigQuery and then linking them
 
 ## Using the online analysis builder
 
-Navigate to the ["Analyse"](https://hospitals.openprescribing.net/analyse/) page. Under "select product(s)", select "Product" and enter the following product groups in the box provided: 
+Navigate to the ["Analyse"](https://hospitals.openprescribing.net/analyse/) page. Under "select product(s)", select "Product" and enter the following product groups in the box provided (Virtual Therapeutic Moiety is provided in brackets for reference only and not necessary for the search): 
 
-- Dexamfetamine 
-- Amfetamine + Dexamfetamine 
-- Methylphenidate
-- Atomoxetine
-- Lisdexamfetamine
-- Guanfacine
+- Dexamfetamine (775504000)
+- Amfetamine + Dexamfetamine (774531008)
+- Methylphenidate (776752004)
+- Atomoxetine (774690000)
+- Lisdexamfetamine (785373000)
+- Guanfacine (776162002)
 
 According to the [OpenPrescribing Hospitals FAQ page](https://hospitals.openprescribing.net/faq/#how-does-product-search-work), product search looks for matches by product name or dm+d code across the medicine name, code, virtual therapeutic group (VTM), and ingredients. Results are grouped by VTM where applicable, and ordered by how well they match your search. You can pick a whole group (all products in a VTM) or individual products (VMPs). We are picking a whole group (all products in a VTM) here. As of 2026-03-13, the above selections will analyse 44 unique products. 
 
@@ -35,7 +35,7 @@ Finally, press "run analysis" to see the results. The unique link for sharing th
 
 Trusts are only included if they have issued any of the selected products during the time period. For the selected products above, this is 216/227 trusts. Variation can reflect differences in hospital size rather than genuine variation. Data from Jan 2019 to Dec 2025 is included.
 
-Scroll down to the percentile chart and click on the hamburger menu icon. Then click "Download Raw Data". A .zip file will be downloaded. 
+Scroll down to the percentile chart and click on the hamburger menu icon. Then click "Download Raw Data". A .zip file will be downloaded. You will need to manually add this to openprescribing/oph_web_data. 
 
 # Unzipping and renaming files
 
