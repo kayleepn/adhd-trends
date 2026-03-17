@@ -12,6 +12,7 @@ library(dplyr)
 library(dbplyr)
 library(here)
 library(tidyverse)
+library(arrow)
 
 source(here("functions", "opr.R"))
 ```
@@ -97,10 +98,9 @@ df_gp_prescribing_chemical <- df_gp_prescribing |>
   distinct() |>
   relocate(items_by_chemical, .after = bnf_chemical_name)
 
-
-write_csv(
+write_parquet(
   df_gp_prescribing_chemical,
-  here("output", "openprescribing", "adhd_gp_prescribing_chemical.csv")
+  here("output", "openprescribing", "adhd_gp_prescribing_chemical.parquet")
 )
 ```
 
@@ -121,8 +121,8 @@ df_gp_prescribing_bnf <- df_gp_prescribing |>
   arrange(month, bnf_code, practice) |>
   distinct()
 
-write_csv(
+write_parquet(
   df_gp_prescribing_bnf,
-  here("output", "openprescribing", "adhd_gp_prescribing_bnf.csv")
+  here("output", "openprescribing", "adhd_gp_prescribing_bnf.parquet")
 )
 ```
