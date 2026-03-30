@@ -1,0 +1,135 @@
+---
+title: "Change point analysis of ADHD prescribing activity"
+author:
+  - Kaylee Poon
+format: html
+---
+# Overview
+This analysis uses the `segmented` R package to conduct change point analysis on the rate of change of ADHD prescribing or medicine issuing activity. The aim is to identify when significant changes in ADHD medication prescribing or issuing occur. 
+
+# Methods
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(segmented)
+
+source(here("functions", "changepoint_functions.R"))
+
+foi_adhd_prescribing <- read_csv(
+  here(
+    "output",
+    "foi_prescribing",
+    "adhd_foi_prescribing.csv"
+    )
+)
+```
+
+## Data sources 
+
+We will start with FP34PCD prescribing FOI data from 2015-08-01 to 2025-07-01 as it is the most simple. Note that only prescription item counts are available and DDD quantity cannot be calculated without quantity information. Here we calculate monthly prescribing for indiviudal chemicals and all chemicals. 
+
+```{r}
+#| label: calculate-monthly-prescribing
+#| output: false
+
+# Individual chemicals
+foi_by_chemical <- foi_adhd_prescribing |> 
+  dplyr::select(month, items, bnf_chemical_name) |>
+  group_by(month, bnf_chemical_name) |> 
+  summarise(monthly_items = sum(items, na.rm = TRUE), .groups = "drop")
+
+foi_all_chemicals <- foi_adhd_prescribing |>
+  dplyr::select(month, items) |>
+  group_by(month) |>
+  summarise(monthly_items = sum(items, na.rm = TRUE), .groups = "drop") |>
+  mutate(bnf_chemical_name = "All chemicals")
+
+total_foi_over_time <- bind_rows(foi_by_chemical, foi_all_chemicals) |> 
+  arrange(month, bnf_chemical_name) |>
+  group_by(bnf_chemical_name) |>
+  # Add column for month number starting from 0, this makes interpreting the model easier
+  mutate(month_number = row_number() - 1) |> 
+  ungroup()
+```
+
+Note that data for atomoxetine and guanfacine (not controlled drugs) only starts being reported on 2015-12-01 and 2016-06-01 respectively. 
+
+```{r}
+total_foi_over_time[total_foi_over_time$bnf_chemical_name == "Atomoxetine", ][1, ]
+# Date: 2015-12-01
+
+total_foi_over_time[total_foi_over_time$bnf_chemical_name == "Guanfacine", ][1, ]
+# Date: 2016-06-01
+```
+
+Later we will add GP prescribing data and Secondary Care Medicines Data.
+
+# Results
+
+## FP34PCD 
+First, we can use Andrea's `mod_aic` function to calculate AIC for a model with 0, 1, and 2 breakpoints. Note that `glm()` is used to create an initial Poisson model.
+
+Both `mod_aic` and `selgmented` work. I've left in the `mod_aic` function for now so we can check that both methods do produce essentially the same results, but later I use models built with `selgmented` because it lets me use fewer functions and avoids mistakes with manually inputing the number of changepoints.
+```{r}
+#| label: create-segmented-models
+#| output: false
+
+mod_aic(total_foi_over_time, "All chemicals")
+# 2 segments has the lowest AIC 
+
+# Create initial model
+foi_all_model0 <- glm(monthly_items ~ month_number, family = poisson, data = subset(total_foi_over_time, bnf_chemical_name == "All chemicals"))
+
+# Fit segmented model with 2 changepoints
+foi_all_segmented <- segmented(foi_all_model0, npsi = 2)
+summary(foi_all_segmented)
+
+# To achieve the same effect without needing the function, `selgmented` can also determine whether 0, 1, or 2 breakpoints produces a model with the lowest AIC and fit the optimal model minimising AIC using the code below. This directly outputs a segmented object. The calculated AIC values can be slightly different e.g. 56905.97 vs 56906.29 but it should not be significant.
+
+
+# Use Kmax to adjust maximum number of breakpoints
+foi_all_selgmented <- selgmented(foi_all_model0, type = "aic", refit = T, Kmax = 2, check.dslope = F)
+
+summary(foi_all_selgmented)
+```
+
+Now we can use a modified version of Andrea's `predicted` function to calculate predicted values and `slope` functions to calculate slope. Note that because I used `selgmented` above to generate the model directly, I only need one predicted function regardless of how many changepoints there are. For `slope`, I still need to use `slope0`, `slope1`, or slope`2` depending on the number of changepoints.
+```{r}
+# Generate df using segmented model with predicted monthly items and 95% CI bounds over time
+pred_foi_all <- predicted(foi_all_selgmented, "All chemicals", total_foi_over_time, "FOI")
+
+# Generate df with slopes and 95% CI bounds for each segment
+slope_foi_all <- slope2(foi_all_selgmented, "All chemicals", "FOI")
+
+```
+
+## Plotting
+
+Making a quick plot for fun, will figure out how to make it look good later.
+
+```{r}
+# Rounding to nearest month
+break_month_number <- round(c(slope_foi_all$change1, slope_foi_all$change2))
+
+# Convert month number into date
+break_dates <- foi_all_chemicals$month[break_month_number + 1]
+# "2020-04-01" "2023-01-01"
+
+ggplot() +
+  geom_point(
+    data = foi_all_chemicals,
+    aes(x = month, y = monthly_items),
+    alpha = .7
+  ) +
+  geom_line(
+    data = pred_foi_all,
+    aes(x= month, y = pred),
+    colour = "red"
+  ) +
+  geom_vline(xintercept = break_dates, alpha = 0.5)
+```
