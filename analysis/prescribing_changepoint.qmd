@@ -17,6 +17,7 @@ library(tidyverse)
 library(here)
 library(ggplot2)
 library(segmented)
+library(performance)
 
 source(here("functions", "changepoint_functions.R"))
 
@@ -72,6 +73,8 @@ Later we will add GP prescribing data and Secondary Care Medicines Data.
 # Results
 
 ## FP34PCD 
+
+### All chemicals 
 First, we can use Andrea's `mod_aic` function to calculate AIC for a model with 0, 1, and 2 breakpoints. Note that `glm()` is used to create an initial Poisson model.
 
 Both `mod_aic` and `selgmented` work. I've left in the `mod_aic` function for now so we can check that both methods do produce essentially the same results, but later I use models built with `selgmented` because it lets me use fewer functions and avoids mistakes with manually inputing the number of changepoints.
@@ -93,7 +96,7 @@ summary(foi_all_segmented)
 
 
 # Use Kmax to adjust maximum number of breakpoints
-foi_all_selgmented <- selgmented(foi_all_model0, type = "aic", refit = T, Kmax = 2, check.dslope = F)
+foi_all_selgmented <- mod_select(total_foi_over_time, "All chemicals")
 
 summary(foi_all_selgmented)
 ```
@@ -105,8 +108,34 @@ pred_foi_all <- predicted(foi_all_selgmented, "All chemicals", total_foi_over_ti
 
 # Generate df with slopes and 95% CI bounds for each segment
 slope_foi_all <- slope2(foi_all_selgmented, "All chemicals", "FOI")
+```
+
+Checking model fit and assumptions
+```{r}
+acf(residuals(foi_all_selgmented))
+# Looks fine
+plot(foi_all_chemicals$month, residuals(foi_all_selgmented, type = "deviance"))
+plot(fitted(foi_all_selgmented), residuals(foi_all_selgmented))
+# Both of these don't look very good
+check_overdispersion(foi_all_selgmented)
+# Dispersion ratio = 480, overdispersion detected
+
+# Fit negative binomial distribution instead
+foi_nb_model0 <- glm.nb(monthly_items ~ month_number,  data = subset(total_foi_over_time, bnf_chemical_name == "All chemicals"))
+
+foi_nb_segmented <- segmented.default(foi_nb_model0, npsi = 1)
+
+summary(foi_nb_segmented)
+# No breakpoint could be detected 
+
+pred_foi_nb_model0 <- predicted(foi_nb_model0, "All chemicals", total_foi_over_time, "FOI")
+
+check_overdispersion(foi_nb_model0)
+# Dispersion ratio = 0.386, underdispersion detected
 
 ```
+
+
 
 ## Plotting
 
@@ -123,13 +152,26 @@ break_dates <- foi_all_chemicals$month[break_month_number + 1]
 ggplot() +
   geom_point(
     data = foi_all_chemicals,
-    aes(x = month, y = monthly_items),
+    aes(x = month, y = monthly_items, colour = "Observed"),
     alpha = .7
   ) +
   geom_line(
     data = pred_foi_all,
-    aes(x= month, y = pred),
-    colour = "red"
+    aes(x= month, y = pred, colour = "Segmented Poisson model")
   ) +
-  geom_vline(xintercept = break_dates, alpha = 0.5)
+  geom_vline(xintercept = break_dates, alpha = 0.5) +
+  geom_line(
+    data = pred_foi_nb_model0,
+    aes(x = month, y = pred, colour = "Negative binomial model")
+  ) +
+  scale_colour_manual(
+    values = c(
+      "Observed" = "black",
+      "Segmented Poisson model" = "red",
+      "Negative binomial model" = "blue"
+    )
+  ) +
+  annotate(x = ymd("2020-04-01"), y = 60000, label = "2020-04-01", geom = "label") +
+  annotate(x = ymd("2023-01-01"), y = 60000, label = "2023-01-01", geom = "label") +
+  theme(legend.position = "right")
 ```
