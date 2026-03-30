@@ -15,6 +15,25 @@ mod_aic <- function(data, chemical) {
   return(aic)
 }
 
+# Create segmented model with optimal number of breakpoints minimising AIC
+mod_select <- function(data, chemical) {
+  dat <- data |>
+    dplyr::filter(bnf_chemical_name == chemical)
+
+  model0 <- glm(
+    monthly_items ~ month_number,
+    family = poisson,
+    data = dat
+  )
+  selgmented(
+    model0,
+    type = "aic",
+    refit = T,
+    Kmax = 2,
+    check.dslope = F
+  )
+}
+
 # Predicted values for model with any number of changepoints
 # Enter any string for chemical and source in quotation marks
 # This is just to keep track of things when all predictions are combined as one file
@@ -23,11 +42,14 @@ predicted <- function(model, chemical, data, source) {
   # `"response"` allows plotting on the scale of the response variable
   pred <- predict(model, se.fit = TRUE, type = "response")
 
+  dat <- data |>
+    dplyr::filter(bnf_chemical_name == chemical)
+
   df.pred <- data.frame(
     # Take month number from model frame
     month_number = model.frame(model)$month_number,
-    # Take month (as date) from data used to generate model, this makes plotting easier
-    month = unique(data$month),
+    # Take month (as date) from dat, this makes plotting easier and tells us when data is missing
+    month = unique(dat$month),
     # Predicted values and 95% CIs
     pred = pred$fit,
     lci = pred$fit - 1.96 * pred$se.fit,
