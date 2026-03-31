@@ -1,0 +1,168 @@
+---
+title: "Descriptive analysis results: SNOMED CT and ICD-10 diagnosis coding"
+author:
+  - Kaylee Poon
+format: html
+---
+# Overview
+This descriptive analysis explores: 
+
+1. SNOMED CT coding activity related to ADHD diagnosis in English primary care
+2. ICD-10 coding activity related to ADHD diagnosis in English Hospital Admitted Patient Care. 
+
+The aim is to understand which clinical codes are used to record ADHD diagnoses and related administrative activity, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic.
+
+# Methods
+
+## Set up
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+library(opencodecounts)
+library(patchwork)
+
+# Function for creating facet plots for age breakdowns
+source(here("functions", "create_facet_plots.R"))
+
+# Functions for creating usage plots
+source(here("functions", "usage_plots.R"))
+
+# Load SNOMED CT ADHD diagnosis coding activity from OpenCodeCounts
+snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone2/45183c88/")
+
+df_snomed_diag_usage <- snomed_usage |>
+  filter(snomed_code %in% snomed_diag_codelist$code)
+
+# Load ICD-10 ADHD diagnosis coding activity from OpenCodeCounts
+icd10_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/")
+
+df_icd10_diag_usage <- icd10_usage |>
+  filter(icd10_code %in% icd10_diag_codelist$code)
+
+# Load ICD-10 usage with age, sex, and diagnosis position breakdowns
+df_icd10_diag_breakdowns <- icd10_usage_breakdowns |>
+  filter(icd10_code %in% icd10_diag_codelist$code)
+```
+
+## Data source
+
+Data extraction methods are based on the [opencodecounts](https://bennettoxford.github.io/opencodecounts/) R package.
+
+We analyse the publicly available NHSE [SNOMED CT code usage in primary care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care) and [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity) datasets.
+
+For SNOMED CT, the annual usage count (from 1st August to  31st July) reflects how many times each listed SNOMED CT code was added to a GP electronic health record in England during the reporting period.
+
+For ICD-10, we extended the methods to also extract diagnosis position and demographic breakdowns of the counts from the Hospital Admitted Patient Care data. Activity is captured in Finished Consultant Episodes (FCEs), where each FCE can have up to 20 recorded ICD-10 diagnoses. 
+
+## Codelists
+
+2 codelists indicating ADHD diagnosis for SNOMED CT[^codelist-adhd-snomed] and ICD-10[^codelist-adhd-icd10] respectively were developed using OpenCodelists. The ICD-10 codelist in particular is pending review.
+
+[^codelist-adhd-snomed]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone2/45183c88/
+[^codelist-adhd-icd10]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/
+
+### ICD-10 Breakdown variables
+
+**Diagnostic codes**: The following four-character ICD-10 codes were included: Disturbance of activity and attention (F900); _Hyperkinetic conduct disorder_ (F901); _Other hyperkinetic disorders_ (F908); _Hyperkinetic disorder, unspecified_ (F909).
+
+**Diagnostic position**: Usage counts represent FCEs with a specific code in any diagnostic position ("all diagnoses") or as the primary reason for admission ("main diagnosis").
+
+**Demographic breakdowns**: Demographic breakdowns are available by age groups (with ages 15-19 reported individually and aggregated here for comparability with other age bands) and sex (male, female, unknown).
+
+# Results
+
+## Total ADHD code usage compared to all SNOMED CT/ICD-10 code usage
+
+### SNOMED CT
+```{r}
+#| label: fig-snomed-adhd-vs-all
+#| fig-cap: "SNOMED CT ADHD diagnosis code usage compared to all SNOMED CT codes. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
+#| fig-width: 10
+#| fig-height: 6
+
+# Get total yearly usage for top 5 SNOMED CT ADHD diagnosis codes
+top5_snomed_diag_codes <- df_snomed_diag_usage |>
+  group_by(snomed_code, description) |> 
+  summarise(total_usage = sum(usage), .groups = "drop") |> 
+  slice_max(total_usage, n = 5) |> 
+  pull(snomed_code)
+
+df_top5_snomed_usage <- df_snomed_diag_usage |>
+  group_by(end_date, snomed_code, description) |> 
+  summarise(yearly_usage = sum(usage), .groups = "drop") |> 
+  filter(snomed_code %in% top5_snomed_diag_codes) |> 
+  # Remove semantic tag in brackets so legend labels don't get too long
+  mutate(description = sub(" \\(.*", "", description)) |> 
+  mutate(facet_group = "ADHD diagnosis-related SNOMED CT codes" ) |> 
+  select(-c(snomed_code))
+
+# Get total yearly usage for codes
+
+df_snomed_yearly_usage <- bind_rows(
+  # Specify facet grouping here
+  summarise_yearly(snomed_usage, "All SNOMED CT codes", "All SNOMED CT codes"),
+  summarise_yearly(df_snomed_diag_usage, "ADHD diagnosis-related SNOMED CT codes", "ADHD diagnosis-related SNOMED CT codes"),
+  df_top5_snomed_usage
+)  
+
+# Plot as graph
+fig_snomed_adhd_vs_all <- plot_usage_facets(df_snomed_yearly_usage, 4) 
+
+fig_snomed_adhd_vs_all
+```
+
+### ICD-10 
+```{r}
+top5_icd10_diag_codes <- df_icd10_diag_usage |>
+  group_by(icd10_code, description) |> 
+  summarise(total_usage = sum(usage), .groups = "drop") |> 
+  slice_max(total_usage, n = 5) |> 
+  pull(icd10_code)
+
+df_top5_icd10_usage <- df_icd10_diag_usage |>
+  group_by(end_date, icd10_code, description) |> 
+  summarise(yearly_usage = sum(usage), .groups = "drop") |> 
+  filter(icd10_code %in% top5_icd10_diag_codes) |> 
+  mutate(facet_group = "ADHD diagnosis-related ICD-10 codes" ) |> 
+  select(-c(icd10_code))
+
+df_icd10_yearly_usage <- bind_rows(
+  summarise_yearly(icd10_usage, "All ICD-10 codes", "All ICD-10 codes"),
+  summarise_yearly(df_icd10_diag_usage, "ADHD diagnosis-related ICD-10 codes", "ADHD diagnosis-related ICD-10 codes"),
+  df_top5_icd10_usage
+)
+
+fig_icd10_adhd_vs_all <- plot_usage_facets(df_icd10_yearly_usage, 3) 
+
+fig_icd10_adhd_vs_all
+```
+
+### Combining both graphs with patchwork
+
+```{r}
+combined_fig <- fig_snomed_adhd_vs_all / fig_icd10_adhd_vs_all + plot_annotation(tag_levels = "A")
+
+combined_fig
+
+ggsave(here("output", "figures", "fig_total_snomed_icd10.png"), width = 10, height = 15)
+```
+
+
+## Usage counts for top 5 codes in each codelist
+
+Can also calculate proportion of coding activity contributed by each code
+
+
+## Some percentage calculations 
+
+- percentage increase compared to start of reporting period
+- percentage of ADHD coding vs all coding 
+
+## ICD-10 breakdowns
+- diagnosis position
+- age
+- gender
