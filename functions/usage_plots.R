@@ -47,7 +47,8 @@ plot_code_usage <- function(
 # Faceted plot - this is very similar to the above function
 plot_usage_facets <- function(
   data,
-  legend_nrow,
+  title,
+  label_to_remove,
   text_size = 16,
   x_label = "End date of yearly reporting period",
   y_label = "Usage count",
@@ -62,30 +63,61 @@ plot_usage_facets <- function(
   # Create plot
   ggplot(
     data,
-    aes(x = end_date, y = yearly_usage, colour = description)
+    aes(
+      x = end_date,
+      y = yearly_usage,
+      colour = description,
+      shape = description,
+      fill = description
+    )
   ) +
-    geom_line(alpha = .5) +
-    geom_point(alpha = .5) +
+    geom_line(alpha = .5, linewidth = 1) +
+    geom_point(alpha = .5, size = 5) +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    labs(x = x_label, y = y_label) +
+    # Wrapping legend label text and removing unnecessary label
+    scale_colour_viridis_d(
+      labels = \(x) str_wrap(x, width = 40),
+      breaks = \(x) x[x != label_to_remove],
+      end = .75
+    ) +
+    # Have to manually specify shapes (and fill) as 7 is too many too handle automatically
+    scale_shape_manual(
+      values = c(21, 22, 23, 3, 4, 24, 25, 11),
+      labels = \(legend_labels) str_wrap(legend_labels, width = 40),
+      breaks = \(x) x[x != label_to_remove],
+    ) +
+    scale_fill_viridis_d(
+      end = .75,
+      labels = \(legend_labels) str_wrap(legend_labels, width = 40),
+      breaks = \(x) x[x != label_to_remove],
+    ) +
+    labs(x = x_label, y = y_label, title = title) +
     # Using black and white theme
     theme_bw(
       base_size = text_size
     ) +
     theme(
-      legend.position = "bottom",
+      # Place legend inside first facet plot
+      legend.position = c(0.4, 0.9),
       legend.title = element_blank(),
-      legend.text = element_text(size = 10)
+      legend.text = element_text(size = 14),
+      legend.background = element_rect(
+        fill = "white",
+        linetype = "solid",
+        colour = "black"
+      ),
+      strip.text = element_text(size = text_size)
     ) +
-    guides(colour = guide_legend(nrow = legend_nrow)) +
+    guides(colour = guide_legend(ncol = 1)) +
     facet_wrap(
       vars(facet_group),
-      labeller = label_wrap_gen(width = 25),
+      ncol = 1,
+      labeller = label_wrap_gen(width = 60),
       scales = "free_y"
     )
 }

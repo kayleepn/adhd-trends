@@ -24,6 +24,7 @@ library(tidyverse)
 library(here)
 library(opencodecounts)
 library(patchwork)
+library(stringr)
 
 # Function for creating facet plots for age breakdowns
 source(here("functions", "create_facet_plots.R"))
@@ -97,8 +98,8 @@ df_top5_snomed_usage <- df_snomed_diag_usage |>
   filter(snomed_code %in% top5_snomed_diag_codes) |> 
   # Remove semantic tag in brackets so legend labels don't get too long
   mutate(description = sub(" \\(.*", "", description)) |> 
-  mutate(facet_group = "ADHD diagnosis-related SNOMED CT codes" ) |> 
-  select(-c(snomed_code))
+  mutate(facet_group = "ADHD diagnosis-related SNOMED CT codes") |> 
+  dplyr::select(-snomed_code)
 
 # Get total yearly usage for codes
 
@@ -110,13 +111,20 @@ df_snomed_yearly_usage <- bind_rows(
 )  
 
 # Plot as graph
-fig_snomed_adhd_vs_all <- plot_usage_facets(df_snomed_yearly_usage, 4) 
 
-fig_snomed_adhd_vs_all
+snomed_legend_labels <- df_snomed_yearly_usage |> 
+  # Don't need a legend for All SNOMED CT codes facet as it's the only line
+  filter(description != "All SNOMED CT codes") |> 
+  distinct(description) |> 
+  pull(description) 
+
+# None of these figures are going to look good until the `ggsave()` step because of scaling issues
+fig_snomed_adhd_vs_all <- plot_usage_facets(df_snomed_yearly_usage, "SNOMED CT Code Usage", "All SNOMED CT codes") 
 ```
 
 ### ICD-10 
 ```{r}
+# There are actually only 4 ICD-10 codes but I've left it as is because this is not the final codelist
 top5_icd10_diag_codes <- df_icd10_diag_usage |>
   group_by(icd10_code, description) |> 
   summarise(total_usage = sum(usage), .groups = "drop") |> 
@@ -128,7 +136,7 @@ df_top5_icd10_usage <- df_icd10_diag_usage |>
   summarise(yearly_usage = sum(usage), .groups = "drop") |> 
   filter(icd10_code %in% top5_icd10_diag_codes) |> 
   mutate(facet_group = "ADHD diagnosis-related ICD-10 codes" ) |> 
-  select(-c(icd10_code))
+  dplyr::select(-icd10_code)
 
 df_icd10_yearly_usage <- bind_rows(
   summarise_yearly(icd10_usage, "All ICD-10 codes", "All ICD-10 codes"),
@@ -136,19 +144,15 @@ df_icd10_yearly_usage <- bind_rows(
   df_top5_icd10_usage
 )
 
-fig_icd10_adhd_vs_all <- plot_usage_facets(df_icd10_yearly_usage, 3) 
-
-fig_icd10_adhd_vs_all
+fig_icd10_adhd_vs_all <- plot_usage_facets(df_icd10_yearly_usage, "ICD-10 Code Usage", "All ICD-10 codes") 
 ```
 
 ### Combining both graphs with patchwork
 
 ```{r}
-combined_fig <- fig_snomed_adhd_vs_all / fig_icd10_adhd_vs_all + plot_annotation(tag_levels = "A")
+fig_total_snomed_icd10 <- fig_snomed_adhd_vs_all + fig_icd10_adhd_vs_all + plot_annotation(tag_levels = "A")
 
-combined_fig
-
-ggsave(here("output", "figures", "fig_total_snomed_icd10.png"), width = 10, height = 15)
+ggsave(here("output", "figures", "fig_total_snomed_icd10.png"), width = 15, height = 15)
 ```
 
 
