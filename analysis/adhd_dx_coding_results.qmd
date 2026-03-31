@@ -25,6 +25,7 @@ library(here)
 library(opencodecounts)
 library(patchwork)
 library(stringr)
+library(flextable)
 
 # Function for creating facet plots for age breakdowns
 source(here("functions", "create_facet_plots.R"))
@@ -98,7 +99,7 @@ df_top5_snomed_usage <- df_snomed_diag_usage |>
   filter(snomed_code %in% top5_snomed_diag_codes) |> 
   # Remove semantic tag in brackets so legend labels don't get too long
   mutate(description = sub(" \\(.*", "", description)) |> 
-  mutate(facet_group = "ADHD diagnosis-related SNOMED CT codes") |> 
+  mutate(facet_group = "All ADHD diagnosis-related SNOMED CT codes") |> 
   dplyr::select(-snomed_code)
 
 # Get total yearly usage for codes
@@ -106,17 +107,11 @@ df_top5_snomed_usage <- df_snomed_diag_usage |>
 df_snomed_yearly_usage <- bind_rows(
   # Specify facet grouping here
   summarise_yearly(snomed_usage, "All SNOMED CT codes", "All SNOMED CT codes"),
-  summarise_yearly(df_snomed_diag_usage, "ADHD diagnosis-related SNOMED CT codes", "ADHD diagnosis-related SNOMED CT codes"),
+  summarise_yearly(df_snomed_diag_usage, "All ADHD diagnosis-related SNOMED CT codes", "All ADHD diagnosis-related SNOMED CT codes"),
   df_top5_snomed_usage
 )  
 
 # Plot as graph
-
-snomed_legend_labels <- df_snomed_yearly_usage |> 
-  # Don't need a legend for All SNOMED CT codes facet as it's the only line
-  filter(description != "All SNOMED CT codes") |> 
-  distinct(description) |> 
-  pull(description) 
 
 # None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_snomed_adhd_vs_all <- plot_usage_facets(df_snomed_yearly_usage, "SNOMED CT Code Usage", "All SNOMED CT codes") 
@@ -135,12 +130,12 @@ df_top5_icd10_usage <- df_icd10_diag_usage |>
   group_by(end_date, icd10_code, description) |> 
   summarise(yearly_usage = sum(usage), .groups = "drop") |> 
   filter(icd10_code %in% top5_icd10_diag_codes) |> 
-  mutate(facet_group = "ADHD diagnosis-related ICD-10 codes" ) |> 
+  mutate(facet_group = "All ADHD diagnosis-related ICD-10 codes" ) |> 
   dplyr::select(-icd10_code)
 
 df_icd10_yearly_usage <- bind_rows(
   summarise_yearly(icd10_usage, "All ICD-10 codes", "All ICD-10 codes"),
-  summarise_yearly(df_icd10_diag_usage, "ADHD diagnosis-related ICD-10 codes", "ADHD diagnosis-related ICD-10 codes"),
+  summarise_yearly(df_icd10_diag_usage, "All ADHD diagnosis-related ICD-10 codes", "All ADHD diagnosis-related ICD-10 codes"),
   df_top5_icd10_usage
 )
 
