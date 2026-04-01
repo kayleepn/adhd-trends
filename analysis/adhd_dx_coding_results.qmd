@@ -7,8 +7,8 @@ format: html
 # Overview
 This descriptive analysis explores: 
 
-1. SNOMED CT coding activity related to ADHD diagnosis in English primary care
-2. ICD-10 coding activity related to ADHD diagnosis in English Hospital Admitted Patient Care. 
+1. SNOMED CT coding activity related to ADHD diagnosis in English primary care (2011-2025)
+2. ICD-10 coding activity related to ADHD diagnosis in English Hospital Admitted Patient Care. (2012-2025) 
 
 The aim is to understand which clinical codes are used to record ADHD diagnoses and related administrative activity, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic.
 
@@ -26,6 +26,7 @@ library(opencodecounts)
 library(patchwork)
 library(stringr)
 library(flextable)
+library(officer)
 
 # Function for creating facet plots for age breakdowns
 source(here("functions", "create_facet_plots.R"))
@@ -48,6 +49,16 @@ df_icd10_diag_usage <- icd10_usage |>
 # Load ICD-10 usage with age, sex, and diagnosis position breakdowns
 df_icd10_diag_breakdowns <- icd10_usage_breakdowns |>
   filter(icd10_code %in% icd10_diag_codelist$code)
+
+# Set flextable defaults
+set_flextable_defaults(
+  font.family = "Times New Roman",
+  font.size = 12,
+  font.colour = "black",
+  border.colour = "black",
+  layout = "autofit",
+  width = 1
+)
 ```
 
 ## Data source
@@ -153,13 +164,127 @@ ggsave(here("output", "figures", "fig_total_snomed_icd10.png"), width = 15, heig
 
 ## Usage counts for top 5 codes in each codelist
 
-Can also calculate proportion of coding activity contributed by each code
+Aim: produce table with total usage (across all years) for all codes and the top 5 codes for SNOMED CT and ICD-10 + proportion of coding activity contributed by each code.
+
+ADHD coding only takes up 0.0068% of all SNOMED CT coding so it makes more sense to calculate the proportion of coding each of the top 5 codes take up within ADHD codes.
+
+```{r}
+# Helper function for calculating total usage and each code's contribution to total ADHD coding
+# `ref_desc` is the description for the reference codes (all ADHD diagnosis-related codes in this case)
+calc_total_usage <- function(data, ref_desc, ref_ignore){
+  data |> 
+    group_by(description) |> 
+    summarise(total_usage = sum(yearly_usage), .groups = "drop") |> 
+    arrange(desc(total_usage)) |>
+    # Calculate percentage of code usage compared to all ADHD code usage 
+    mutate(ref = total_usage[description == ref_desc]) |> 
+    # Doesn't make sense to calculate all SNOMED usage as a percentage of all ADHD code usage so setting the value in that row to NA
+    mutate(percentage = if_else(
+      description == ref_ignore,
+      NA_real_,
+      round(total_usage/ref * 100, digits = 2)
+    )) |> 
+    dplyr::select(-ref)
+}
 
 
-## Some percentage calculations 
+df_snomed_total_usage <- calc_total_usage(
+  df_snomed_yearly_usage,
+  ref_desc = "All ADHD diagnosis-related SNOMED CT codes",
+  ref_ignore = "All SNOMED CT codes"
+)
 
-- percentage increase compared to start of reporting period
-- percentage of ADHD coding vs all coding 
+df_icd10_total_usage <- calc_total_usage(
+  df_icd10_yearly_usage,
+  ref_desc = "All ADHD diagnosis-related ICD-10 codes",
+  ref_ignore = "All ICD-10 codes"
+)
+
+# Calculate usage percentage change compared to start of analysis period
+# Important: note that "Attention deficit hyperactivity disorder, combined type" only starts being recorded in 2018-19
+
+# Helper function to calculate pct change
+calc_pct_change <- function(data){
+  data |> 
+  group_by(description) |> 
+  summarise(
+    min_date = min(end_date, na.rm = TRUE),
+    max_date = max(end_date, na.rm = TRUE),
+    start_usage = yearly_usage[end_date == min_date][1],
+    end_usage = yearly_usage[end_date == max_date][1],
+    change = end_usage - start_usage,
+    pct_change = round(change / start_usage * 100, digits = 2),
+    .groups = "drop"
+   ) |> 
+  select(description, pct_change)
+}
+
+# Calculate pct changes for SNOMED CT and ICD-10
+df_snomed_pct_change <- calc_pct_change(df_snomed_yearly_usage)
+df_icd10_pct_change <- calc_pct_change(df_icd10_yearly_usage)
+```
+
+### Constructing the usage table
+
+```{r}
+# Join total usage and percentage change dfs
+df_snomed_usage_table <- inner_join(
+  df_snomed_total_usage,
+  df_snomed_pct_change
+)
+
+df_icd10_usage_table <- inner_join(
+  df_icd10_total_usage,
+  df_icd10_pct_change
+)
+
+# Bind SNOMED CT and ICD10 dfs
+df_usage_table <- bind_rows(
+  tibble(description = "SNOMED CT Codes (2011-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
+  df_snomed_usage_table, 
+  tibble(description = "ICD-10 Codes (2012-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
+  df_icd10_usage_table
+)
+
+# Header rows will need to be reformated after exporting to Word - merging with flextable isn't preserved in Word
+# Table works fine in html
+usage_table <- flextable(df_usage_table) |> 
+  theme_booktabs() |> 
+  set_caption("ICD-10 and SNOMED CT Code Usage Summary Table") |> 
+  set_header_labels(
+    description = "Code description",
+    total_usage = "Total code usage",
+    percentage = "Percentage of total ADHD diagnosis-related usage",
+    pct_change = "Percent change compared to start of analysis period"
+  ) |> 
+  colformat_num(na_str = "N/A") |> 
+  # Formatting header rows for SNOMED CT and ICD-10 codes
+  merge_at(i = 1, j = 1:4) |> 
+  merge_at(i = 9, j = 1:4) |> 
+  bold(i = c(1, 9)) |>
+  align(i = c(1, 9), align = "center", part = "body") |> 
+  hline(
+    i = c(1, 8, 9),
+    border = fp_border(color = "#666666", width = 1.5),
+    part = "body"
+  ) |> 
+  footnote(i = 8, j = 1, 
+    value = as_paragraph(
+      "Note that 'Attention deficit hyperactivity disorder, combined type' was first recorded in the 2018-19 reporting period."
+      ),
+    ref_symbols = "*",
+    part = "body"
+  ) 
+
+usage_table
+
+save_as_docx(
+  "ICD-10 and SNOMED CT Code Usage Summary Table" = usage_table,
+  path = "output/tables/descriptive_tables.docx"
+)
+```
+
+
 
 ## ICD-10 breakdowns
 - diagnosis position
