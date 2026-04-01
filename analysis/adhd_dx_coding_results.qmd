@@ -35,7 +35,7 @@ source(here("functions", "create_facet_plots.R"))
 source(here("functions", "usage_plots.R"))
 
 # Load SNOMED CT ADHD diagnosis coding activity from OpenCodeCounts
-snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone2/45183c88/")
+snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/adhd_cod/20250912/")
 
 df_snomed_diag_usage <- snomed_usage |>
   filter(snomed_code %in% snomed_diag_codelist$code)

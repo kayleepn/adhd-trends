@@ -102,6 +102,7 @@ plot_usage_facets <- function(
       base_size = text_size
     ) +
     theme(
+      text = element_text(family = "Times New Roman"),
       # Place legend inside first facet plot
       legend.position = c(0.4, 0.9),
       legend.title = element_blank(),
