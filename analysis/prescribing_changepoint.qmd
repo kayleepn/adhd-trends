@@ -145,19 +145,39 @@ check_overdispersion(foi_nb_model0)
 
 ```
 
+Fitting a log-transformed linear segmented model for FOI data
 
+```{r}
+foi_log_model <- log_mod_select(total_foi_over_time, "All chemicals")
+
+summary(foi_log_model)
+# Estimated break points: 59.999, 64.117
+
+# Check model fit
+check_model(foi_log_model)
+# Doesn't look too bad according to Andrea
+
+acf(residuals(foi_log_model))
+# No autocorrelation present
+
+pred_foi_log_model <- predicted_exp(
+  foi_log_model, "All chemicals", total_foi_over_time, "FOI"
+)
+
+plot(foi_log_model)
+```
 
 ## Plotting
 
-Making a quick plot for fun, will figure out how to make it look good later.
+Plotting all 3 models with observed data.
 
 ```{r}
 # Rounding to nearest month
-break_month_number <- round(c(slope_foi_all$change1, slope_foi_all$change2))
+foi_break_month_number <- round(c(slope_foi_all$change1, slope_foi_all$change2, 59.999, 64.117))
 
 # Convert month number into date
-break_dates <- foi_all_chemicals$month[break_month_number + 1]
-# "2020-04-01" "2023-01-01"
+foi_break_dates <- foi_all_chemicals$month[foi_break_month_number + 1]
+# "2020-04-01", "2023-01-01", "2020-08-01", "2020-12-01"
 
 ggplot() +
   geom_point(
@@ -167,22 +187,33 @@ ggplot() +
   ) +
   geom_line(
     data = pred_foi_all,
-    aes(x= month, y = pred, colour = "Segmented Poisson model")
+    aes(x= month, y = pred, colour = "Segmented Poisson model"),
+    size = 1
   ) +
-  geom_vline(xintercept = break_dates, alpha = 0.5) +
+  geom_vline(xintercept = foi_break_dates, colour = c("red", "red", "green", "green"), alpha = 0.5) +
   geom_line(
     data = pred_foi_nb_model0,
-    aes(x = month, y = pred, colour = "Negative binomial model")
+    aes(x = month, y = pred, colour = "Negative binomial model"), 
+    size = 1
+  ) +
+  geom_line(
+    data = pred_foi_log_model,
+    aes(x = month, y = pred, colour = "Segmented log-linear model"),
+    size = 1
   ) +
   scale_colour_manual(
     values = c(
       "Observed" = "black",
       "Segmented Poisson model" = "red",
-      "Negative binomial model" = "blue"
+      "Negative binomial model" = "blue",
+      "Segmented log-linear model" = "green"
     )
   ) +
-  annotate(x = ymd("2020-04-01"), y = 60000, label = "2020-04-01", geom = "label") +
-  annotate(x = ymd("2023-01-01"), y = 60000, label = "2023-01-01", geom = "label") +
+  annotate(x = ymd("2020-04-01"), y = 35000, label = "2020-04-01", geom = "label", colour = "red") +
+  annotate(x = ymd("2023-01-01"), y = 65000, label = "2023-01-01", geom = "label", colour = "red") +
+  annotate(x = ymd("2020-08-01"), y = 45000, label = "2020-08-01", geom = "label", colour = "green") +
+  annotate(x = ymd("2020-12-01"), y = 55000, label = "2020-12-01", geom = "label", colour = "green") +
+  
   theme(legend.position = "right")
 ```
 
