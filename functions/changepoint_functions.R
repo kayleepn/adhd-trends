@@ -15,6 +15,24 @@ mod_aic <- function(data, chemical) {
   return(aic)
 }
 
+# Create log-transformed linear segmented model with optimal number of breakpoints minimising AIC
+log_mod_select <- function(data, chemical) {
+  dat <- data |>
+    dplyr::filter(bnf_chemical_name == chemical)
+
+  model0 <- lm(
+    log(monthly_items) ~ month_number,
+    data = dat
+  )
+  selgmented(
+    model0,
+    type = "aic",
+    refit = T,
+    Kmax = 2,
+    check.dslope = F
+  )
+}
+
 # Create segmented model with optimal number of breakpoints minimising AIC
 mod_select <- function(data, chemical) {
   dat <- data |>
@@ -54,6 +72,39 @@ predicted <- function(model, chemical, data, source) {
     pred = pred$fit,
     lci = pred$fit - 1.96 * pred$se.fit,
     uci = pred$fit + 1.96 * pred$se.fit,
+    # Labelling columns for chemical and data source
+    bnf_chemical = rep(chemical, length(pred$fit)),
+    data_source = rep(source, length(pred$fit))
+  )
+  return(df.pred)
+}
+
+# Predicted values for log models with any number of changepoints, similar to `predicted` above
+# Enter any string for chemical and source in quotation marks
+# This is just to keep track of things when all predictions are combined as one file
+predicted_exp <- function(model, chemical, data, source) {
+  # Generate predicted values using segmented model
+  # `"response"` allows plotting on the scale of the response variable
+  pred <- predict(model, se.fit = TRUE)
+
+  lowerci <- pred$fit - 1.96 * pred$se.fit
+  upperci <- pred$fit + 1.96 * pred$se.fit
+
+  dat <- data |>
+    dplyr::filter(bnf_chemical_name == chemical)
+
+  # Log-normal (σ²/2) bias correction
+  sigma2 <- summary(model)$sigma^2
+
+  df.pred <- data.frame(
+    # Take month number from model frame
+    month_number = model.frame(model)$month_number,
+    # Take month (as date) from dat, this makes plotting easier and tells us when data is missing
+    month = unique(dat$month),
+    # Predicted values and 95% CIs
+    pred = exp(pred$fit),
+    lci = exp(lowerci + sigma2 / 2),
+    uci = exp(upperci + sigma2 / 2),
     # Labelling columns for chemical and data source
     bnf_chemical = rep(chemical, length(pred$fit)),
     data_source = rep(source, length(pred$fit))
