@@ -1,38 +1,3 @@
-# Calculate monthly prescribing/issuing for individual and all chemicals
-# Prescribing measure: "items", issuing measure: "ddd_quantity"
-calc_monthly <- function(
-  data,
-  measure_col,
-  monthly_measure_name
-) {
-  # Calculate monthly prescribing/issuing for individual chemicals
-  by_chemical <- data |>
-    group_by(month, bnf_chemical_name) |>
-    summarise(
-      !!monthly_measure_name := sum({{ measure_col }}, na.rm = TRUE),
-      .groups = "drop"
-    )
-
-  # Repeat for all chemicals
-  all_chemicals <- data |>
-    group_by(month) |>
-    summarise(
-      !!monthly_measure_name := sum({{ measure_col }}, na.rm = TRUE),
-      .groups = "drop"
-    ) |>
-    mutate(bnf_chemical_name = "All chemicals")
-
-  # Combine the above dataframes
-  total_over_time <- bind_rows(by_chemical, all_chemicals) |>
-    arrange(month, bnf_chemical_name) |>
-    group_by(bnf_chemical_name) |>
-    # Add column for month number starting from 0, this makes interpreting the model easier
-    mutate(month_number = row_number() - 1) |>
-    ungroup()
-
-  return(total_over_time)
-}
-
 # Calculate AIC for models with 0, 1, and 2 breakpoints
 # Note that `glm()` is used to create a Poisson model instead
 mod_aic <- function(data, chemical) {
