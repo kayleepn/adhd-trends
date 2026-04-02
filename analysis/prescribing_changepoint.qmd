@@ -28,7 +28,7 @@ foi_adhd_prescribing <- read_csv(
     "output",
     "foi_prescribing",
     "adhd_foi_prescribing.csv"
-    )
+  )
 )
 
 gp_adhd_prescribing <- read_parquet(
@@ -36,49 +36,97 @@ gp_adhd_prescribing <- read_parquet(
     "output",
     "openprescribing",
     "adhd_gp_prescribing_chemical.parquet"
-    )
-)
+  )
+) |> 
+  # Rename column for consistency
+  rename(items = items_by_chemical)
+
+scmd_adhd_issuing <- read_csv(
+  here(
+    "output",
+    "web-openprescribing-hospitals",
+    "adhd_oph_web_ddd_quantity.csv"
+  )
+) |>
+  # Clean and rename column names
+  janitor::clean_names() |>
+  rename(
+    month = date,
+    bnf_chemical_name = vtm_name,
+    ddd_quantity = value
+  )
 ```
 
 ## Data sources 
 
-We will start with FP34PCD prescribing FOI data from 2015-08-01 to 2025-07-01 as it is the most simple. Note that only prescription item counts are available and DDD quantity cannot be calculated without quantity information. Here we calculate monthly prescribing for indiviudal chemicals and all chemicals. 
+We analyse 3 data sources: 
+
+1. FP34PCD prescribing FOI data from 2015-08-01 to 2025-07-31 (items)
+2. OpenPrescribing GP prescribing data from 2015-08-01 to 2025-07-31 (items)
+3. OpenPrescribing-Hospitals SCMD issuing data from 2019-01-01 to 2025-07-31 (DDD quantity)
+
+For FOI data, DDD quantity cannot be calculated without quantity information. For GP data, there is enough information to calculate DDD quantity but it is non-trivial work and not the best use of limited time for the thesis. 
 
 ```{r}
-#| label: calculate-monthly-prescribing
+#| label: calculate-monthly
 #| output: false
 
-# Individual chemicals
-foi_by_chemical <- foi_adhd_prescribing |> 
-  dplyr::select(month, items, bnf_chemical_name) |>
-  group_by(month, bnf_chemical_name) |> 
-  summarise(monthly_items = sum(items, na.rm = TRUE), .groups = "drop")
+# FOI data
+total_foi_over_time <- calc_monthly(
+  data = foi_adhd_prescribing, 
+  measure_col = items, 
+  monthly_measure_name = "monthly_items"
+)
 
-foi_all_chemicals <- foi_adhd_prescribing |>
-  dplyr::select(month, items) |>
-  group_by(month) |>
-  summarise(monthly_items = sum(items, na.rm = TRUE), .groups = "drop") |>
-  mutate(bnf_chemical_name = "All chemicals")
+n_distinct(total_foi_over_time$month)
+# [1] 120 
+# As 120 * 6 = 720 and the data only has 659 rows, some medications were not prescribed every month
 
-total_foi_over_time <- bind_rows(foi_by_chemical, foi_all_chemicals) |> 
-  arrange(month, bnf_chemical_name) |>
-  group_by(bnf_chemical_name) |>
-  # Add column for month number starting from 0, this makes interpreting the model easier
-  mutate(month_number = row_number() - 1) |> 
-  ungroup()
+# OpenPrescribing GP data
+total_gp_over_time <- calc_monthly(
+  data = gp_adhd_prescribing, 
+  measure_col = items, 
+  monthly_measure_name = "monthly_items"
+)
+
+n_distinct(total_gp_over_time$month)
+# [1] 120 
+# As 120 * 6 = 720 and the data only has 714 rows, some medications were not prescribed every month
+
+# OpenPrescribing Hospitals web SCMD data
+total_scmd_over_time <- calc_monthly(
+  data = scmd_adhd_issuing, 
+  measure_col = ddd_quantity, 
+  monthly_measure_name = "monthly_ddd_quantity"
+)
+
+n_distinct(total_scmd_over_time$month)
+# [1] 84
+# As 84 * 6 = 504, each medication has been issued at least once every month
 ```
 
-Note that data for atomoxetine and guanfacine (not controlled drugs) only starts being reported on 2015-12-01 and 2016-06-01 respectively. 
+### Checking individual chemical breakdowns
+
+For now, we will only analyse prescribing/issuing for all chemicals combined. If we want to analyse each individual chemical, we will want to do more in depth checks of where data is missing. 
 
 ```{r}
+#| label: check-chemical-breakdowns
+#| output: false
+
 total_foi_over_time[total_foi_over_time$bnf_chemical_name == "Atomoxetine", ][1, ]
 # Date: 2015-12-01
 
 total_foi_over_time[total_foi_over_time$bnf_chemical_name == "Guanfacine", ][1, ]
 # Date: 2016-06-01
+
+total_gp_over_time[total_gp_over_time$bnf_chemical_name == "Guanfacine", ][1, ]
+# Date: 2016-02-01
 ```
 
-Later we will add GP prescribing data and Secondary Care Medicines Data.
+
+Note that FOI data for atomoxetine and guanfacine (not controlled drugs) only starts being reported on 2015-12-01 and 2016-06-01 respectively. 
+
+For GP data, guanfacine is only recorded (or prescribed) starting on 2016-02-01. This accounts for the 6 rows of 'missing' data.
 
 # Results
 
@@ -220,31 +268,6 @@ ggplot() +
 ## GP Prescribing Data (items)
 
 Fitting Poisson, negative binomial, and log-transformed models for GP prescribing data from 2015-08-01 to 2025-07-01 then calculating change points. Using items as calculating DDDs is non-trivial and not the best use of limited time. Note that prescribing for Guanfacine was only recorded starting from 2016-02-01.
-
-```{r}
-#| label: calculate-monthly-gp-prescribing
-#| output: false
-
-# Same code as FOI monthly prescribing but need to fix slightly different column names
-# Individual chemicals
-gp_by_chemical <- gp_adhd_prescribing |> 
-  dplyr::select(month, items_by_chemical, bnf_chemical_name) |>
-  group_by(month, bnf_chemical_name) |> 
-  summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop")
-
-gp_all_chemicals <- gp_adhd_prescribing |>
-  dplyr::select(month, items_by_chemical) |>
-  group_by(month) |>
-  summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop") |>
-  mutate(bnf_chemical_name = "All chemicals")
-
-total_gp_over_time <- bind_rows(gp_by_chemical, gp_all_chemicals) |> 
-  arrange(month, bnf_chemical_name) |>
-  group_by(bnf_chemical_name) |>
-  # Add column for month number starting from 0, this makes interpreting the model easier
-  mutate(month_number = row_number() - 1) |> 
-  ungroup()
-```
 
 Creating Poisson linear segmented model for GP data
 ```{r}
