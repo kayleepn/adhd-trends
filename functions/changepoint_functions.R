@@ -1,56 +1,81 @@
-# Calculate AIC for models with 0, 1, and 2 breakpoints
+# Calculate AIC for models with 0, 1, 2, and 3 breakpoints
 # Note that `glm()` is used to create a Poisson model instead
-mod_aic <- function(data, chemical) {
+mod_aic <- function(data, chemical, monthly_measure) {
   model0 <- glm(
-    monthly_items ~ month_number,
+    reformulate("month_number", response = monthly_measure),
     family = poisson,
-    data = subset(data, bnf_chemical_name == chemical)
+    data = data,
+    subset = bnf_chemical_name == chemical
   )
-  seg.model1 <- segmented(model0, npsi = 1)
-  seg.model2 <- segmented(model0, npsi = 2)
+
+  # As the lowest AIC is often found at 2 breakpoints, I wanted to also calculate AIC for 3 breakpoints
+  # However when the data doesn't fit 3 breakpoints, AIC calculation can fail
+  # So I'm using another function to return "NULL" when AIC calculation fails
+  safe_seg <- function(...) {
+    tryCatch(
+      segmented::segmented(...),
+      error = function(e) NULL
+    )
+  }
+  seg.model1 <- safe_seg(model0, seg.Z = ~month_number, npsi = 1)
+  seg.model2 <- safe_seg(model0, seg.Z = ~month_number, npsi = 2)
+  seg.model3 <- safe_seg(model0, seg.Z = ~month_number, npsi = 3)
+
+  get_aic <- function(model) {
+    if (is.null(model)) NA else AIC(model)
+  }
+
   aic <- data.frame(
-    num_breaks = c("0", "1", "2"),
-    aic = c(AIC(model0), AIC(seg.model1), AIC(seg.model2))
+    num_breaks = c("0", "1", "2", "3"),
+    aic = c(
+      AIC(model0),
+      get_aic(seg.model1),
+      get_aic(seg.model2),
+      get_aic(seg.model3)
+    )
   )
   return(aic)
 }
 
 # Create log-transformed linear segmented model with optimal number of breakpoints minimising AIC
-log_mod_select <- function(data, chemical) {
+log_mod_select <- function(data, chemical, monthly_measure) {
   dat <- data |>
     dplyr::filter(bnf_chemical_name == chemical)
 
   model0 <- lm(
-    log(monthly_items) ~ month_number,
+    reformulate(
+      "month_number",
+      response = paste0("log(", monthly_measure, ")")
+    ),
     data = dat
   )
   selgmented(
     model0,
     type = "aic",
     refit = T,
-    Kmax = 2,
+    Kmax = 3,
     check.dslope = F
   )
 }
 
-# Create segmented model with optimal number of breakpoints minimising AIC
-mod_select <- function(data, chemical) {
-  dat <- data |>
-    dplyr::filter(bnf_chemical_name == chemical)
+# # Create segmented model with optimal number of breakpoints minimising AIC
+# mod_select <- function(data, chemical, monthly_measure) {
+#   dat <- data |>
+#     dplyr::filter(bnf_chemical_name == chemical)
 
-  model0 <- glm(
-    monthly_items ~ month_number,
-    family = poisson,
-    data = dat
-  )
-  selgmented(
-    model0,
-    type = "aic",
-    refit = T,
-    Kmax = 2,
-    check.dslope = F
-  )
-}
+#   model0 <- glm(
+#     reformulate("month_number", response = monthly_measure),
+#     family = poisson,
+#     data = dat
+#   )
+#   selgmented(
+#     model0,
+#     type = "aic",
+#     refit = T,
+#     Kmax = 3,
+#     check.dslope = F
+#   )
+# }
 
 # Predicted values for model with any number of changepoints
 # Enter any string for chemical and source in quotation marks
@@ -176,6 +201,39 @@ slope2 <- function(model, chemical, source) {
 
     change1 = psi[1, "Est."],
     change2 = psi[2, "Est."],
+
+    bnf_chemical = chemical,
+    data_source = source
+  )
+}
+
+# Slope calculation for model with 3 breakpoints
+# Again, same logic but more segments
+slope3 <- function(model, chemical, source) {
+  slope <- slope(model)
+  month <- slope(model)$month_number
+  psi <- summary(model)$psi
+
+  df.slope <- data.frame(
+    slope1 = month[1, "Est."],
+    lci1 = month[1, "CI(95%).l"],
+    uci1 = month[1, "CI(95%).u"],
+
+    slope2 = month[2, "Est."],
+    lci2 = month[2, "CI(95%).l"],
+    uci2 = month[2, "CI(95%).u"],
+
+    slope3 = month[3, "Est."],
+    lci3 = month[3, "CI(95%).l"],
+    uci3 = month[3, "CI(95%).u"],
+
+    slope4 = month[4, "Est."],
+    lci4 = month[4, "CI(95%).l"],
+    uci4 = month[4, "CI(95%).u"],
+
+    change1 = psi[1, "Est."],
+    change2 = psi[2, "Est."],
+    change3 = psi[3, "Est."],
 
     bnf_chemical = chemical,
     data_source = source
