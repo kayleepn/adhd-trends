@@ -1,47 +1,11 @@
-# Calculate AIC for models with 0, 1, 2, and 3 breakpoints
-# Note that `glm()` is used to create a Poisson model instead
-mod_aic <- function(data, chemical, monthly_measure) {
-  model0 <- glm(
-    reformulate("month_number", response = monthly_measure),
-    family = poisson,
-    data = data,
-    subset = bnf_chemical_name == chemical
-  )
-
-  # As the lowest AIC is often found at 2 breakpoints, I wanted to also calculate AIC for 3 breakpoints
-  # However when the data doesn't fit 3 breakpoints, AIC calculation can fail
-  # So I'm using another function to return "NULL" when AIC calculation fails
-  safe_seg <- function(...) {
-    tryCatch(
-      segmented::segmented(...),
-      error = function(e) NULL
-    )
-  }
-  seg.model1 <- safe_seg(model0, seg.Z = ~month_number, npsi = 1)
-  seg.model2 <- safe_seg(model0, seg.Z = ~month_number, npsi = 2)
-  seg.model3 <- safe_seg(model0, seg.Z = ~month_number, npsi = 3)
-
-  get_aic <- function(model) {
-    if (is.null(model)) NA else AIC(model)
-  }
-
-  aic <- data.frame(
-    num_breaks = c("0", "1", "2", "3"),
-    aic = c(
-      AIC(model0),
-      get_aic(seg.model1),
-      get_aic(seg.model2),
-      get_aic(seg.model3)
-    )
-  )
-  return(aic)
-}
-
-# Create log-transformed linear segmented model with optimal number of breakpoints minimising AIC
+# Function to create log-transformed linear segmented model with optimal number of breakpoints minimising AIC
+# Using dynamic column names to deal with monthly items and monthly DDD quantity
 log_mod_select <- function(data, chemical, monthly_measure) {
+  # Filter data; allows for analysis of individual chemicals
   dat <- data |>
     dplyr::filter(bnf_chemical_name == chemical)
 
+  # Create initial model
   model0 <- lm(
     reformulate(
       "month_number",
@@ -49,35 +13,17 @@ log_mod_select <- function(data, chemical, monthly_measure) {
     ),
     data = dat
   )
+  # These settings produce the closest results to Andrea's 'mod_aic' function
   selgmented(
     model0,
     type = "aic",
-    refit = T,
-    Kmax = 3,
-    check.dslope = F
+    refit = T, # improves model selection accuracy
+    Kmax = 3, # max number of changepoints = 3
+    check.dslope = F # ensures only AIC is used to select model
   )
 }
 
-# # Create segmented model with optimal number of breakpoints minimising AIC
-# mod_select <- function(data, chemical, monthly_measure) {
-#   dat <- data |>
-#     dplyr::filter(bnf_chemical_name == chemical)
-
-#   model0 <- glm(
-#     reformulate("month_number", response = monthly_measure),
-#     family = poisson,
-#     data = dat
-#   )
-#   selgmented(
-#     model0,
-#     type = "aic",
-#     refit = T,
-#     Kmax = 3,
-#     check.dslope = F
-#   )
-# }
-
-# Predicted values for model with any number of changepoints
+# Predicted values for linear models with any number of changepoints
 # Enter any string for chemical and source in quotation marks
 # This is just to keep track of things when all predictions are combined as one file
 predicted <- function(model, chemical, data, source) {
@@ -239,3 +185,63 @@ slope3 <- function(model, chemical, source) {
     data_source = source
   )
 }
+
+# The following functions are not used in the script but I have kept them as they might be useful for analysing individual chemicals.
+
+# # Calculate AIC for models with 0, 1, 2, and 3 breakpoints
+# # Note that `glm()` is used to create a Poisson model instead
+# mod_aic <- function(data, chemical, monthly_measure) {
+#   model0 <- glm(
+#     reformulate("month_number", response = monthly_measure),
+#     family = poisson,
+#     data = data,
+#     subset = bnf_chemical_name == chemical
+#   )
+
+#   # As the lowest AIC is often found at 2 breakpoints, I wanted to also calculate AIC for 3 breakpoints
+#   # However when the data doesn't fit 3 breakpoints, AIC calculation can fail
+#   # So I'm using another function to return "NULL" when AIC calculation fails
+#   safe_seg <- function(...) {
+#     tryCatch(
+#       segmented::segmented(...),
+#       error = function(e) NULL
+#     )
+#   }
+#   seg.model1 <- safe_seg(model0, seg.Z = ~month_number, npsi = 1)
+#   seg.model2 <- safe_seg(model0, seg.Z = ~month_number, npsi = 2)
+#   seg.model3 <- safe_seg(model0, seg.Z = ~month_number, npsi = 3)
+
+#   get_aic <- function(model) {
+#     if (is.null(model)) NA else AIC(model)
+#   }
+
+#   aic <- data.frame(
+#     num_breaks = c("0", "1", "2", "3"),
+#     aic = c(
+#       AIC(model0),
+#       get_aic(seg.model1),
+#       get_aic(seg.model2),
+#       get_aic(seg.model3)
+#     )
+#   )
+#   return(aic)
+# }
+
+# # Create segmented model with optimal number of breakpoints minimising AIC
+# mod_select <- function(data, chemical, monthly_measure) {
+#   dat <- data |>
+#     dplyr::filter(bnf_chemical_name == chemical)
+
+#   model0 <- glm(
+#     reformulate("month_number", response = monthly_measure),
+#     family = poisson,
+#     data = dat
+#   )
+#   selgmented(
+#     model0,
+#     type = "aic",
+#     refit = T,
+#     Kmax = 3,
+#     check.dslope = F
+#   )
+# }
