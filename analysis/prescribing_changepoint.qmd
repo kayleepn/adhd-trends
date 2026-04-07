@@ -209,20 +209,22 @@ check_model(foi_all_log_model)
 
 acf(residuals(foi_all_log_model))
 # No significant autocorrelation present
+
+plot(foi_all_log_model)
 ```
 
 #### Calculating predicted values and slope
 
 `predicted_exp` is a function based on Andrea's `predicted` functions but modified to deal with log-transformed data. It generates a df using the model with predicted monthly items and 95% CI bounds over time.
 
-Need to add functions for calculating slope for log models later.
+`extract_exp_slopes` extracts the slopes and 95% CIs for each segment, exponentiates them, then outputs the interpretation of slopes as a percentage change with 95% CIs. 
 
 ```{r}
 pred_foi_all_log <- predicted_exp(
   foi_all_log_model, "All chemicals", total_foi_over_time, "FOI"
 )
 
-plot(foi_all_log_model)
+slope_foi_all_log <- extract_exp_slopes(foi_all_log_model, "All chemicals", "FOI")
 ```
 
 #### Plotting
@@ -231,7 +233,7 @@ Plotting the log-transformed model with observed data.
 
 ```{r}
 # Rounding break points to nearest month
-foi_all_break_months <- round(c(59.999, 64.117))
+foi_all_break_months <- round(c(slope_foi_all_log$bp1, slope_foi_all_log$bp2))
 
 # Convert month number into date
 foi_all_break_dates <- foi_all_chemicals$month[foi_all_break_months + 1]
@@ -296,12 +298,14 @@ This log-transformed linear segmented model is a good model choice but we will n
 pred_gp_all_log <- predicted_exp(
   gp_all_log_model, "All chemicals", total_gp_over_time, "GP"
 )
+
+slope_gp_all_log <- extract_exp_slopes(gp_all_log_model, "All chemicals", "GP")
 ```
 
 #### Plotting log-transformed model with observed data
 ```{r}
 # Rounding breakpoints to nearest month
-gp_log_break_months <- round(c(60))
+gp_log_break_months <- round(slope_gp_all_log$bp1)
 
 # Convert month number into date
 gp_all_break_dates <- gp_all_chemicals$month[gp_log_break_months + 1]
@@ -376,11 +380,13 @@ check_model(scmd_all_lin3_model)
 
 Uses `predicted` for calculating predicted values and `slope3` for calculating 95% CI bounds for each segment. `Predicted` is similar to `predited_exp` but for linear models. `slope3` is very similar to Andrea's various `slope` functions. 
 
+`extract_lin_slopes` extracts slopes and 95% CIs. 
+
 ```{r}
 pred_scmd_all_lin3 <- predicted(scmd_all_lin3_model, "All chemicals", total_scmd_over_time, "SCMD")
 
 # Generate df with slopes and 95% CI bounds for each segment
-slope_scmd_all_lin3 <- slope3(scmd_all_lin3_model, "All chemicals", "SCMD")
+slope_scmd_all_lin3 <- extract_lin_slopes(scmd_all_lin3_model, "All chemicals", "SCMD")
 ```
 
 #### Plotting the linear model with observed data.
@@ -388,9 +394,9 @@ slope_scmd_all_lin3 <- slope3(scmd_all_lin3_model, "All chemicals", "SCMD")
 ```{r}
 # Rounding breakpoints to nearest month
 scmd_all_break_months <- round(c( 
-  slope_scmd_all_lin3$change1, 
-  slope_scmd_all_lin3$change2,
-  slope_scmd_all_lin3$change3
+  slope_scmd_all_lin3$bp1, 
+  slope_scmd_all_lin3$bp2,
+  slope_scmd_all_lin3$bp3
   )
 )
 

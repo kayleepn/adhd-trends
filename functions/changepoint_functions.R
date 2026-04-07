@@ -83,107 +83,94 @@ predicted_exp <- function(model, chemical, data, source) {
   return(df.pred)
 }
 
-# Slope calculation for model with no breakpoints
-slope0 <- function(model, chemical, source) {
-  slope <- slope(model)
+# Slope calculation for linear models with up to 3 breakpoints
+# Avoids needing different functions for models with different numbers of breakpoints
+extract_lin_slopes <- function(model, chemical, source) {
+  slope_mat <- slope(model)$month_number
+  # Return null after reaching the number of breakpoints specified in the model
+  psi_mat <- tryCatch(summary(model)$psi, error = function(e) NULL)
 
-  # Extracting the output of `slope` into a df
-  month <- slope(model)$month_number
-
-  df.slope <- data.frame(
-    slope1 = month[1, "Est."],
-    lci1 = month[1, "CI(95%).l"],
-    uci1 = month[1, "CI(95%).u"],
-
-    change1 = 0,
-
+  # Defining the output structure and pre-filling "NA"s
+  out <- list(
     bnf_chemical = chemical,
-    data_source = source
+    data_source = source,
+    slope1 = NA,
+    lci1 = NA,
+    uci1 = NA,
+    slope2 = NA,
+    lci2 = NA,
+    uci2 = NA,
+    slope3 = NA,
+    lci3 = NA,
+    uci3 = NA,
+    slope4 = NA,
+    lci4 = NA,
+    uci4 = NA,
+    # bp: breakpoint
+    bp1 = NA,
+    bp2 = NA,
+    bp3 = NA
   )
+
+  # Extracting coefficients and placing them in the output list
+  for (i in seq_len(nrow(slope_mat))) {
+    out[[paste0("slope", i)]] <- slope_mat[i, "Est."]
+    out[[paste0("lci", i)]] <- slope_mat[i, "CI(95%).l"]
+    out[[paste0("uci", i)]] <- slope_mat[i, "CI(95%).u"]
+  }
+
+  # Adding breakpoint month numbers only if the breakpoint exists
+  if (!is.null(psi_mat)) {
+    for (i in seq_len(nrow(psi_mat))) {
+      out[[paste0("bp", i)]] <- psi_mat[i, "Est."]
+    }
+  }
+
+  as.data.frame(out)
 }
 
-# Slope calculation for model with 1 breakpoint
-# Same logic as `slope0` but more segments
-slope1 <- function(model, chemical, source) {
-  slope <- slope(model)
-  month <- slope(model)$month_number
-  psi <- summary(model)$psi
+# Slope calculation for log models with up to 3 breakpoints
+# Same logic as above but exponentiates coefficients
+# and interprets slopes and 95% CIs as percent change
+extract_exp_slopes <- function(model, chemical, source) {
+  slope_mat <- slope(model)$month_number
+  # Return null after reaching the number of breakpoints specified in the model
+  psi_mat <- tryCatch(summary(model)$psi, error = function(e) NULL)
 
-  df.slope <- data.frame(
-    slope1 = month[1, "Est."],
-    lci1 = month[1, "CI(95%).l"],
-    uci1 = month[1, "CI(95%).u"],
-
-    slope2 = month[2, "Est."],
-    lci2 = month[2, "CI(95%).l"],
-    uci2 = month[2, "CI(95%).u"],
-
-    change1 = psi[1, "Est."],
-
+  # Defining the output structure and pre-filling "NA"s
+  out <- list(
     bnf_chemical = chemical,
-    data_source = source
+    data_source = source,
+    pct_change1 = NA,
+    pct_lci1 = NA,
+    pct_uci1 = NA,
+    pct_change2 = NA,
+    pct_lci2 = NA,
+    pct_uci2 = NA,
+    pct_change3 = NA,
+    pct_lci3 = NA,
+    pct_uci3 = NA,
+    pct_change4 = NA,
+    pct_lci4 = NA,
+    pct_uci4 = NA,
+    bp1 = NA,
+    bp2 = NA,
+    bp3 = NA
   )
-}
 
-# Slope calculation for model with 2 breakpoints
-# Again, same logic but more segments
-slope2 <- function(model, chemical, source) {
-  slope <- slope(model)
-  month <- slope(model)$month_number
-  psi <- summary(model)$psi
+  for (i in seq_len(nrow(slope_mat))) {
+    out[[paste0("pct_change", i)]] <- (exp(slope_mat[i, "Est."]) - 1) * 100
+    out[[paste0("pct_lci", i)]] <- (exp(slope_mat[i, "CI(95%).l"]) - 1) * 100
+    out[[paste0("pct_uci", i)]] <- (exp(slope_mat[i, "CI(95%).u"]) - 1) * 100
+  }
 
-  df.slope <- data.frame(
-    slope1 = month[1, "Est."],
-    lci1 = month[1, "CI(95%).l"],
-    uci1 = month[1, "CI(95%).u"],
+  if (!is.null(psi_mat)) {
+    for (i in seq_len(nrow(psi_mat))) {
+      out[[paste0("bp", i)]] <- psi_mat[i, "Est."]
+    }
+  }
 
-    slope2 = month[2, "Est."],
-    lci2 = month[2, "CI(95%).l"],
-    uci2 = month[2, "CI(95%).u"],
-
-    slope3 = month[3, "Est."],
-    lci3 = month[3, "CI(95%).l"],
-    uci3 = month[3, "CI(95%).u"],
-
-    change1 = psi[1, "Est."],
-    change2 = psi[2, "Est."],
-
-    bnf_chemical = chemical,
-    data_source = source
-  )
-}
-
-# Slope calculation for model with 3 breakpoints
-# Again, same logic but more segments
-slope3 <- function(model, chemical, source) {
-  slope <- slope(model)
-  month <- slope(model)$month_number
-  psi <- summary(model)$psi
-
-  df.slope <- data.frame(
-    slope1 = month[1, "Est."],
-    lci1 = month[1, "CI(95%).l"],
-    uci1 = month[1, "CI(95%).u"],
-
-    slope2 = month[2, "Est."],
-    lci2 = month[2, "CI(95%).l"],
-    uci2 = month[2, "CI(95%).u"],
-
-    slope3 = month[3, "Est."],
-    lci3 = month[3, "CI(95%).l"],
-    uci3 = month[3, "CI(95%).u"],
-
-    slope4 = month[4, "Est."],
-    lci4 = month[4, "CI(95%).l"],
-    uci4 = month[4, "CI(95%).u"],
-
-    change1 = psi[1, "Est."],
-    change2 = psi[2, "Est."],
-    change3 = psi[3, "Est."],
-
-    bnf_chemical = chemical,
-    data_source = source
-  )
+  as.data.frame(out)
 }
 
 # The following functions are not used in the script but I have kept them as they might be useful for analysing individual chemicals.
@@ -243,5 +230,28 @@ slope3 <- function(model, chemical, source) {
 #     refit = T,
 #     Kmax = 3,
 #     check.dslope = F
+#   )
+# }
+
+# Slope calculation for model with 1 breakpoint
+# Same logic as `slope0` but more segments
+# slope1 <- function(model, chemical, source) {
+#   slope <- slope(model)
+#   month <- slope(model)$month_number
+#   psi <- summary(model)$psi
+
+#   df.slope <- data.frame(
+#     slope1 = month[1, "Est."],
+#     lci1 = month[1, "CI(95%).l"],
+#     uci1 = month[1, "CI(95%).u"],
+
+#     slope2 = month[2, "Est."],
+#     lci2 = month[2, "CI(95%).l"],
+#     uci2 = month[2, "CI(95%).u"],
+
+#     change1 = psi[1, "Est."],
+
+#     bnf_chemical = chemical,
+#     data_source = source
 #   )
 # }
