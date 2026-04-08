@@ -20,6 +20,7 @@ library(segmented)
 library(performance)
 library(arrow)
 library(see)
+library(forecast)
 
 source(here("functions", "changepoint_functions.R"))
 
@@ -292,6 +293,58 @@ plot(gp_all_log_model)
 
 This log-transformed linear segmented model is a good model choice but we will need to adjust for autocorrelation.
 
+#### Fitting a log-transformed model with month as a dummy variable
+
+I will start with a seasonality plot to observe seasonal patterns.
+
+```{r}
+# Convert GP data into `ts` object for seasonality plot
+ts_gp_all <- ts(data = gp_all_chemicals$monthly_items, frequency = 12, start = c(2015, 8), end = c(2025, 7))
+# Season plot
+ggseasonplot(ts_gp_all)
+# Generally, there seems to be a spike in March and a dip in August
+```
+
+Now to fit the model: 
+
+```{r}
+total_gp_over_time$month_factor <- factor(
+  format(total_gp_over_time$month, "%b"),
+  levels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+)
+
+gp_all_seasonal_model0 <- lm(
+  log(monthly_items) ~ month_number + month_factor,
+  data = total_gp_over_time,
+  subset = bnf_chemical_name == "All chemicals"
+)
+
+gp_all_seasonal_model <- selgmented(
+  gp_all_seasonal_model0,
+  seg.Z = ~ month_number,
+  type = "aic",
+  refit = T, # improves model selection accuracy
+  Kmax = 3, # max number of changepoints = 3
+  check.dslope = F # ensures only AIC is used to select model
+)
+# 3 breakpoints has lowest AIC (-486.8576)
+
+summary(gp_all_seasonal_model) 
+# Estimated breakpoints: 32.202, 69.014, 91.001
+# Significant effect for Feb, Mar, Apr, and Aug
+
+# Check model fit
+check_model(gp_all_seasonal_model)
+# Meets linearity, homoscedasticity, and normality of residual assumptions and no significant outliers. 
+# Appears to be a better fit than without the monthly dummy variable.
+
+acf(residuals(gp_all_seasonal_model))
+# Autocorrelation still present
+
+plot(gp_all_seasonal_model)
+```
+
+
 #### Calculating predicted values and slope
 
 ```{r}
@@ -300,16 +353,22 @@ pred_gp_all_log <- predicted_exp(
 )
 
 slope_gp_all_log <- extract_exp_slopes(gp_all_log_model, "All chemicals", "GP")
+
+pred_gp_all_seasonal <- predicted_exp(
+  gp_all_seasonal_model, "All chemicals", total_gp_over_time, "GP"
+)
+
+slope_gp_all_seasonal <- extract_exp_slopes(gp_all_seasonal_model, "All chemicals", "GP")
 ```
 
-#### Plotting log-transformed model with observed data
+#### Plotting log-transformed models with observed data
 ```{r}
 # Rounding breakpoints to nearest month
-gp_log_break_months <- round(slope_gp_all_log$bp1)
+gp_log_break_months <- round(c(slope_gp_all_log$bp1, slope_gp_all_seasonal$bp1, slope_gp_all_seasonal$bp2, slope_gp_all_seasonal$bp3))
 
 # Convert month number into date
 gp_all_break_dates <- gp_all_chemicals$month[gp_log_break_months + 1]
-# "2020-08-01"
+# "2020-08-01", "2018-04-01", "2021-05-01", "2023-03-01"
 
 ggplot() +
   geom_point(
@@ -322,17 +381,22 @@ ggplot() +
     data = pred_gp_all_log,
     aes(x = month, y = pred, colour = "Segmented log-linear model")
   ) +
+  geom_line(
+    data = pred_gp_all_seasonal,
+    aes(x = month, y = pred, colour = "Segmented seasonal log-linear model")
+  ) +  
   scale_colour_manual(
     values = c(
       "Observed" = "black",
-      "Segmented log-linear model" = "red"
+      "Segmented log-linear model" = "red",
+      "Segmented seasonal log-linear model" = "blue"
     )
   ) +
   annotate(x = ymd("2020-08-01"), y = 175000, label = "2020-08-01", geom = "label", colour = "red") +
   theme(legend.position = "right")
 ```
 
-Looks like a decent fit. Will try adding a dummy monthly variable and see if it improves the fit. 
+Looks like a decent fit. Adding a dummy variable improves the fit a bit visually (but change points are harder to see) but doesn't improve autocorrelation. I thihnk I need to explicitly adjust for autocorrelation.  
 
 ## SCMD Issuing Data (DDD quantity)
 
@@ -376,6 +440,55 @@ check_model(scmd_all_lin3_model)
 # Reasonable linearity, homogeneity of variance, and normality of residuals. 2 outliers detected. Some high collinearity but not a big concern. 
 ```
 
+Again, starting start with a seasonality plot to observe seasonal patterns.
+
+```{r}
+# Convert SCMD data into `ts` object for seasonality plot
+ts_scmd_all <- ts(data = scmd_all_chemicals$monthly_ddd_quantity, frequency = 12, start = c(2019, 1), end = c(2025, 12))
+# Season plot
+ggseasonplot(ts_scmd_all)
+# Seasonal effect less obvious but there seems to be a spike in March
+```
+
+Now to fit the model: 
+
+```{r}
+total_scmd_over_time$month_factor <- factor(
+  format(total_scmd_over_time$month, "%b"),
+  levels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+)
+
+scmd_all_seasonal_model0 <- lm(
+  monthly_ddd_quantity ~ month_number + month_factor,
+  data = total_scmd_over_time,
+  subset = bnf_chemical_name == "All chemicals"
+)
+
+scmd_all_seasonal_model <- selgmented(
+  scmd_all_seasonal_model0,
+  seg.Z = ~ month_number,
+  type = "aic",
+  refit = T, # improves model selection accuracy
+  Kmax = 2, # max number of changepoints = 2 as 3 breakpoints makes calculation fail
+  check.dslope = F # ensures only AIC is used to select model
+)
+# 2 breakpoints has lowest AIC (1822.564)
+
+summary(scmd_all_seasonal_model) 
+# Estimated breakpoints: 32.202, 69.014, 91.001
+# Significant effect for Aug only
+
+# Check model fit
+check_model(scmd_all_seasonal_model)
+# Meets linearity, homoscedasticity, and normality of residual assumptions; similar to model w/o monthly dummy variable
+# No significant outliers; slightly better fit than model w/o monthly dummy variable in this sense 
+
+acf(residuals(scmd_all_seasonal_model))
+# Autocorrelation still present at lag = 1, 7, and 17
+
+plot(scmd_all_seasonal_model)
+```
+
 #### Calculating predicted values and slope
 
 Uses `predicted` for calculating predicted values and `slope3` for calculating 95% CI bounds for each segment. `Predicted` is similar to `predited_exp` but for linear models. `slope3` is very similar to Andrea's various `slope` functions. 
@@ -387,6 +500,8 @@ pred_scmd_all_lin3 <- predicted(scmd_all_lin3_model, "All chemicals", total_scmd
 
 # Generate df with slopes and 95% CI bounds for each segment
 slope_scmd_all_lin3 <- extract_lin_slopes(scmd_all_lin3_model, "All chemicals", "SCMD")
+
+pred_scmd_all_seasonal <- predicted(scmd_all_seasonal_model, "All chemicals", total_scmd_over_time, "SCMD")
 ```
 
 #### Plotting the linear model with observed data.
@@ -416,11 +531,18 @@ ggplot() +
     size = 1,
     alpha = .7
   ) +
+  geom_line(
+    data = pred_scmd_all_seasonal,
+    aes(x= month, y = pred, colour = "Segmented seasonal model"),
+    size = 1,
+    alpha = .7
+  ) +
   geom_vline(xintercept = scmd_all_break_dates, colour = c("blue", "blue", "blue"), alpha = 0.5) +
   scale_colour_manual(
     values = c(
       "Observed" = "black",
-      "Segmented linear model (3bps)" = "blue"
+      "Segmented linear model (3bps)" = "blue",
+      "Segmented seasonal model" = "red"
     )
   ) +
   annotate(x = ymd("2020-02-01"), y = 200000, label = "2020-02-01", geom = "label", colour = "blue") +
