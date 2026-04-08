@@ -27,6 +27,7 @@ library(patchwork)
 library(stringr)
 library(flextable)
 library(officer)
+library(ggtext)
 
 # Function for creating facet plots for age breakdowns
 source(here("functions", "create_facet_plots.R"))
@@ -287,6 +288,139 @@ save_as_docx(
 
 
 ## ICD-10 breakdowns
-- diagnosis position
-- age
-- gender
+
+The usage table above shows that F900 accounts for 97.73% of all F90 code usage. 
+
+```{r}
+# Same code as secondary care breakdown analysis report
+
+df_icd10_diag_positions <- df_icd10_diag_breakdowns |> 
+  filter(breakdown %in% c("all_diagnoses", "main_diagnosis")) |>
+  group_by(icd10_code, description, breakdown) |>
+  summarise(n = sum(usage)) |> 
+  pivot_wider(names_from = breakdown, values_from = n) |>
+  arrange(icd10_code)
+
+ratio_all_vs_main <- sum(df_icd10_diag_positions$main_diagnosis, na.rm = TRUE) / sum(df_icd10_diag_positions$all_diagnoses, na.rm = TRUE)
+
+round(ratio_all_vs_main * 100, 2)
+# [1] 0.79
+```
+
+Main diagnoses represent only 0.79% of all F90 diagnosis codes, indicating that ADHD is rarely the primary reason for inpatient admission. Therefore, the following analyses focus on F900 only and do not differentiate between diagnosis positions.
+
+### Age breakdowns
+
+This code is very similar to the previous secondary care report but I aggregate the "age_0" and "age_1_4" groups and plot each age group as one line instead of using facets. 
+```{r}
+#| label: fig-icd10-age-breakdowns
+#| fig-cap: "ICD-10 F900 usage over time by age group (ages 0-4 and 15-19 aggregated). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
+#| fig-width: 10
+#| fig-height: 11
+
+df_icd10_age_breakdowns_fig <- df_icd10_diag_breakdowns |>
+  filter(icd10_code == "F900") |>
+  filter(str_starts(breakdown, "age")) |>
+  # Aggregate factor levels age_15 to age_19
+  mutate(
+    breakdown = fct_collapse(
+      breakdown,
+      "age_0_4" = c("age_0", "age_1_4"),
+      "age_15_19" = c("age_15", "age_16", "age_17", "age_18", "age_19")
+    )
+  ) |>
+  # Need to also group by end_date to plot over time
+  group_by(breakdown, end_date) |>
+  summarise(usage = sum(usage), .groups = "drop") |>
+  ungroup() |>
+  group_by(breakdown) |>
+  # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
+  mutate(
+    breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
+    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
+    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
+  ) |>
+  ungroup() |>
+  mutate(
+    breakdown = fct_reorder(breakdown, parse_number(breakdown))
+  )
+
+fig_icd10_age_breakdowns <- plot_code_usage(df_icd10_age_breakdowns_fig, "ICD-10 Code Usage: F900 Age Breakdowns")
+
+fig_icd10_age_breakdowns
+```
+
+Version with 10-year age groups: 
+
+```{r}
+#| label: fig-icd10-age-10-breakdowns
+#| fig-cap: "ICD-10 F900 usage over time by age group (aggregated 10-year age groups). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
+#| fig-width: 10
+#| fig-height: 11
+
+df_icd10_age_10_fig <- df_icd10_diag_breakdowns |> 
+  filter(icd10_code == "F900") |>
+  filter(str_starts(breakdown, "age")) |>
+  mutate(
+    breakdown = fct_collapse(
+      breakdown,
+      "age_0_9" = c("age_0", "age_1_4", "age_5_9"),
+      "age_10_19" = c("age_10_14", "age_15", "age_16", "age_17", "age_18", "age_19"),
+      "age_20_29" = c("age_20_24", "age_25_29"),
+      "age_30_39" = c("age_30_34", "age_35_39"),
+      "age_40_49" = c("age_40_44", "age_45_49"),
+      "age_50_59" = c("age_50_54", "age_55_59"),
+      "age_60_69" = c("age_60_64", "age_65_69"),
+      "age_70_79" = c("age_70_74", "age_75_79"),
+      "age_80_89" = c("age_80_84", "age_85_89")
+    )
+  ) |>
+  # Need to also group by end_date to plot over time
+  group_by(breakdown, end_date) |>
+  summarise(usage = sum(usage), .groups = "drop") |>
+  ungroup() |>
+  group_by(breakdown) |>
+    # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
+  mutate(
+    breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
+    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
+    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
+  ) |>
+  ungroup()
+
+fig_icd10_age_10_breakdowns <- plot_code_usage(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns (10 groups)")
+
+fig_icd10_age_10_breakdowns
+
+age_group_comparison_fig <- fig_icd10_age_breakdowns + fig_icd10_age_10_breakdowns + plot_annotation(tag_levels = "A")
+
+ggsave(here("output", "figures", "age_group_comparison_fig.png"), width = 15, height = 10)
+```
+
+I feel like 19 colours for the 5-year age group breakdowns are quite difficult to tell apart so the 10-year age group breakdowns are better. However 10 colours are only distinguishable if I use the full colour spectrum, which not may be colour blind friendly. 
+
+### Sex breakdowns
+
+Male diagnoses exceeded female diagnoses until approximately 2024, when female diagnoses surpassed male.
+Gender unknown remains low throughout the period.
+
+```{r}
+#| label: fig-icd10-sex-breakdowns
+#| fig-cap: "ICD-10 F900 usage over time by sex (all diagnosis positions). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
+#| fig-width: 10
+#| fig-height: 4
+
+df_icd10_sex_breakdowns_fig <- df_icd10_diag_breakdowns |>
+  filter(icd10_code == "F900") |>
+  filter(breakdown %in% c("male", "female", "gender_unknown")) |>
+  group_by(breakdown) |>
+  mutate(
+    breakdown = str_replace(breakdown, "gender_unknown", "unknown"),
+    breakdown = str_to_title(breakdown),
+    breakdown = paste0(breakdown, " (n = ", scales::comma(sum(usage)), ")")
+  )
+
+fig_icd10_sex_breakdowns <- plot_code_usage(df_icd10_sex_breakdowns_fig, "ICD-10 Code Usage: Sex Breakdowns")
+
+fig_icd10_sex_breakdowns
+```
