@@ -311,49 +311,10 @@ Main diagnoses represent only 0.79% of all F90 diagnosis codes, indicating that 
 
 ### Age breakdowns
 
-This code is very similar to the previous secondary care report but I aggregate the "age_0" and "age_1_4" groups and plot each age group as one line instead of using facets. 
+This code is very similar to the previous secondary care report but I aggregate 5-year age groups into 10-year age groups and plot each age group as one line instead of using facets. This allows easier interpretation and takes up less space.
+
 ```{r}
 #| label: fig-icd10-age-breakdowns
-#| fig-cap: "ICD-10 F900 usage over time by age group (ages 0-4 and 15-19 aggregated). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
-#| fig-width: 10
-#| fig-height: 11
-
-df_icd10_age_breakdowns_fig <- df_icd10_diag_breakdowns |>
-  filter(icd10_code == "F900") |>
-  filter(str_starts(breakdown, "age")) |>
-  # Aggregate factor levels age_15 to age_19
-  mutate(
-    breakdown = fct_collapse(
-      breakdown,
-      "age_0_4" = c("age_0", "age_1_4"),
-      "age_15_19" = c("age_15", "age_16", "age_17", "age_18", "age_19")
-    )
-  ) |>
-  # Need to also group by end_date to plot over time
-  group_by(breakdown, end_date) |>
-  summarise(usage = sum(usage), .groups = "drop") |>
-  ungroup() |>
-  group_by(breakdown) |>
-  # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
-  mutate(
-    breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
-    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
-    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
-  ) |>
-  ungroup() |>
-  mutate(
-    breakdown = fct_reorder(breakdown, parse_number(breakdown))
-  )
-
-fig_icd10_age_breakdowns <- plot_code_usage(df_icd10_age_breakdowns_fig, "ICD-10 Code Usage: F900 Age Breakdowns")
-
-fig_icd10_age_breakdowns
-```
-
-Version with 10-year age groups: 
-
-```{r}
-#| label: fig-icd10-age-10-breakdowns
 #| fig-cap: "ICD-10 F900 usage over time by age group (aggregated 10-year age groups). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
 #| fig-width: 10
 #| fig-height: 11
@@ -388,16 +349,12 @@ df_icd10_age_10_fig <- df_icd10_diag_breakdowns |>
   ) |>
   ungroup()
 
-fig_icd10_age_10_breakdowns <- plot_code_usage(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns (10 groups)")
+fig_icd10_age_10_breakdowns <- plot_code_usage(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns")
 
 fig_icd10_age_10_breakdowns
-
-age_group_comparison_fig <- fig_icd10_age_breakdowns + fig_icd10_age_10_breakdowns + plot_annotation(tag_levels = "A")
-
-ggsave(here("output", "figures", "age_group_comparison_fig.png"), width = 15, height = 10)
 ```
 
-I feel like 19 colours for the 5-year age group breakdowns are quite difficult to tell apart so the 10-year age group breakdowns are better. However 10 colours are only distinguishable if I use the full colour spectrum, which not may be colour blind friendly. 
+Note that the 10 colours are only distinguishable if I use the full colour spectrum, which not may be colour blind friendly. 
 
 ### Sex breakdowns
 
@@ -423,4 +380,14 @@ df_icd10_sex_breakdowns_fig <- df_icd10_diag_breakdowns |>
 fig_icd10_sex_breakdowns <- plot_code_usage(df_icd10_sex_breakdowns_fig, "ICD-10 Code Usage: Sex Breakdowns")
 
 fig_icd10_sex_breakdowns
+```
+
+Note that this is probably not colour blind friendly either.
+
+### Combined figure for ICD-10 breakdowns
+
+```{r}
+fig_icd10_breakdowns <- fig_icd10_age_10_breakdowns + fig_icd10_sex_breakdowns + plot_annotation(tag_levels = "A")
+
+ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 15, height = 10)
 ```
