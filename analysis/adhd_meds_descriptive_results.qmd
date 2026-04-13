@@ -1,0 +1,253 @@
+---
+title: "ADHD Medications Descriptive Analysis and Results"
+author:
+  - Kaylee Poon
+format: html
+---
+# Overview
+
+This analysis explores prescribing/issuing data for ADHD medications using the following data sources:
+
+1. GP prescribing data (OpenPrescribing) from 2015-08-01 to 2025-07-01 (monthly items). 
+2. FOI prescribing data from 2015-08-01 to 2025-07-01 (monthly items).
+3. SCMD issuing data (OpenPrescribing-Hospitals website) from 2019-01-01 to 2025-12-01 (monthly DDD quantity).
+
+I will produce the following figures for the thesis: 
+
+- Annual total ADHD medication prescriptions from each data source
+
+- Regional trends and variations in ADHD medications in primary care (OpenPrescribing), secondary care (OpenPrescribing-Hospitals), and private care (NHS BSA FOI)
+
+# Methods
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(here)
+library(nhstt)
+library(arrow)
+library(patchwork)
+library(ggtext)
+
+source(here("functions", "medication_plots.R"))
+
+
+gp_adhd_prescribing <- read_parquet(
+  here(
+    "output",
+    "openprescribing",
+    "adhd_gp_prescribing_chemical.parquet"
+    )
+)
+
+foi_adhd_prescribing <- read_csv(
+  here(
+    "output",
+    "foi_prescribing",
+    "adhd_foi_prescribing.csv"
+    )
+)
+
+scmd_adhd_issuing <- read_csv(
+  here(
+    "output",
+    "web-openprescribing-hospitals",
+    "adhd_oph_web_ddd_quantity.csv"
+    )
+) |> 
+  janitor::clean_names() |> 
+  rename(
+    month = date,
+    bnf_chemical_name = vtm_name
+  ) 
+```
+
+# Results: medication usage
+
+
+## Prescribing/issuing by chemical (monthly)
+```{r}
+# fig_total_gp_over_time <- adhd_gp_prescribing |> 
+#   select(month, items_by_chemical) |>
+#   group_by(month, bnf_chemical_name) |> 
+#   summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop")
+
+# cheating here by borrowing total_gp_over_time from `prescribing_changepoint.qmd` 
+fig_monthly_gp_by_chemical <- plot_med_usage(total_gp_over_time, monthly_items, "Monthly items", "GP Prescribing")
+
+fig_monthly_gp_by_chemical
+
+fig_monthly_foi_by_chemical <- plot_med_usage(total_foi_over_time, monthly_items, "Monthly items", "FOI Prescribing")
+
+fig_monthly_foi_by_chemical
+
+fig_monthly_scmd_by_chemical <- plot_med_usage(total_scmd_over_time, monthly_ddd_quantity, "Monthly DDD quantity", "SCMD issuing")
+
+fig_monthly_scmd_by_chemical
+
+combined_monthly_plot <- ((fig_monthly_gp_by_chemical / fig_monthly_foi_by_chemical) | plot_spacer() | fig_monthly_scmd_by_chemical) + 
+  plot_annotation(tag_levels = "A") +
+  plot_layout(widths = c(1, 0.05, 1))
+
+combined_monthly_plot
+
+ggsave(here("output", "figures", "fig_monthly_med_usage.png"), combined_monthly_plot, width = 15, height = 15)
+```
+
+I find that if I'm plotting monthly data, line types work a bit better than shapes. Although sometimes it's still a bit difficult to tell indiviudal lines apart. Also I need to do something about the breaks.
+
+Might be good to do some % calculations for each chemical? Also think about if I should aggregate this into yearly data instead. 
+
+## Prescribing/issuing by chemical (yearly)
+
+Will need to interpret the first year or so carefully because of missing data.
+
+```{r}
+# Helper function for calculating yearly totals
+# Pass `yearly_measure` as a string and `monthly_measure` as a variable
+calc_yearly_total <- function(data, yearly_measure, monthly_measure){
+  data |> 
+    mutate(
+      # calculate reporting year (Aug 1st - Jun 31st) from month 
+      reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
+      # Add end date of reporting year
+      end_date = as.Date(paste0(reporting_year, "-07-31"))
+    ) |> 
+    group_by(bnf_chemical_name, end_date) |> 
+    summarise(
+      !!yearly_measure := sum({{monthly_measure}}, na.rm = TRUE), .groups = "drop"
+  )
+}
+
+# GP prescribing
+df_yearly_gp_by_chemical <- calc_yearly_total(
+  total_gp_over_time,
+  "yearly_items",
+  monthly_items
+)
+
+fig_yearly_gp_by_chemical <- plot_med_usage_shapes(df_yearly_gp_by_chemical, end_date, yearly_items, "GP Prescribing")
+
+fig_yearly_gp_by_chemical
+
+# FOI prescribing
+df_yearly_foi_by_chemical <- calc_yearly_total(
+  total_foi_over_time,
+  "yearly_items",
+  monthly_items
+)
+
+fig_yearly_foi_by_chemical <- plot_med_usage_shapes(df_yearly_foi_by_chemical, end_date, yearly_items, "FOI Prescribing")
+
+fig_yearly_foi_by_chemical
+
+# SCMD issuing
+df_yearly_scmd_by_chemical <- calc_yearly_total(
+  total_scmd_over_time,
+  "yearly_ddd_quantity",
+  monthly_ddd_quantity
+)
+
+fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(df_yearly_scmd_by_chemical, end_date, yearly_ddd_quantity, "SCMD Prescribing")
+
+fig_yearly_scmd_by_chemical
+
+combined_yearly_plot <- ((fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical) | plot_spacer() | (fig_yearly_scmd_by_chemical / fig_total_gp_foi)) + 
+  plot_annotation(title = "Version with yearly data", tag_levels = "A") +
+  plot_layout(widths = c(1, 0.05, 1))
+
+combined_yearly_plot
+
+ggsave(here("output", "figures", "fig_yearly_med_usage.png"), combined_yearly_plot, width = 15, height = 15)
+```
+
+It's now easier to distinguish between different lines. Will need to fix x-axis tick labelling if we end up reporting yearly data at this point. Can consider having a bar plot for proportion of items prescribed in GP vs FOI data for each chemical. 
+
+### Percentage stacked bar chart for GP and FOI prescribing (total prescribing by chemical)
+
+```{r}
+df_total_gp_foi <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "source") |> 
+  mutate(
+    source = recode(source, "1" = "GP", "2" = "FOI")
+  ) |> 
+  group_by(bnf_chemical_name, source) |> 
+  summarise(total_items = sum(yearly_items), na.rm = T, .groups = "drop")
+
+fig_total_gp_foi <- ggplot(
+  df_total_gp_foi,
+  aes(fill = source, y = total_items, x = bnf_chemical_name)
+) +
+  # Stacked percentage bar chart
+  geom_bar(position = "fill", stat = "identity") +
+  scale_y_continuous(limits = c(0, NA), labels = scales::percent) +
+  scale_fill_viridis_d(begin = 0.25, end = 0.5) +
+  labs(title = "Percentage of GP/FOI Prescribing by Chemical") +
+  theme_bw(base_size = 12) +
+  theme(text = element_text(family = "Times New Roman"))
+
+fig_total_gp_foi
+```
+
+Kind of ugly but does the job. Can add percentage labels. 
+
+## Prescribing/issuing by chemical (half-yearly)
+
+```{r}
+# Helper function for calculating half-yearly totals
+# Pass `yearly_measure` as a string and `monthly_measure` as a variable
+calc_halfyearly_total <- function(data, half_yearly_measure, monthly_measure){
+  data |> 
+    # calculate reporting period (Aug 1st - Jan 31st; Feb 1st - Jul 31st) from month
+    mutate( 
+      period_start = case_when(
+      month(month) %in% 8:12 ~ as.Date(paste0(year(month), "-08-01")),
+      month(month) == 1 ~ as.Date(paste0(year(month) + 1, "-08-01")),
+      month(month) %in% 2:7 ~ as.Date(paste0(year(month), "-02-01"))
+      ),
+      period_end = case_when(
+      month(month) %in% 8:12 ~ as.Date(paste0(year(month) + 1, "-01-31")),
+      month(month) == 1 ~ as.Date(paste0(year(month), "-01-31")),
+      month(month) %in% 2:7 ~ as.Date(paste0(year(month), "-07-31"))
+      )
+    ) |> 
+    group_by(bnf_chemical_name, period_end) |> 
+    summarise(
+      !!half_yearly_measure := sum({{monthly_measure}}, na.rm = TRUE), .groups = "drop"
+  )
+}
+
+# GP prescribing
+
+df_halfy_gp_by_chemical <- calc_halfyearly_total(total_gp_over_time, "half_yearly_items", monthly_items)
+
+fig_halfy_gp_by_chemical <- plot_med_usage_shapes(df_halfy_gp_by_chemical, period_end, half_yearly_items, "GP Prescribing")
+
+fig_halfy_gp_by_chemical
+
+# FOI prescribing
+
+df_halfy_foi_by_chemical <- calc_halfyearly_total(total_foi_over_time, "half_yearly_items", monthly_items)
+
+fig_halfy_foi_by_chemical <- plot_med_usage_shapes(df_halfy_foi_by_chemical, period_end, half_yearly_items, "FOI Prescribing")
+
+fig_halfy_foi_by_chemical
+
+# SCMD issuing
+
+df_halfy_scmd_by_chemical <- calc_halfyearly_total(total_scmd_over_time, "half_yearly_ddd_quantity", monthly_ddd_quantity)
+
+fig_halfy_scmd_by_chemical <- plot_med_usage_shapes(df_halfy_scmd_by_chemical, period_end, half_yearly_ddd_quantity, "SCMD issuing")
+
+fig_halfy_scmd_by_chemical
+
+combined_half_yearly_plot <- ((fig_halfy_gp_by_chemical / fig_halfy_foi_by_chemical) | plot_spacer() | (fig_halfy_scmd_by_chemical / fig_total_gp_foi)) + 
+  plot_annotation(title = "Version with half-yearly data", tag_levels = "A") +
+  plot_layout(widths = c(1, 0.05, 1))
+
+combined_half_yearly_plot
+
+ggsave(here("output", "figures", "fig_half_yearly_med_usage.png"), combined_half_yearly_plot, width = 15, height = 15)
+
+```
+
