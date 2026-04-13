@@ -327,7 +327,7 @@ gp_all_seasonal_model <- selgmented(
   Kmax = 3, # max number of changepoints = 3
   check.dslope = F # ensures only AIC is used to select model
 )
-# 3 breakpoints has lowest AIC (-486.8576)
+# 3 breakpoints has lowest AIC (-486.8576) which is lower than the model without the dummy month variable.
 
 summary(gp_all_seasonal_model) 
 # Estimated breakpoints: 32.202, 69.014, 91.001
@@ -344,6 +344,83 @@ acf(residuals(gp_all_seasonal_model))
 plot(gp_all_seasonal_model)
 ```
 
+Version with only months with a significant effect as a factor
+
+```{r}
+total_gp_over_time$sigmonth_factor <- if_else(
+  format(total_gp_over_time$month, "%b") %in% c("Feb", "Mar", "Apr", "Aug"), 
+  "sig", 
+  "not_sig"
+) |> 
+  factor(levels = c("sig", "not_sig"))
+
+gp_all_sigmonth_model0 <- lm(
+  log(monthly_items) ~ month_number + sigmonth_factor,
+  data = total_gp_over_time,
+  subset = bnf_chemical_name == "All chemicals"
+)
+
+gp_all_sigmonth_model <- selgmented(
+  gp_all_sigmonth_model0,
+  seg.Z = ~ month_number,
+  type = "aic",
+  refit = T, # improves model selection accuracy
+  Kmax = 3, # max number of changepoints = 3
+  check.dslope = F # ensures only AIC is used to select model
+)
+# 2 breakpoints has lowest AIC (-416.9572) which is higher than the model without the dummy month variable.
+
+summary(gp_all_sigmonth_model) 
+# Estimated breakpoints: 36.001, 65.918
+# Significant effect for sigmonths
+
+# Check model fit
+check_model(gp_all_sigmonth_model)
+# Meets linearity, homoscedasticity, and normality of residual assumptions and no significant outliers. 
+
+acf(residuals(gp_all_sigmonth_model))
+# Autocorrelation still present, big spike at lag = 12
+
+plot(gp_all_sigmonth_model)
+```
+
+Version with each significant month as a separate dummy variable
+
+```{r}
+# Feb, Mar, Apr, and Aug
+total_gp_over_time$sigmonth_factors <- format(total_gp_over_time$month, "%b") |> 
+  factor() |> 
+  fct_other(keep = c("Feb", "Mar", "Apr", "Aug"), other_level = "not_sig")
+
+gp_all_sigmonths_model0 <- lm(
+  log(monthly_items) ~ month_number + sigmonth_factors,
+  data = total_gp_over_time,
+  subset = bnf_chemical_name == "All chemicals"
+)
+
+gp_all_sigmonths_model <- selgmented(
+  gp_all_sigmonths_model0,
+  seg.Z = ~ month_number,
+  type = "aic",
+  refit = T, # improves model selection accuracy
+  Kmax = 3, # max number of changepoints = 3
+  check.dslope = F # ensures only AIC is used to select model
+)
+# 2 breakpoints has lowest AIC (-496.9207) which is lower than the model without the dummy month variable.
+
+summary(gp_all_sigmonths_model) 
+# Estimated breakpoints: 34.965, 66.000
+# Significant effect for sigmonth_factors
+
+# Check model fit
+check_model(gp_all_sigmonths_model)
+# Meets linearity, homoscedasticity, and normality of residual assumptions and no significant outliers. 
+
+acf(residuals(gp_all_sigmonths_model))
+# Autocorrelation still present, big spike at lag = 12
+
+plot(gp_all_sigmonths_model)
+```
 
 #### Calculating predicted values and slope
 
@@ -472,7 +549,7 @@ scmd_all_seasonal_model <- selgmented(
   Kmax = 2, # max number of changepoints = 2 as 3 breakpoints makes calculation fail
   check.dslope = F # ensures only AIC is used to select model
 )
-# 2 breakpoints has lowest AIC (1822.564)
+# 2 breakpoints has lowest AIC (1822.564), which is lower than the model without the dummy month factor
 
 summary(scmd_all_seasonal_model) 
 # Estimated breakpoints: 32.202, 69.014, 91.001
@@ -489,6 +566,46 @@ acf(residuals(scmd_all_seasonal_model))
 plot(scmd_all_seasonal_model)
 ```
 
+Model with only august as a dummy factor
+
+```{r}
+total_scmd_over_time$aug_factor <- factor(
+  format(total_scmd_over_time$month, "%b"),
+  levels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+) |> 
+  fct_other(keep = "Aug", other_level = "not_aug")
+
+scmd_all_aug_model0 <- lm(
+  monthly_ddd_quantity ~ month_number + aug_factor,
+  data = total_scmd_over_time,
+  subset = bnf_chemical_name == "All chemicals"
+)
+
+scmd_all_aug_model <- selgmented(
+  scmd_all_aug_model0,
+  seg.Z = ~ month_number,
+  type = "aic",
+  refit = T, # improves model selection accuracy
+  Kmax = 3, # max number of changepoints = 3 
+  check.dslope = F # ensures only AIC is used to select model
+)
+# 2 breakpoints has lowest AIC (1815.751), which is lower than the other two models
+
+summary(scmd_all_aug_model) 
+# Estimated breakpoints: 24.547, 70.388
+# Significant effect for Aug factor
+
+# Check model fit
+check_model(scmd_all_aug_model)
+# Meets linearity, homoscedasticity, and normality of residual assumptions; similar to model w/o monthly dummy variable
+# No significant outliers; slightly better fit than model w/o monthly dummy variable in this sense 
+
+acf(residuals(scmd_all_aug_model))
+# Autocorrelation still present at lag = 7 and 14
+
+plot(scmd_all_aug_model)
+```
+
 #### Calculating predicted values and slope
 
 Uses `predicted` for calculating predicted values and `slope3` for calculating 95% CI bounds for each segment. `Predicted` is similar to `predited_exp` but for linear models. `slope3` is very similar to Andrea's various `slope` functions. 
@@ -502,6 +619,8 @@ pred_scmd_all_lin3 <- predicted(scmd_all_lin3_model, "All chemicals", total_scmd
 slope_scmd_all_lin3 <- extract_lin_slopes(scmd_all_lin3_model, "All chemicals", "SCMD")
 
 pred_scmd_all_seasonal <- predicted(scmd_all_seasonal_model, "All chemicals", total_scmd_over_time, "SCMD")
+
+pred_scmd_all_aug <- predicted(scmd_all_aug_model, "All chemicals", total_scmd_over_time, "SCMD")
 ```
 
 #### Plotting the linear model with observed data.
@@ -537,12 +656,19 @@ ggplot() +
     size = 1,
     alpha = .7
   ) +
+  geom_line(
+    data = pred_scmd_all_aug,
+    aes(x= month, y = pred, colour = "Segmented august model"),
+    size = 1,
+    alpha = .7
+  ) +
   geom_vline(xintercept = scmd_all_break_dates, colour = c("blue", "blue", "blue"), alpha = 0.5) +
   scale_colour_manual(
     values = c(
       "Observed" = "black",
       "Segmented linear model (3bps)" = "blue",
-      "Segmented seasonal model" = "red"
+      "Segmented seasonal model" = "red",
+      "Segmented august model" = "green"
     )
   ) +
   annotate(x = ymd("2020-02-01"), y = 200000, label = "2020-02-01", geom = "label", colour = "blue") +
