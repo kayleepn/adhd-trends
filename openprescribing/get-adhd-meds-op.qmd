@@ -130,15 +130,7 @@ write_parquet(
 # Monthly GP prescribing for all chemicals and by chemical 
 
 ```{r}
-# df_gp_prescribing_chemical <- read_parquet(
-#   here(
-#     "output",
-#     "openprescribing",
-#     "adhd_gp_prescribing_chemical.parquet"
-#   )
-# )
-
-# Monthly issuing by chemical
+# Monthly prescribing by chemical
 df_gp_by_chemical <- df_gp_prescribing_chemical |> 
   group_by(month, bnf_chemical_name) |> 
   summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop")
@@ -148,7 +140,7 @@ write_csv(
   here("output", "monthly_op_gp", "adhd_gp_by_chemical.csv")
 )
 
-# Monthly issuing for all chemicals combined
+# Monthly prescribing for all chemicals combined
 df_gp_all_chemicals <- df_gp_prescribing_chemical |>
   group_by(month) |>
   summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop") |>
@@ -159,7 +151,7 @@ write_csv(
   here("output", "monthly_op_gp", "adhd_gp_all_chemicals.csv")
 )
 
-# Monthly issuing by chemical and for all chemicals combined
+# Monthly prescribing by chemical and for all chemicals combined
 df_total_gp_over_time <- bind_rows(df_gp_by_chemical, df_gp_all_chemicals) |> 
   arrange(month, bnf_chemical_name) 
 
