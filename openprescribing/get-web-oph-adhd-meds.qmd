@@ -124,7 +124,7 @@ df_scmd_by_chemical <- scmd_adhd_issuing |>
 
 write_csv(
   df_scmd_by_chemical,
-  here("output", "clean_oph_scmd", "adhd_scmd_by_chemical.csv")
+  here("output", "monthly_oph_scmd", "adhd_scmd_by_chemical.csv")
 )
 
 # Monthly issuing for all chemicals combined
@@ -135,7 +135,7 @@ df_scmd_all_chemicals <- scmd_adhd_issuing |>
 
 write_csv(
   df_scmd_all_chemicals,
-  here("output", "clean_oph_scmd", "adhd_scmd_all_chemicals.csv")
+  here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv")
 )
 
 # Monthly issuing by chemical and for all chemicals combined
@@ -144,6 +144,6 @@ df_total_scmd_over_time <- bind_rows(df_scmd_by_chemical, df_scmd_all_chemicals)
 
 write_csv(
   df_total_scmd_over_time,
-  here("output", "clean_oph_scmd", "adhd_scmd_total.csv")
+  here("output", "monthly_oph_scmd", "adhd_scmd_total.csv")
 )
 ```
