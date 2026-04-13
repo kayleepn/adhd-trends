@@ -29,6 +29,8 @@ library(nhstt)
 library(arrow)
 library(patchwork)
 library(ggtext)
+library(gghighlight)
+library(ggnewscale)
 
 source(here("functions", "medication_plots.R"))
 
@@ -104,12 +106,12 @@ Might be good to do some % calculations for each chemical? Also think about if I
 Will need to interpret the first year or so carefully because of missing data.
 
 ```{r}
-# Helper function for calculating yearly totals
+# Helper function for calculating yearly totals from Aug 1st to Jul 31st
 # Pass `yearly_measure` as a string and `monthly_measure` as a variable
 calc_yearly_total <- function(data, yearly_measure, monthly_measure){
   data |> 
     mutate(
-      # calculate reporting year (Aug 1st - Jun 31st) from month 
+      # calculate reporting year (Aug 1st - Jul 31st) from month 
       reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
       # Add end date of reporting year
       end_date = as.Date(paste0(reporting_year, "-07-31"))
@@ -142,27 +144,25 @@ fig_yearly_foi_by_chemical <- plot_med_usage_shapes(df_yearly_foi_by_chemical, e
 
 fig_yearly_foi_by_chemical
 
-# SCMD issuing
-df_yearly_scmd_by_chemical <- calc_yearly_total(
-  total_scmd_over_time,
-  "yearly_ddd_quantity",
-  monthly_ddd_quantity
-)
+# SCMD issuing - we want to aggregate from Apr 1st to Mar 31st to enable comparisons with ICD-10 code usage
+df_yearly_scmd_by_chemical <- total_scmd_over_time |> 
+  mutate(
+    # calculate reporting year (Apr 1st - Mar 31st) from month 
+    reporting_year = if_else(month(month) >= 4, year(month) + 1, year(month)),
+    # Add end date of reporting year
+    end_date = as.Date(paste0(reporting_year, "-03-31"))
+  ) |> 
+  group_by(bnf_chemical_name, end_date) |> 
+  summarise(
+    yearly_ddd_quantity = sum(monthly_ddd_quantity, na.rm = TRUE), .groups = "drop"
+  )
 
 fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(df_yearly_scmd_by_chemical, end_date, yearly_ddd_quantity, "SCMD Prescribing")
 
 fig_yearly_scmd_by_chemical
-
-combined_yearly_plot <- ((fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical) | plot_spacer() | (fig_yearly_scmd_by_chemical / fig_total_gp_foi)) + 
-  plot_annotation(title = "Version with yearly data", tag_levels = "A") +
-  plot_layout(widths = c(1, 0.05, 1))
-
-combined_yearly_plot
-
-ggsave(here("output", "figures", "fig_yearly_med_usage.png"), combined_yearly_plot, width = 15, height = 15)
 ```
 
-It's now easier to distinguish between different lines. Will need to fix x-axis tick labelling if we end up reporting yearly data at this point. Can consider having a bar plot for proportion of items prescribed in GP vs FOI data for each chemical. 
+It's now easier to distinguish between different lines. Will need to fix x-axis tick labelling if we end up reporting yearly data at this point. 
 
 ### Percentage stacked bar chart for GP and FOI prescribing (total prescribing by chemical)
 
@@ -191,63 +191,108 @@ fig_total_gp_foi
 
 Kind of ugly but does the job. Can add percentage labels. 
 
-## Prescribing/issuing by chemical (half-yearly)
+### Combined figure
 
 ```{r}
-# Helper function for calculating half-yearly totals
+combined_yearly_plot <- ((fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical) | plot_spacer() | (fig_yearly_scmd_by_chemical / fig_total_gp_foi)) + 
+  plot_annotation(title = "Version with yearly data", tag_levels = "A") +
+  plot_layout(widths = c(1, 0.05, 1))
+
+combined_yearly_plot
+
+ggsave(here("output", "figures", "fig_yearly_med_usage.png"), combined_yearly_plot, width = 15, height = 15)
+```
+
+
+# Results: ICB-level analysis
+
+Create dataframe with the total number of prescribed ADHD items (all chemicals) per ICB
+```{r}
+# Helper function for calculating ICB yearly totals for SCMD ONLY
 # Pass `yearly_measure` as a string and `monthly_measure` as a variable
-calc_halfyearly_total <- function(data, half_yearly_measure, monthly_measure){
+icb_yearly_total <- function(data, yearly_measure, monthly_measure){
   data |> 
-    # calculate reporting period (Aug 1st - Jan 31st; Feb 1st - Jul 31st) from month
-    mutate( 
-      period_start = case_when(
-      month(month) %in% 8:12 ~ as.Date(paste0(year(month), "-08-01")),
-      month(month) == 1 ~ as.Date(paste0(year(month) + 1, "-08-01")),
-      month(month) %in% 2:7 ~ as.Date(paste0(year(month), "-02-01"))
-      ),
-      period_end = case_when(
-      month(month) %in% 8:12 ~ as.Date(paste0(year(month) + 1, "-01-31")),
-      month(month) == 1 ~ as.Date(paste0(year(month), "-01-31")),
-      month(month) %in% 2:7 ~ as.Date(paste0(year(month), "-07-31"))
-      )
+    mutate(
+      # calculate reporting year (Aug 1st - Jun 31st) from month 
+      reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
+      # Add end date of reporting year
+      end_date = as.Date(paste0(reporting_year, "-07-31"))
     ) |> 
-    group_by(bnf_chemical_name, period_end) |> 
+    group_by(icb_code, end_date) |> 
     summarise(
-      !!half_yearly_measure := sum({{monthly_measure}}, na.rm = TRUE), .groups = "drop"
+      !!yearly_measure := sum({{monthly_measure}}, na.rm = TRUE), .groups = "drop"
   )
 }
 
-# GP prescribing
+foi_adhd_icb <- icb_yearly_total(foi_adhd_prescribing, "yearly_items", items)
+unique(foi_adhd_icb$icb_code)
+# 70 unique values including "NA" (unidentified doctors), will need a mapping file!
+# but what if I fucking read in the names without brackets? 
 
-df_halfy_gp_by_chemical <- calc_halfyearly_total(total_gp_over_time, "half_yearly_items", monthly_items)
+unique(gp_adhd_prescribing$stp)
+# 43 unique values including "NA" (unidentified doctors) - seem to correspond to ICB
 
-fig_halfy_gp_by_chemical <- plot_med_usage_shapes(df_halfy_gp_by_chemical, period_end, half_yearly_items, "GP Prescribing")
+unique(scmd_adhd_issuing$icb)
+# 42 unique values which match current ICBs 
 
-fig_halfy_gp_by_chemical
+# aggregating from april 1st to march 31st each year - will only have data from 2019/20 to 2024-25
+scmd_adhd_icb_yearly <- scmd_adhd_issuing |> 
+  mutate(
+    # calculate reporting year (Apr 1st - Mar 31st) from month 
+    reporting_year = if_else(month(month) >= 4, year(month) + 1, year(month)),
+      # Add end date of reporting year
+      end_date = as.Date(paste0(reporting_year, "-03-31"))
+    ) |> 
+  group_by(icb, end_date) |> 
+  summarise(yearly_ddd_quantity := sum(value, na.rm = TRUE), .groups = "drop") |> 
+  filter_out(end_date == c("2019-03-31", "2026-03-31")) |> 
+  mutate(end_date = as.factor(end_date)) |> 
+  group_by(end_date) |> 
+  mutate(
+    year_rank = min_rank(desc(yearly_ddd_quantity)),
+    max_rank = max(year_rank, na.rm = T),
+    # Create columns for colouring top/bottom 5 ICBs in fig
+    year_top5 = if_else(year_rank <= 5, icb, NA_character_),
+    year_bottom5 = if_else(year_rank > max_rank - 5, icb, NA_character_)
+  ) |> 
+  ungroup()
 
-# FOI prescribing
+# violin plot
+fig_scmd_icb_yearly <- ggplot(
+  scmd_adhd_icb_yearly,
+  aes(x = end_date, y = yearly_ddd_quantity)
+ ) +
+  geom_violin() +
+  geom_jitter(
+    data = subset(scmd_adhd_icb_yearly, !is.na(year_top5)),
+    aes(colour = year_top5),
+    size = 1,
+    shape = 16, 
+    position = position_jitter(0.2)
+  ) +
+  scale_colour_discrete(name = "Top 5 ICBs") +
 
-df_halfy_foi_by_chemical <- calc_halfyearly_total(total_foi_over_time, "half_yearly_items", monthly_items)
+  ggnewscale::new_scale_colour() +
 
-fig_halfy_foi_by_chemical <- plot_med_usage_shapes(df_halfy_foi_by_chemical, period_end, half_yearly_items, "FOI Prescribing")
+  # Bottom 5 layer
+  geom_jitter(
+    data = subset(scmd_adhd_icb_yearly, !is.na(year_bottom5)),
+    aes(colour = year_bottom5),
+    size = 1,
+    shape = 16, 
+    position = position_jitter(0.2)
+  ) +
+  scale_colour_discrete(name = "Bottom 5 ICBs") +
 
-fig_halfy_foi_by_chemical
+  # Remaining ICBs
+  geom_jitter(
+    data = subset(scmd_adhd_icb_yearly, is.na(year_top5) & is.na(year_bottom5)),
+    colour = "grey70",
+    shape = 16,
+    position = position_jitter(0.2)
+  ) +
+  scale_y_continuous(limits = c(0, NA), labels = scales::comma) 
 
-# SCMD issuing
-
-df_halfy_scmd_by_chemical <- calc_halfyearly_total(total_scmd_over_time, "half_yearly_ddd_quantity", monthly_ddd_quantity)
-
-fig_halfy_scmd_by_chemical <- plot_med_usage_shapes(df_halfy_scmd_by_chemical, period_end, half_yearly_ddd_quantity, "SCMD issuing")
-
-fig_halfy_scmd_by_chemical
-
-combined_half_yearly_plot <- ((fig_halfy_gp_by_chemical / fig_halfy_foi_by_chemical) | plot_spacer() | (fig_halfy_scmd_by_chemical / fig_total_gp_foi)) + 
-  plot_annotation(title = "Version with half-yearly data", tag_levels = "A") +
-  plot_layout(widths = c(1, 0.05, 1))
-
-combined_half_yearly_plot
-
-ggsave(here("output", "figures", "fig_half_yearly_med_usage.png"), combined_half_yearly_plot, width = 15, height = 15)
+fig_scmd_icb_yearly
 
 ```
-
