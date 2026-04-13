@@ -96,3 +96,54 @@ zip(
   )
 )
 ```
+
+# Data cleaning of raw csv files for future analysis
+
+
+```{r}
+library(tidyverse)
+library(here)
+
+scmd_adhd_issuing <- read_csv(
+  here(
+    "output",
+    "web-openprescribing-hospitals",
+    "adhd_oph_web_ddd_quantity.csv"
+  )
+) |> 
+  janitor::clean_names() |> 
+  rename(
+    month = date,
+    bnf_chemical_name = vtm_name
+  ) 
+
+# Monthly issuing by chemical
+df_scmd_by_chemical <- scmd_adhd_issuing |> 
+  group_by(month, bnf_chemical_name) |> 
+  summarise(monthly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop")
+
+write_csv(
+  df_scmd_by_chemical,
+  here("output", "monthly_oph_scmd", "adhd_scmd_by_chemical.csv")
+)
+
+# Monthly issuing for all chemicals combined
+df_scmd_all_chemicals <- scmd_adhd_issuing |>
+  group_by(month) |>
+  summarise(monthly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |>
+  mutate(bnf_chemical_name = "All chemicals")
+
+write_csv(
+  df_scmd_all_chemicals,
+  here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv")
+)
+
+# Monthly issuing by chemical and for all chemicals combined
+df_total_scmd_over_time <- bind_rows(df_scmd_by_chemical, df_scmd_all_chemicals) |> 
+  arrange(month, bnf_chemical_name) 
+
+write_csv(
+  df_total_scmd_over_time,
+  here("output", "monthly_oph_scmd", "adhd_scmd_total.csv")
+)
+```
