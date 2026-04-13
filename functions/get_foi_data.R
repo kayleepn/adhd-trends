@@ -142,3 +142,41 @@ write_csv(
   df_adhd_foi_rx,
   here("output", "foi_prescribing", "adhd_foi_prescribing.csv")
 )
+
+# Monthly FOI prescribing for all chemicals and by chemical
+
+# Monthly prescribing by chemical
+df_foi_by_chemical <- df_adhd_foi_rx |>
+  group_by(month, bnf_chemical_name) |>
+  summarise(
+    monthly_items = sum(items, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+write_csv(
+  df_foi_by_chemical,
+  here("output", "foi_prescribing", "adhd_foi_by_chemical.csv")
+)
+
+# Monthly prescribing for all chemicals combined
+df_foi_all_chemicals <- df_adhd_foi_rx |>
+  group_by(month) |>
+  summarise(
+    monthly_items = sum(items, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(bnf_chemical_name = "All chemicals")
+
+write_csv(
+  df_foi_all_chemicals,
+  here("output", "foi_prescribing", "adhd_foi_all_chemicals.csv")
+)
+
+# Monthly prescribing by chemical and for all chemicals combined
+df_total_foi_over_time <- bind_rows(df_foi_by_chemical, df_foi_all_chemicals) |>
+  arrange(month, bnf_chemical_name)
+
+write_csv(
+  df_total_foi_over_time,
+  here("output", "foi_prescribing", "adhd_foi_total.csv")
+)
