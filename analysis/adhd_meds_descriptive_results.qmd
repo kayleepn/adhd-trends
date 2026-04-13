@@ -43,6 +43,8 @@ gp_adhd_prescribing <- read_parquet(
     )
 )
 
+total_gp_over_time <- read_csv(here("output", "monthly_op_gp", "adhd_gp_total.csv"))
+
 foi_adhd_prescribing <- read_csv(
   here(
     "output",
@@ -50,6 +52,8 @@ foi_adhd_prescribing <- read_csv(
     "adhd_foi_prescribing.csv"
     )
 )
+
+total_foi_over_time <- read_csv(here("output", "foi_prescribing", "adhd_foi_total.csv"))
 
 scmd_adhd_issuing <- read_csv(
   here(
@@ -63,6 +67,8 @@ scmd_adhd_issuing <- read_csv(
     month = date,
     bnf_chemical_name = vtm_name
   ) 
+
+total_scmd_over_time <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_total.csv"))
 ```
 
 # Results: medication usage
@@ -70,12 +76,6 @@ scmd_adhd_issuing <- read_csv(
 
 ## Prescribing/issuing by chemical (monthly)
 ```{r}
-# fig_total_gp_over_time <- adhd_gp_prescribing |> 
-#   select(month, items_by_chemical) |>
-#   group_by(month, bnf_chemical_name) |> 
-#   summarise(monthly_items = sum(items_by_chemical, na.rm = TRUE), .groups = "drop")
-
-# cheating here by borrowing total_gp_over_time from `prescribing_changepoint.qmd` 
 fig_monthly_gp_by_chemical <- plot_med_usage(total_gp_over_time, monthly_items, "Monthly items", "GP Prescribing")
 
 fig_monthly_gp_by_chemical
@@ -87,14 +87,6 @@ fig_monthly_foi_by_chemical
 fig_monthly_scmd_by_chemical <- plot_med_usage(total_scmd_over_time, monthly_ddd_quantity, "Monthly DDD quantity", "SCMD issuing")
 
 fig_monthly_scmd_by_chemical
-
-combined_monthly_plot <- ((fig_monthly_gp_by_chemical / fig_monthly_foi_by_chemical) | plot_spacer() | fig_monthly_scmd_by_chemical) + 
-  plot_annotation(tag_levels = "A") +
-  plot_layout(widths = c(1, 0.05, 1))
-
-combined_monthly_plot
-
-ggsave(here("output", "figures", "fig_monthly_med_usage.png"), combined_monthly_plot, width = 15, height = 15)
 ```
 
 I find that if I'm plotting monthly data, line types work a bit better than shapes. Although sometimes it's still a bit difficult to tell indiviudal lines apart. Also I need to do something about the breaks.
@@ -191,9 +183,17 @@ fig_total_gp_foi
 
 Kind of ugly but does the job. Can add percentage labels. 
 
-### Combined figure
+### Combined figures
 
 ```{r}
+combined_monthly_plot <- ((fig_monthly_gp_by_chemical / fig_monthly_foi_by_chemical) | plot_spacer() | fig_monthly_scmd_by_chemical / fig_total_gp_foi) + 
+  plot_annotation(tag_levels = "A") +
+  plot_layout(widths = c(1, 0.05, 1))
+
+combined_monthly_plot
+
+ggsave(here("output", "figures", "fig_monthly_med_usage.png"), combined_monthly_plot, width = 15, height = 15)
+
 combined_yearly_plot <- ((fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical) | plot_spacer() | (fig_yearly_scmd_by_chemical / fig_total_gp_foi)) + 
   plot_annotation(title = "Version with yearly data", tag_levels = "A") +
   plot_layout(widths = c(1, 0.05, 1))

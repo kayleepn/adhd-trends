@@ -51,7 +51,7 @@ plot_med_usage <- function(
       axis.text.x = element_text(size = 14),
       axis.text.y = element_text(size = 14),
       # Place legend inside graphs
-      legend.position = c(0.2, 0.75),
+      legend.position = c(0.2, 0.775),
       # Enable markdown in legend labels and sets strip text size
       legend.text = element_markdown(size = 12),
       legend.title = element_text(family = "Times New Roman"),
