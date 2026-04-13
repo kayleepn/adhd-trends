@@ -208,7 +208,7 @@ ggsave(here("output", "figures", "fig_yearly_med_usage.png"), combined_yearly_pl
 
 Create dataframe with the total number of prescribed ADHD items (all chemicals) per ICB
 ```{r}
-# Helper function for calculating ICB yearly totals for SCMD ONLY
+# Helper function for calculating ICB yearly totals for GP and FOI data ONLY
 # Pass `yearly_measure` as a string and `monthly_measure` as a variable
 icb_yearly_total <- function(data, yearly_measure, monthly_measure){
   data |> 
@@ -227,7 +227,6 @@ icb_yearly_total <- function(data, yearly_measure, monthly_measure){
 foi_adhd_icb <- icb_yearly_total(foi_adhd_prescribing, "yearly_items", items)
 unique(foi_adhd_icb$icb_code)
 # 70 unique values including "NA" (unidentified doctors), will need a mapping file!
-# but what if I fucking read in the names without brackets? 
 
 unique(gp_adhd_prescribing$stp)
 # 43 unique values including "NA" (unidentified doctors) - seem to correspond to ICB
@@ -244,7 +243,7 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
       end_date = as.Date(paste0(reporting_year, "-03-31"))
     ) |> 
   group_by(icb, end_date) |> 
-  summarise(yearly_ddd_quantity := sum(value, na.rm = TRUE), .groups = "drop") |> 
+  summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
   filter_out(end_date == c("2019-03-31", "2026-03-31")) |> 
   mutate(end_date = as.factor(end_date)) |> 
   group_by(end_date) |> 
