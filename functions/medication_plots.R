@@ -116,3 +116,88 @@ plot_med_usage_shapes <- function(
       )
     )
 }
+
+# Function for yearly violin plots
+plot_yearly_violins <- function(
+  data,
+  usage_measure, # either items or ddd_quantity
+  top_legend,
+  bottom_legend,
+  shape_values,
+  title_label,
+  text_size = 16,
+  point_size = 4
+) {
+  # Create violin plot
+  ggplot(
+    data,
+    aes(x = end_date, y = {{ usage_measure }})
+  ) +
+    geom_violin(fill = "grey90", colour = NA) +
+
+    # Layer with top 5 ICBs
+    geom_jitter(
+      data = data |> filter(year_top5 == TRUE),
+      aes(shape = icb_name, fill = icb_name),
+      size = 3,
+      alpha = .7,
+      position = position_jitter(0.2)
+    ) +
+    scale_fill_viridis_d(
+      name = "Top 5 ICBs",
+      breaks = top_legend$icb_name,
+      labels = top_legend$label,
+      end = .8,
+      option = "inferno",
+      guide = guide_legend(order = 1)
+    ) +
+    scale_shape_manual(
+      name = "Top 5 ICBs",
+      breaks = top_legend$icb_name,
+      labels = top_legend$label,
+      values = shape_values,
+      guide = guide_legend(order = 1)
+    ) +
+    ggnewscale::new_scale_colour() +
+    # Layer with bottom 5 ICBs
+    geom_jitter(
+      data = data |> filter(year_bottom5 == TRUE),
+      aes(colour = icb_name),
+      size = 3,
+      alpha = .7,
+      shape = 16,
+      position = position_jitter(0.2)
+    ) +
+    scale_color_viridis_d(
+      name = "Bottom 5 ICBs",
+      breaks = bottom_legend$icb_name,
+      labels = bottom_legend$label,
+      option = "turbo",
+      guide = guide_legend(order = 2)
+    ) +
+    # Layer with remaining ICBs
+    geom_jitter(
+      data = data |> filter(!year_top5 & !year_bottom5),
+      colour = "grey50",
+      size = 2,
+      shape = 16,
+      position = position_jitter(0.2)
+    ) +
+    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    labs(title = title_label) +
+    theme_bw() +
+    theme(
+      text = element_text(family = "Times New Roman"),
+      axis.text.x = element_text(size = 14),
+      axis.text.y = element_text(size = 14),
+      legend.text = element_markdown(size = 12),
+      legend.title = element_text(family = "Times New Roman"),
+      legend.key.spacing.y = unit(5, "pt"),
+      legend.background = element_rect(
+        fill = "white",
+        linetype = "solid",
+        colour = "black",
+        linewidth = 0.5
+      )
+    )
+}

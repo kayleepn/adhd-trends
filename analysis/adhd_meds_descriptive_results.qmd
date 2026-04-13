@@ -65,7 +65,8 @@ scmd_adhd_issuing <- read_csv(
   janitor::clean_names() |> 
   rename(
     month = date,
-    bnf_chemical_name = vtm_name
+    bnf_chemical_name = vtm_name,
+    icb_name = icb
   ) 
 
 total_scmd_over_time <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_total.csv"))
@@ -210,7 +211,7 @@ Create dataframe with the total number of prescribed ADHD items (all chemicals) 
 ```{r}
 # Helper function for calculating ICB yearly totals for GP and FOI data ONLY
 # Pass `yearly_measure` as a string and `monthly_measure` as a variable
-icb_yearly_total <- function(data, yearly_measure, monthly_measure){
+icb_yearly_total <- function(data, icb_col, yearly_measure, monthly_measure){
   data |> 
     mutate(
       # calculate reporting year (Aug 1st - Jun 31st) from month 
@@ -218,21 +219,22 @@ icb_yearly_total <- function(data, yearly_measure, monthly_measure){
       # Add end date of reporting year
       end_date = as.Date(paste0(reporting_year, "-07-31"))
     ) |> 
-    group_by(icb_code, end_date) |> 
+    group_by({{icb_col}}, end_date) |> 
     summarise(
       !!yearly_measure := sum({{monthly_measure}}, na.rm = TRUE), .groups = "drop"
   )
 }
 
-foi_adhd_icb <- icb_yearly_total(foi_adhd_prescribing, "yearly_items", items)
+
 unique(foi_adhd_icb$icb_code)
 # 70 unique values including "NA" (unidentified doctors), will need a mapping file!
 
 unique(gp_adhd_prescribing$stp)
-# 43 unique values including "NA" (unidentified doctors) - seem to correspond to ICB
+# 43 unique values including "NA" (unidentified doctors) - seem to correspond to 
+gp_adhd_icb <- icb_yearly_total(gp_adhd_prescribing, stp, "yearly_items", items_by_chemical)
 
-unique(scmd_adhd_issuing$icb)
-# 42 unique values which match current ICBs 
+unique(scmd_adhd_issuing$icb_name)
+# 42 unique values which seem to match current ICBs 
 
 # aggregating from april 1st to march 31st each year - will only have data from 2019/20 to 2024-25
 scmd_adhd_icb_yearly <- scmd_adhd_issuing |> 
@@ -242,56 +244,61 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
       # Add end date of reporting year
       end_date = as.Date(paste0(reporting_year, "-03-31"))
     ) |> 
-  group_by(icb, end_date) |> 
+  group_by(icb_name, end_date) |> 
   summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
+  # Removing data before 2019-03-31 and after 2025-04-01 as the years are incomplete
   filter_out(end_date == c("2019-03-31", "2026-03-31")) |> 
+  # `end_date` needs to be a factor for the violin plot
   mutate(end_date = as.factor(end_date)) |> 
   group_by(end_date) |> 
   mutate(
+    # Ranking ICBs by yearly DDD quantity each year
     year_rank = min_rank(desc(yearly_ddd_quantity)),
     max_rank = max(year_rank, na.rm = T),
-    # Create columns for colouring top/bottom 5 ICBs in fig
-    year_top5 = if_else(year_rank <= 5, icb, NA_character_),
-    year_bottom5 = if_else(year_rank > max_rank - 5, icb, NA_character_)
+    # Create columns to highlight top/bottom 5 ICBs in the fig
+    year_top5 = year_rank <= 5,
+    year_bottom5 = year_rank > max_rank - 5
   ) |> 
   ungroup()
 
+# Top 5 legend
+# Need to be very specific here because I want the legend as
+# "ICB name, (years the ICB was in the top five)"
+top_scmd_legend <- scmd_adhd_icb_yearly |> 
+  filter(year_top5 == T) |> 
+  mutate(year = format(as.Date(end_date), "%Y")) |> 
+  distinct(icb_name, year) |> 
+  group_by(icb_name) |> 
+  summarise(
+    years = paste(sort(unique(year)), collapse = ", "),
+    .groups = "drop"
+  ) |> 
+  mutate(label = paste0(icb_name, "<br>(", years, ")"))
+
+bottom_scmd_legend <- scmd_adhd_icb_yearly |> 
+  filter(year_bottom5 == T) |> 
+  mutate(year = format(as.Date(end_date), "%Y")) |> 
+  distinct(icb_name, year) |> 
+  group_by(icb_name) |> 
+  summarise(
+    years = paste(sort(unique(year)), collapse = ", "),
+    .groups = "drop"
+  ) |> 
+  mutate(label = paste0(icb_name, "<br>(", years, ")"))
+
 # violin plot
-fig_scmd_icb_yearly <- ggplot(
-  scmd_adhd_icb_yearly,
-  aes(x = end_date, y = yearly_ddd_quantity)
- ) +
-  geom_violin() +
-  geom_jitter(
-    data = subset(scmd_adhd_icb_yearly, !is.na(year_top5)),
-    aes(colour = year_top5),
-    size = 1,
-    shape = 16, 
-    position = position_jitter(0.2)
-  ) +
-  scale_colour_discrete(name = "Top 5 ICBs") +
+scmd_shape_values <- c(21, 22, 23, 24, 25, 8, 11)
 
-  ggnewscale::new_scale_colour() +
-
-  # Bottom 5 layer
-  geom_jitter(
-    data = subset(scmd_adhd_icb_yearly, !is.na(year_bottom5)),
-    aes(colour = year_bottom5),
-    size = 1,
-    shape = 16, 
-    position = position_jitter(0.2)
-  ) +
-  scale_colour_discrete(name = "Bottom 5 ICBs") +
-
-  # Remaining ICBs
-  geom_jitter(
-    data = subset(scmd_adhd_icb_yearly, is.na(year_top5) & is.na(year_bottom5)),
-    colour = "grey70",
-    shape = 16,
-    position = position_jitter(0.2)
-  ) +
-  scale_y_continuous(limits = c(0, NA), labels = scales::comma) 
+fig_scmd_icb_yearly <- plot_yearly_violins(
+  data = scmd_adhd_icb_yearly,
+  usage_measure = yearly_ddd_quantity,
+  top_legend = top_scmd_legend,
+  bottom_legend = bottom_scmd_legend,
+  shape_values = scmd_shape_values,
+  title_label = "Yearly SCMD Issuing by ICB"
+)
 
 fig_scmd_icb_yearly
 
+ggsave(here("output", "figures", "fig_scmd_icb_yearly.png"), fig_scmd_icb_yearly, width = 15, height = 10)
 ```
