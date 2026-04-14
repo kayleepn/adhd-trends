@@ -125,7 +125,7 @@ plot_yearly_violins <- function(
   bottom_legend,
   shape_values,
   title_label,
-  text_size = 16,
+  text_size = 20,
   point_size = 4
 ) {
   # Create violin plot
@@ -149,14 +149,14 @@ plot_yearly_violins <- function(
       labels = top_legend$label,
       end = .8,
       option = "inferno",
-      guide = guide_legend(order = 1)
+      guide = guide_legend(order = 1, ncol = 3)
     ) +
     scale_shape_manual(
       name = "Top 5 ICBs",
       breaks = top_legend$icb_name,
       labels = top_legend$label,
       values = shape_values,
-      guide = guide_legend(order = 1)
+      guide = guide_legend(order = 1, ncol = 3)
     ) +
     ggnewscale::new_scale_colour() +
     # Layer with bottom 5 ICBs
@@ -173,7 +173,7 @@ plot_yearly_violins <- function(
       breaks = bottom_legend$icb_name,
       labels = bottom_legend$label,
       option = "turbo",
-      guide = guide_legend(order = 2)
+      guide = guide_legend(order = 2, ncol = 3)
     ) +
     # Layer with remaining ICBs
     geom_jitter(
@@ -188,11 +188,13 @@ plot_yearly_violins <- function(
     theme_bw() +
     theme(
       text = element_text(family = "Times New Roman"),
-      axis.text.x = element_text(size = 14),
-      axis.text.y = element_text(size = 14),
-      legend.text = element_markdown(size = 12),
+      axis.text.x = element_text(size = 16),
+      axis.text.y = element_text(size = 16),
+      legend.text = element_markdown(size = 16),
       legend.title = element_text(family = "Times New Roman"),
       legend.key.spacing.y = unit(5, "pt"),
+      legend.position = "bottom",
+      legend.box = "vertical",
       legend.background = element_rect(
         fill = "white",
         linetype = "solid",

@@ -302,3 +302,58 @@ fig_scmd_icb_yearly
 
 ggsave(here("output", "figures", "fig_scmd_icb_yearly.png"), fig_scmd_icb_yearly, width = 15, height = 10)
 ```
+
+## GP ICB-level analysis
+
+Still need to map ICB codes to ICB names!
+```{r}
+  # `end_date` needs to be a factor for the violin plot
+gp_adhd_icb_yearly <- gp_adhd_icb |> 
+  mutate(end_date = as.factor(end_date)) |> 
+  group_by(end_date) |> 
+  rename(icb_name = stp) |> 
+  mutate(
+    icb_name = coalesce(icb_name, "Unidentified doctors"),
+    # Ranking ICBs by yearly DDD quantity each year
+    year_rank = min_rank(desc(yearly_items)),
+    max_rank = max(year_rank, na.rm = T),
+    # Create columns to highlight top/bottom 5 ICBs in the fig
+    year_top5 = year_rank <= 5,
+    year_bottom5 = year_rank > max_rank - 5
+  ) |> 
+  ungroup()
+
+top_gp_legend <- gp_adhd_icb_yearly |> 
+  filter(year_top5 == T) |> 
+  mutate(year = format(as.Date(end_date), "%Y")) |> 
+  distinct(icb_name, year) |> 
+  group_by(icb_name) |> 
+  summarise(
+    years = paste(sort(unique(year)), collapse = ", "),
+    .groups = "drop"
+  ) |> 
+  mutate(label = paste0(icb_name, "<br>(", years, ")"))
+
+bottom_gp_legend <- gp_adhd_icb_yearly |> 
+  filter(year_bottom5 == T) |> 
+  mutate(year = format(as.Date(end_date), "%Y")) |> 
+  distinct(icb_name, year) |> 
+  group_by(icb_name) |> 
+  summarise(
+    years = paste(sort(unique(year)), collapse = ", "),
+    .groups = "drop"
+  ) |> 
+  mutate(label = paste0(icb_name, "<br>(", years, ")"))
+
+gp_shape_values <- c(21, 22, 23, 24, 25, 8)
+fig_gp_icb_yearly <- plot_yearly_violins(
+  data = gp_adhd_icb_yearly,
+  usage_measure = yearly_items,
+  top_legend = top_gp_legend,
+  bottom_legend = bottom_gp_legend,
+  shape_values = gp_shape_values,
+  title_label = "Yearly GP Prescribing by ICB"
+)
+
+fig_gp_icb_yearly
+```
