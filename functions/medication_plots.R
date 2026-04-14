@@ -149,14 +149,14 @@ plot_yearly_violins <- function(
       labels = top_legend$label,
       end = .8,
       option = "inferno",
-      guide = guide_legend(order = 1, ncol = 3)
+      guide = guide_legend(order = 1, ncol = 2)
     ) +
     scale_shape_manual(
       name = "Top 5 ICBs",
       breaks = top_legend$icb_name,
       labels = top_legend$label,
       values = shape_values,
-      guide = guide_legend(order = 1, ncol = 3)
+      guide = guide_legend(order = 1, ncol = 2)
     ) +
     ggnewscale::new_scale_colour() +
     # Layer with bottom 5 ICBs
@@ -173,7 +173,7 @@ plot_yearly_violins <- function(
       breaks = bottom_legend$icb_name,
       labels = bottom_legend$label,
       option = "turbo",
-      guide = guide_legend(order = 2, ncol = 3)
+      guide = guide_legend(order = 2, ncol = 2)
     ) +
     # Layer with remaining ICBs
     geom_jitter(
