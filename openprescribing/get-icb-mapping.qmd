@@ -84,4 +84,4 @@ write_csv(
 )
 ```
 
-The ICB codes are legit but the same area code can be mapped to multiple ICB codes. I don't think there's a way around it because OP data is practice level and it's possible that different practices in the same area team ended up in different ICBs. However, for FOI data, there is no practice-level data. However, data from 2020-04-01 onwards appear to be mapped to new ICBs with the correct ICB codes. Given that FOI prescribing increases greatly aroud the same time, it might be appropriate to only analyse ICB-level breakdowns for FOI data from 2020-04-01 onwards. 
+The ICB codes are legit but the same area code can be mapped to multiple ICB codes. I don't think there's a way around it because OP data is practice level and it's possible that different practices in the same area team ended up in different ICBs. However, for FOI data, there is no practice-level data. However, data from 2020-04-01 onwards appear to be mapped to new ICBs with the correct ICB codes. Given that FOI prescribing increases greatly around the same time, it might be appropriate to only analyse ICB-level breakdowns for FOI data from 2020-04-01 onwards. 
