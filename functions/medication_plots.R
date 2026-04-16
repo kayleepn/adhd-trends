@@ -22,11 +22,14 @@ plot_med_usage <- function(
       x = month,
       # {{}} for dynamic column names
       y = {{ usage_measure }},
-      colour = bnf_chemical_name,
-      linetype = bnf_chemical_name
+      colour = bnf_chemical_name
     )
   ) +
-    geom_line(alpha = .7, linewidth = 1) +
+    geom_line(
+      alpha = .7,
+      linewidth = 1,
+      position = position_dodge(width = 0.2)
+    ) +
     # geom_point(size = point_size, alpha = .5) +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
@@ -39,8 +42,7 @@ plot_med_usage <- function(
       x = x_label,
       y = y_label,
       title = title_label,
-      colour = "Chemical",
-      linetype = "Chemical"
+      colour = "Chemical"
     ) +
     # Using black and white theme
     theme_bw(

@@ -29,7 +29,6 @@ library(nhstt)
 library(arrow)
 library(patchwork)
 library(ggtext)
-library(gghighlight)
 library(ggnewscale)
 library(stringr)
 
@@ -92,9 +91,22 @@ fig_monthly_foi_by_chemical
 fig_monthly_scmd_by_chemical <- plot_med_usage(total_scmd_over_time, monthly_ddd_quantity, "Monthly DDD quantity", "SCMD issuing")
 
 fig_monthly_scmd_by_chemical
+
+combined_monthly_fig_1col <- fig_monthly_gp_by_chemical / fig_monthly_foi_by_chemical / fig_monthly_scmd_by_chemical + 
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect")
+
+combined_monthly_fig_1col
+
+ggsave(
+  here("output", "figures", "fig_1col_monthly_med_usage.png"),
+  combined_monthly_fig_1col,
+  width = 15,
+  height = 15
+)
 ```
 
-I find that if I'm plotting monthly data, line types work a bit better than shapes. Although sometimes it's still a bit difficult to tell indiviudal lines apart. Also I need to do something about the breaks.
+I find that a 1*3 layout works better. If this ends up in the thesis, it would be nice to use a common x-axis. 
 
 Might be good to do some % calculations for each chemical? Also think about if I should aggregate this into yearly data instead. 
 
