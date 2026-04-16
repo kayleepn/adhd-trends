@@ -31,6 +31,7 @@ library(patchwork)
 library(ggtext)
 library(gghighlight)
 library(ggnewscale)
+library(stringr)
 
 source(here("functions", "medication_plots.R"))
 
@@ -162,27 +163,29 @@ It's now easier to distinguish between different lines. Will need to fix x-axis 
 
 ### Percentage stacked bar chart for GP and FOI prescribing (total prescribing by chemical)
 
+We will report the percentages shown in this chart as text instead - need to calculate!
+
 ```{r}
-df_total_gp_foi <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "source") |> 
-  mutate(
-    source = recode(source, "1" = "GP", "2" = "FOI")
-  ) |> 
-  group_by(bnf_chemical_name, source) |> 
-  summarise(total_items = sum(yearly_items), na.rm = T, .groups = "drop")
+# df_total_gp_foi <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "source") |> 
+#   mutate(
+#     source = recode(source, "1" = "GP", "2" = "FOI")
+#   ) |> 
+#   group_by(bnf_chemical_name, source) |> 
+#   summarise(total_items = sum(yearly_items), na.rm = T, .groups = "drop")
 
-fig_total_gp_foi <- ggplot(
-  df_total_gp_foi,
-  aes(fill = source, y = total_items, x = bnf_chemical_name)
-) +
-  # Stacked percentage bar chart
-  geom_bar(position = "fill", stat = "identity") +
-  scale_y_continuous(limits = c(0, NA), labels = scales::percent) +
-  scale_fill_viridis_d(begin = 0.25, end = 0.5) +
-  labs(title = "Percentage of GP/FOI Prescribing by Chemical") +
-  theme_bw(base_size = 12) +
-  theme(text = element_text(family = "Times New Roman"))
+# fig_total_gp_foi <- ggplot(
+#   df_total_gp_foi,
+#   aes(fill = source, y = total_items, x = bnf_chemical_name)
+# ) +
+#   # Stacked percentage bar chart
+#   geom_bar(position = "fill", stat = "identity") +
+#   scale_y_continuous(limits = c(0, NA), labels = scales::percent) +
+#   scale_fill_viridis_d(begin = 0.25, end = 0.5) +
+#   labs(title = "Percentage of GP/FOI Prescribing by Chemical") +
+#   theme_bw(base_size = 12) +
+#   theme(text = element_text(family = "Times New Roman"))
 
-fig_total_gp_foi
+# fig_total_gp_foi
 ```
 
 Kind of ugly but does the job. Can add percentage labels. 
@@ -210,13 +213,173 @@ ggsave(here("output", "figures", "fig_yearly_med_usage.png"), combined_yearly_pl
 
 # Results: ICB-level analysis
 
-Create dataframe with the total number of prescribed ADHD items (all chemicals) per ICB
-```{r}
-unique(scmd_adhd_issuing$icb_name)
-# 42 unique values which seem to match current ICBs 
+## GP ICB-level analysis
 
-# aggregating from april 1st to march 31st each year - will only have data from 2019/20 to 2024-25
+We obtained GP data from 2015-08-01 to 2025-07-31 from BigQuery to match SNOMED CT code usage reporting years. Therefore, we will aggregate from Aug 1st to Jul 31st the next year. Also need to map ICB codes to ICB names for this one.
+
+```{r}
+# The `stp` column contains the correct ICB codes as of 2026-03-01
+unique(gp_adhd_prescribing$stp)
+# 43 unique values including "NA" (unidentified doctors)
+
+# Helper function for calculating ICB yearly totals for GP and FOI data ONLY
+icb_yearly_total <- function(data, icb_col, monthly_col){
+  data |> 
+    mutate(
+      # calculate reporting year (Aug 1st - Jul 31st) from month 
+      reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
+      # Add end date of reporting year
+      end_date = as.Date(paste0(reporting_year, "-07-31"))
+    ) |> 
+    group_by({{icb_col}}, end_date) |> 
+    summarise(
+      yearly_items = sum({{monthly_col}}, na.rm = TRUE), .groups = "drop"
+    ) |> 
+    mutate(end_date = as.factor(end_date))
+}
+
+# Map ICB codes to ICB names
+gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemical) |>  
+  rename(icb_code = stp) |>
+  left_join(icb_code_name_map, by = "icb_code") |> 
+  select(-icb_code)
+
+# Helper function for ranking ICBs according to yearly medication usage
+# `yearly_col` is the column name of yearly quantity measures (items or ddd quantity)
+
+rank_icb_yearly <- function(data, yearly_col){
+  data |> 
+    group_by(end_date) |>
+    mutate(
+      icb_name = coalesce(icb_name, "Unidentified doctors"),
+      # Ranking ICBs by yearly items each year
+      year_rank = min_rank(desc({{yearly_col}})),
+      max_rank = max(year_rank, na.rm = T),
+      # Create columns to highlight top/bottom 5 ICBs in the fig
+      year_top5 = year_rank <= 5,
+      year_bottom5 = year_rank > max_rank - 5
+    ) |> 
+    # Turn ICB names into title case and remove "NHS" prefix
+    mutate(icb_name = icb_name |> 
+        str_remove("^NHS\\s*") |>
+        str_remove("\\s*Integrated Care Board$") |> 
+        str_to_title()
+    ) |> 
+    ungroup()
+}
+
+gp_adhd_icb_ranked <- rank_icb_yearly(gp_adhd_icb_yearly, yearly_items)
+
+# Helper function for creating a legend for top 5 ICBs
+# Need to be very specific here because I want the legend as
+# "ICB name, (years the ICB was in the top 5) 
+create_top_legend <- function(data){
+  data |> 
+    filter(year_top5 == T) |> 
+    mutate(year = format(as.Date(end_date), "%Y")) |> 
+    distinct(icb_name, year) |> 
+    group_by(icb_name) |> 
+    summarise(
+      years = paste(sort(unique(year)), collapse = ", "),
+      .groups = "drop"
+    ) |> 
+    mutate(label = paste0(icb_name, "<br>(", years, ")"))
+}
+
+# Helper function for creating a legend for bottom 5 ICBs - same logic as above
+
+create_bottom_legend <- function(data){
+  data |> 
+    filter(year_bottom5 == T) |> 
+    mutate(year = format(as.Date(end_date), "%Y")) |> 
+    distinct(icb_name, year) |> 
+    group_by(icb_name) |> 
+    summarise(
+      years = paste(sort(unique(year)), collapse = ", "),
+      .groups = "drop"
+    ) |> 
+    mutate(label = paste0(icb_name, "<br>(", years, ")"))
+}
+
+top_gp_legend <- create_top_legend(gp_adhd_icb_ranked)
+bottom_gp_legend <- create_bottom_legend(gp_adhd_icb_ranked)
+
+# Create violin plots
+# `plot_yearly_violins` is in `medication_plots.R`
+gp_shape_values <- c(21, 22, 23, 24, 25, 8)
+fig_gp_icb_violins <- plot_yearly_violins(
+  data = gp_adhd_icb_ranked,
+  usage_measure = yearly_items,
+  top_legend = top_gp_legend,
+  bottom_legend = bottom_gp_legend,
+  shape_values = gp_shape_values,
+  title_label = "Yearly GP Prescribing by ICB"
+)
+
+fig_gp_icb_violins
+
+ggsave(here("output", "figures", "fig_gp_icb_violins.png"), fig_gp_icb_violins, width = 15, height = 10)
+```
+
+## FOI ICB-level analysis
+
+FOI data prior to 2020-04-01 is given with Area Team codes instead of ICB codes. Without practice-level information, it's impossible to map Area Team onto ICB accurately. Therefore, I will only analyse FOI data from 2020-08-01 to 2025-07-31 (to match with SNOMED CT code usage reporting years).
+
+```{r}
+foi_adhd_20to25 <- foi_adhd_prescribing |> 
+  filter(month >= "2020-08-01" & month < "2025-08-01") |> 
+  # Using the mapping file to ensure consistent formatting of ICB names
+  left_join(icb_code_name_map, by = "icb_code") |> 
+  select(-icb_name.x) |> 
+  rename(icb_name = icb_name.y)
+
+setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
+# ICB names match the mapping file but FOI data includes "Unidentified doctors")
+
+# Calculate yearly prescribing for each ICB
+foi_adhd_icb <- icb_yearly_total(foi_adhd_20to25, icb_name, items)
+# Rank ICBs according to yearly prescribing
+foi_adhd_icb_ranked <- rank_icb_yearly(foi_adhd_icb, yearly_items)
+
+# Create top and bottom legends
+top_foi_legend <- create_top_legend(foi_adhd_icb_ranked)
+bottom_foi_legend <- create_bottom_legend(foi_adhd_icb_ranked)
+
+# Create violin plot
+foi_shape_values <- c(21, 22, 23, 24, 25, 8, 11)
+
+fig_foi_icb_violins <- plot_yearly_violins(
+  data = foi_adhd_icb_ranked,
+  usage_measure = yearly_items,
+  top_legend = top_foi_legend,
+  bottom_legend = bottom_foi_legend,
+  shape_values = foi_shape_values,
+  title_label = "Yearly FOI Prescribing by ICB"
+)
+
+fig_foi_icb_violins
+
+ggsave(here("output", "figures", "fig_foi_icb_violins.png"), fig_foi_icb_violins, width = 15, height = 10)
+```
+
+## SCMD ICB-level analysis
+
+SCMD data is only available from 2019-01-01 to 2025-12-31. To match analysis time periods with ICD-10 code usage reporting years, I will only analyse SCMD hospital issuing from 2019-04-01 to 2025-03-31. 
+
+```{r}
+# ICB names in SCMD essentially match the mapping file but are formatted differently
+scmd_adhd_issuing_caps <- scmd_adhd_issuing |> 
+  mutate(
+    icb_name = paste0(icb_name, " Integrated Care Board") |> 
+    str_to_upper() 
+  )
+setequal(scmd_adhd_issuing_caps$icb_name, icb_code_name_map$icb_name)
+# [1] TRUE
+
+# Calculate yearly DDD quantity for each ICB
+# Can't use `icb_yearly_total` as I am aggregating from April 1st to March 31st but the code follows the same logic
 scmd_adhd_icb_yearly <- scmd_adhd_issuing |> 
+  filter(month >= "2019-04-01" & month < "2025-04-01") |> 
   mutate(
     # calculate reporting year (Apr 1st - Mar 31st) from month 
     reporting_year = if_else(month(month) >= 4, year(month) + 1, year(month)),
@@ -225,56 +388,21 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
     ) |> 
   group_by(icb_name, end_date) |> 
   summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
-  # Removing data before 2019-03-31 and after 2025-04-01 as the years are incomplete
-  filter_out(end_date == c("2019-03-31", "2026-03-31")) |> 
   # `end_date` needs to be a factor for the violin plot
-  mutate(end_date = as.factor(end_date)) |> 
-  group_by(end_date) |> 
-  mutate(
-    # Ranking ICBs by yearly DDD quantity each year
-    year_rank = min_rank(desc(yearly_ddd_quantity)),
-    max_rank = max(year_rank, na.rm = T),
-    # Create columns to highlight top/bottom 5 ICBs in the fig
-    year_top5 = year_rank <= 5,
-    year_bottom5 = year_rank > max_rank - 5
-  ) |> 
-  mutate(icb_name = icb_name |> 
-    str_remove("^NHS\\s*") |>
-    str_remove("\\s*Integrated Care Board$") |> 
-    str_to_title()
-  ) |> 
-  ungroup()
+  mutate(end_date = as.factor(end_date))
 
-# Top 5 legend
-# Need to be very specific here because I want the legend as
-# "ICB name, (years the ICB was in the top five)"
-top_scmd_legend <- scmd_adhd_icb_yearly |> 
-  filter(year_top5 == T) |> 
-  mutate(year = format(as.Date(end_date), "%Y")) |> 
-  distinct(icb_name, year) |> 
-  group_by(icb_name) |> 
-  summarise(
-    years = paste(sort(unique(year)), collapse = ", "),
-    .groups = "drop"
-  ) |> 
-  mutate(label = paste0(icb_name, "<br>(", years, ")"))
+# Rank ICBs by yearly DDD quantity
+scmd_adhd_icb_ranked <- rank_icb_yearly(scmd_adhd_icb_yearly, yearly_ddd_quantity)
 
-bottom_scmd_legend <- scmd_adhd_icb_yearly |> 
-  filter(year_bottom5 == T) |> 
-  mutate(year = format(as.Date(end_date), "%Y")) |> 
-  distinct(icb_name, year) |> 
-  group_by(icb_name) |> 
-  summarise(
-    years = paste(sort(unique(year)), collapse = ", "),
-    .groups = "drop"
-  ) |> 
-  mutate(label = paste0(icb_name, "<br>(", years, ")"))
+# Create top and bottom legends
+top_scmd_legend <- create_top_legend(scmd_adhd_icb_ranked)
+bottom_scmd_legend <- create_bottom_legend(scmd_adhd_icb_ranked)
 
-# violin plot
+# Create violin plot
 scmd_shape_values <- c(21, 22, 23, 24, 25, 8, 11)
 
-fig_scmd_icb_yearly <- plot_yearly_violins(
-  data = scmd_adhd_icb_yearly,
+fig_scmd_icb_violins <- plot_yearly_violins(
+  data = scmd_adhd_icb_ranked,
   usage_measure = yearly_ddd_quantity,
   top_legend = top_scmd_legend,
   bottom_legend = bottom_scmd_legend,
@@ -282,103 +410,7 @@ fig_scmd_icb_yearly <- plot_yearly_violins(
   title_label = "Yearly SCMD Issuing by ICB"
 )
 
-fig_scmd_icb_yearly
+fig_scmd_icb_violins
 
-ggsave(here("output", "figures", "fig_scmd_icb_yearly.png"), fig_scmd_icb_yearly, width = 15, height = 10)
-```
-
-## GP ICB-level analysis
-
-Need to map ICB codes to ICB names!
-```{r}
-# The `stp` column contains the correct ICB codes as of 2026-03-01
-unique(gp_adhd_prescribing$stp)
-# 43 unique values including "NA" (unidentified doctors)
-
-# Helper function for calculating ICB yearly totals for GP and FOI data ONLY
-# Pass `yearly_measure` as a string and `monthly_measure` as a variable
-icb_yearly_total <- function(data, icb_col, yearly_measure, monthly_measure){
-  data |> 
-    mutate(
-      # calculate reporting year (Aug 1st - Jun 31st) from month 
-      reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
-      # Add end date of reporting year
-      end_date = as.Date(paste0(reporting_year, "-07-31"))
-    ) |> 
-    group_by({{icb_col}}, end_date) |> 
-    summarise(
-      !!yearly_measure := sum({{monthly_measure}}, na.rm = TRUE), .groups = "drop"
-  )
-}
-
-gp_adhd_icb <- icb_yearly_total(gp_adhd_prescribing, stp, "yearly_items", items_by_chemical)
-
-# This is the same logic as SCMD above but with the mapping and slightly different column names
-# Can be turned into a function with some work
-gp_adhd_icb_yearly <- gp_adhd_icb |> 
-  # `end_date` needs to be a factor for the violin plot
-  mutate(end_date = as.factor(end_date)) |> 
-  group_by(end_date) |> 
-  rename(icb_code = stp) |>
-  left_join(icb_code_name_map, by = "icb_code") |> 
-  select(-icb_code) |> 
-  mutate(
-    icb_name = coalesce(icb_name, "Unidentified doctors"),
-    # Ranking ICBs by yearly items each year
-    year_rank = min_rank(desc(yearly_items)),
-    max_rank = max(year_rank, na.rm = T),
-    # Create columns to highlight top/bottom 5 ICBs in the fig
-    year_top5 = year_rank <= 5,
-    year_bottom5 = year_rank > max_rank - 5
-  ) |> 
-  # Turn ICB names into title case and remove "NHS" prefix
-  mutate(icb_name = icb_name |> 
-      str_remove("^NHS\\s*") |>
-      str_remove("\\s*Integrated Care Board$") |> 
-      str_to_title()
-  ) |> 
-  ungroup()
-
-top_gp_legend <- gp_adhd_icb_yearly |> 
-  filter(year_top5 == T) |> 
-  mutate(year = format(as.Date(end_date), "%Y")) |> 
-  distinct(icb_name, year) |> 
-  group_by(icb_name) |> 
-  summarise(
-    years = paste(sort(unique(year)), collapse = ", "),
-    .groups = "drop"
-  ) |> 
-  mutate(label = paste0(icb_name, "<br>(", years, ")"))
-
-bottom_gp_legend <- gp_adhd_icb_yearly |> 
-  filter(year_bottom5 == T) |> 
-  mutate(year = format(as.Date(end_date), "%Y")) |> 
-  distinct(icb_name, year) |> 
-  group_by(icb_name) |> 
-  summarise(
-    years = paste(sort(unique(year)), collapse = ", "),
-    .groups = "drop"
-  ) |> 
-  mutate(label = paste0(icb_name, "<br>(", years, ")"))
-
-gp_shape_values <- c(21, 22, 23, 24, 25, 8)
-fig_gp_icb_yearly <- plot_yearly_violins(
-  data = gp_adhd_icb_yearly,
-  usage_measure = yearly_items,
-  top_legend = top_gp_legend,
-  bottom_legend = bottom_gp_legend,
-  shape_values = gp_shape_values,
-  title_label = "Yearly GP Prescribing by ICB"
-)
-
-fig_gp_icb_yearly
-
-ggsave(here("output", "figures", "fig_gp_icb_yearly.png"), fig_gp_icb_yearly, width = 15, height = 10)
-```
-
-## FOI ICB-level analysis
-
-```{r}
-unique(foi_adhd_icb$icb_code)
-# 70 unique values including "NA" (unidentified doctors), will need a mapping file!
+ggsave(here("output", "figures", "fig_scmd_icb_violins.png"), fig_scmd_icb_yearly, width = 15, height = 10)
 ```

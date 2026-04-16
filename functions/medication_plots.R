@@ -133,7 +133,7 @@ plot_yearly_violins <- function(
     data,
     aes(x = end_date, y = {{ usage_measure }})
   ) +
-    geom_violin(fill = "grey90", colour = NA) +
+    geom_violin(fill = "grey80", colour = NA) +
 
     # Layer with top 5 ICBs
     geom_jitter(
