@@ -414,3 +414,13 @@ fig_scmd_icb_violins
 
 ggsave(here("output", "figures", "fig_scmd_icb_violins.png"), fig_scmd_icb_yearly, width = 15, height = 10)
 ```
+
+## Summary statistics
+
+Can have the following:
+
+- Total prescribing/issuing quantity for each data source for the entire analysis period (for every single month or to match yearly totals?) and possibly percentage change
+- Percentage of FOI/GP prescribing for each chemical
+- Possibly the top total prescribing/issuing ICBs?
+- Percentage of FOI and GP prescribing by unidentified doctors (N/A for SCMD)
+- ICB quartiles for the first and last year (GP, FOI, SCMD)
