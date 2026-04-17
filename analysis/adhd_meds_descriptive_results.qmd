@@ -431,8 +431,76 @@ ggsave(here("output", "figures", "fig_scmd_icb_violins.png"), fig_scmd_icb_yearl
 
 Can have the following:
 
-- Total prescribing/issuing quantity for each data source for the entire analysis period (for every single month or to match yearly totals?) and possibly percentage change
+- Total prescribing/issuing quantity for each data source for the entire analysis period (for every single month or to match yearly totals? currently the stats below include all SCMD data which doesn't match yearly aggregated data because there are some extra months) and percentage change
+
+```{r}
+# Prepare GP, FOI, and SCMD dataframes to be combined
+gp_for_summary <- total_gp_over_time |> 
+  mutate(dataset = "GP", unit = "items") |> 
+  rename(monthly_value = monthly_items)
+
+foi_for_summary <- total_foi_over_time |> 
+  mutate(dataset = "FOI", unit = "items") |> 
+  rename(monthly_value = monthly_items)
+
+scmd_for_summary <- total_scmd_over_time |> 
+  mutate(dataset = "SCMD", unit = "ddd_quantity") |> 
+  rename(monthly_value = monthly_ddd_quantity)
+
+# Create summary table for total usage
+df_total_summary <- bind_rows(gp_for_summary, foi_for_summary, scmd_for_summary, .id = NULL) |> 
+  filter(bnf_chemical_name == "All chemicals") |> 
+  group_by(dataset) |> 
+  mutate(
+    # Start and end dates for each dataset - can change if appropriate
+    start_date = min(month),
+    start_value = monthly_value[which.min(month)],
+    end_date = max(month),
+    end_value = monthly_value[which.max(month)],
+    # Total prescribing/issuing across time period 
+    total = sum(monthly_value)
+  ) |> 
+  select(-c(month, monthly_value, bnf_chemical_name)) |> 
+  distinct() |> 
+  # Percentage change of last month with data compared to first month with data
+  # Note that this is not necessarily 2015-08-01 as some chemicals were not recorded at first
+  # Have to pick the first month with data as dividing by 0 doesn't work!
+  mutate(pct_change = round((end_value - start_value) / start_value * 100, digits = 2))
+```
+
 - Percentage of FOI/GP prescribing for each chemical
+
+Need to think about how I do this, as FOI data for atomoxetine and guanfacine is missing for the first few months. Currently doing first year vs last year comparison (but I might want to do second year vs last year, given that the first year won't be complete?).
+
+```{r}
+# Same analysis time period: 2015-08-01 to 2025-07-01
+df_foi_gp_pct <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "dataset") |> 
+  mutate(
+    dataset = recode(dataset, "1" = "GP", "2" = "FOI")
+  ) |> 
+  group_by(dataset, bnf_chemical_name) |> 
+  mutate(
+    start_value = yearly_items[which.min(end_date)],
+    end_value = yearly_items[which.max(end_date)],
+    period_dataset_total = sum(yearly_items)
+  ) |> 
+  ungroup() |>
+  select(-c(end_date, yearly_items)) |> 
+  distinct() |> 
+  group_by(bnf_chemical_name) |> 
+  mutate(
+    start_total = sum(start_value),
+    start_pct = round(start_value / start_total * 100, digits = 2),
+    end_total = sum(end_value),
+    end_pct = round(end_value / end_total * 100, digits = 2),
+    period_total = sum(period_dataset_total),
+    period_pct = round(period_dataset_total / period_total * 100, digits = 2)
+  ) |>
+  select(-c(start_value, end_value, start_total, end_total, period_total, period_dataset_total)) |> 
+  arrange(bnf_chemical_name)
+
+```
+
 - Possibly the top total prescribing/issuing ICBs?
 - Percentage of FOI and GP prescribing by unidentified doctors (N/A for SCMD)
 - ICB quartiles for the first and last year (GP, FOI, SCMD)
