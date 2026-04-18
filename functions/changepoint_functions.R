@@ -19,7 +19,7 @@ log_mod_select <- function(data, chemical, monthly_measure) {
     type = "aic",
     refit = T, # improves model selection accuracy
     Kmax = 3, # max number of changepoints = 3
-    check.dslope = F # ensures only AIC is used to select model
+    check.dslope = T # removes breakpoints without a significant slope change
   )
 }
 
@@ -53,13 +53,20 @@ predicted <- function(model, chemical, data, source) {
 # Predicted values for log models with any number of changepoints, similar to `predicted` above
 # Enter any string for chemical and source in quotation marks
 # This is just to keep track of things when all predictions are combined as one file
-predicted_exp <- function(model, chemical, data, source) {
+predicted_exp <- function(model, chemical, data, source, nw_se) {
   # Generate predicted values using segmented model
   # `"response"` allows plotting on the scale of the response variable
   pred <- predict(model, se.fit = TRUE)
 
-  lowerci <- pred$fit - 1.96 * pred$se.fit
-  upperci <- pred$fit + 1.96 * pred$se.fit
+  if (missing(nw_se)) {
+    # Simply use `pred$se.fit` if no Newey-West CIs are needed
+    lowerci <- pred$fit - 1.96 * pred$se.fit
+    upperci <- pred$fit + 1.96 * pred$se.fit
+  } else {
+    # Use provided Newey-West SE vector to calculate 95% CI bounds
+    lowerci <- pred$fit - 1.96 * nw_se
+    upperci <- pred$fit + 1.96 * nw_se
+  }
 
   dat <- data |>
     dplyr::filter(bnf_chemical_name == chemical)
@@ -73,12 +80,12 @@ predicted_exp <- function(model, chemical, data, source) {
     # Take month (as date) from dat, this makes plotting easier and tells us when data is missing
     month = unique(dat$month),
     # Predicted values and 95% CIs
-    pred = exp(pred$fit),
+    pred = exp(pred$fit + sigma2 / 2),
     lci = exp(lowerci + sigma2 / 2),
     uci = exp(upperci + sigma2 / 2),
     # Labelling columns for chemical and data source
-    bnf_chemical = rep(chemical, length(pred$fit)),
-    data_source = rep(source, length(pred$fit))
+    bnf_chemical = chemical,
+    data_source = source
   )
   return(df.pred)
 }
@@ -133,6 +140,7 @@ extract_lin_slopes <- function(model, chemical, source) {
 # Same logic as above but exponentiates coefficients
 # and interprets slopes and 95% CIs as percent change
 extract_exp_slopes <- function(model, chemical, source) {
+  # slope_mat <- slope(model, .vcov = NeweyWest(model), lag = mod_lag, prewhite = F)$month_number
   slope_mat <- slope(model)$month_number
   # Return null after reaching the number of breakpoints specified in the model
   psi_mat <- tryCatch(summary(model)$psi, error = function(e) NULL)
