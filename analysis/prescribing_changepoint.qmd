@@ -371,8 +371,8 @@ gp_nw_coef_pvals <- coeftest(gp_all_months_model, vcov. = gp_nw_variance)[,4]
 gp_holm_coef_pvals <- p.adjust(gp_nw_coef_pvals, method = "holm")
 
 # Sanity test for Newey-West corrected 95% CIs
-round(coefci(gp_all_seasonal_model), digits = 5)
-round(coefci(gp_all_seasonal_model, .vcov = gp_nw_variance), digits = 5)
+round(coefci(gp_all_months_model), digits = 5)
+round(coefci(gp_all_months_model, .vcov = gp_nw_variance), digits = 5)
 # CIs are sometimes wider and sometimes narrower after Newey-West correction, which can sometimes happen
 
 # Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
@@ -505,20 +505,18 @@ ncol(gp_mod_matrix) == nrow(gp_nw_variance)
 # Matrix multiplication to get SE for each predicted value
 gp_nw_se <- sqrt(rowSums((gp_mod_matrix %*% gp_nw_variance) * gp_mod_matrix))
 
-# Use function to get prediction df
+# Use functions to get prediction and slopes dfs
 pred_gp_all_months <- predicted_exp(
   gp_all_months_model, "All chemicals", total_gp_over_time, "GP", gp_nw_se
 )
 
-slope_gp_all_months <- extract_exp_slopes(gp_all_months_model, "3", "All chemicals", "GP")
-
-slope_gp_all_seasonal_old <- extract_exp_slopes(gp_all_seasonal_model, "All chemicals", "GP")
+slope_gp_all_months <- extract_exp_slopes(gp_all_months_model, "All chemicals", "GP", gp_nw_variance)
 ```
 
 #### Plotting log-transformed models with observed data
 ```{r}
 # Rounding breakpoints to nearest month
-gp_log_break_months <- round(c(slope_gp_all_log$bp1, slope_gp_all_seasonal$bp1, slope_gp_all_seasonal$bp2, slope_gp_all_seasonal$bp3))
+gp_log_break_months <- round(c(slope_gp_all_log$bp1, slope_gp_all_months$bp1, slope_gp_all_months$bp2))
 
 # Convert month number into date
 gp_all_break_dates <- gp_all_chemicals$month[gp_log_break_months + 1]
@@ -536,21 +534,21 @@ ggplot() +
     aes(x = month, y = pred, colour = "Segmented log-linear model")
   ) +
   geom_line(
-    data = pred_gp_all_seasonal,
-    aes(x = month, y = pred, colour = "Segmented seasonal log-linear model")
+    data = pred_gp_all_months,
+    aes(x = month, y = pred, colour = "Segmented log-linear model w/ month dummies")
   ) +  
   scale_colour_manual(
     values = c(
       "Observed" = "black",
       "Segmented log-linear model" = "red",
-      "Segmented seasonal log-linear model" = "blue"
+      "Segmented log-linear model w/ month dummies" = "blue"
     )
   ) +
   annotate(x = ymd("2020-08-01"), y = 175000, label = "2020-08-01", geom = "label", colour = "red") +
   theme(legend.position = "right")
 ```
 
-Looks like a decent fit. Adding a dummy variable improves the fit a bit visually (but change points are harder to see) but doesn't improve autocorrelation. I thihnk I need to explicitly adjust for autocorrelation.  
+Looks like a decent fit. Adding a dummy variable improves the fit a bit visually (but change points are harder to see) but doesn't improve autocorrelation. Therefore, the Newey-West heteroscedasticity and autocorrelation consistent (HAC) covariance matrix estimators were used to re-estimate 95% CIs and p-values.     
 
 ## SCMD Issuing Data (DDD quantity)
 

@@ -53,9 +53,10 @@ predicted <- function(model, chemical, data, source) {
 # Predicted values for log models with any number of changepoints, similar to `predicted` above
 # Enter any string for chemical and source in quotation marks
 # This is just to keep track of things when all predictions are combined as one file
+# Provide Newey-West standard errors `nw_se` only when needed
 predicted_exp <- function(model, chemical, data, source, nw_se) {
   # Generate predicted values using segmented model
-  # `"response"` allows plotting on the scale of the response variable
+  # `"response"` not needed for log-linear models
   pred <- predict(model, se.fit = TRUE)
 
   if (missing(nw_se)) {
@@ -139,9 +140,15 @@ extract_lin_slopes <- function(model, chemical, source) {
 # Slope calculation for log models with up to 3 breakpoints
 # Same logic as above but exponentiates coefficients
 # and interprets slopes and 95% CIs as percent change
-extract_exp_slopes <- function(model, chemical, source) {
-  # slope_mat <- slope(model, .vcov = NeweyWest(model), lag = mod_lag, prewhite = F)$month_number
-  slope_mat <- slope(model)$month_number
+extract_exp_slopes <- function(model, chemical, source, nw_variance) {
+  # Construct slope matrix using `slope()`
+  if (missing(nw_variance)) {
+    # When Newey-West variance adjustment is not needed
+    slope_mat <- slope(model)$month_number
+  } else {
+    slope_mat <- slope(model, .vcov = nw_variance)$month_number
+  }
+
   # Return null after reaching the number of breakpoints specified in the model
   psi_mat <- tryCatch(summary(model)$psi, error = function(e) NULL)
 
