@@ -372,7 +372,7 @@ gp_holm_coef_pvals <- p.adjust(gp_nw_coef_pvals, method = "holm")
 
 # Sanity test for Newey-West corrected 95% CIs
 round(coefci(gp_all_months_model), digits = 5)
-round(coefci(gp_all_months_model, .vcov = gp_nw_variance), digits = 5)
+round(coefci(gp_all_months_model, vcov. = gp_nw_variance), digits = 5)
 # CIs are sometimes wider and sometimes narrower after Newey-West correction, which can sometimes happen
 
 # Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
@@ -552,7 +552,7 @@ Looks like a decent fit. Adding a dummy variable improves the fit a bit visually
 
 ## SCMD Issuing Data (DDD quantity)
 
-Fitting a linear segmented model (3 breakpoints) with an UNTRANSFORMED y-axis (monthly DDD quantity) is the best choice. 
+Fitting a linear segmented model (3 breakpoints) with an UNTRANSFORMED y-axis (monthly DDD quantity) is the best choice. Although models with monthly dummies or just dummies for significant months have lower AIC, those models only find 2 breakpoints which is a poorer visual fit for the data. 
 
 ```{r}
 #| label: create-scmd-linear-model
@@ -573,13 +573,13 @@ scmd_all_lin3_model <- selgmented(
   type = "aic",
   refit = T,
   Kmax = 3,
-  check.dslope = F
+  check.dslope = T
   )
 # 3 breakpoints has lowest AIC (1828.880)
 # If I use Kmax = 5, 3 breakpoints still has the lowest AIC
 
 summary(scmd_all_lin3_model)
-# Estimated break points: 12.948, 15.694, 70.992
+# Estimated break points: 12.948 (SE = 0.678), 15.694 (SE = 0.773), 70.992 (SE = 0.942)
 ```
 
 Checking model fit and assumptions 
@@ -592,7 +592,7 @@ check_model(scmd_all_lin3_model)
 # Reasonable linearity, homogeneity of variance, and normality of residuals. 2 outliers detected. Some high collinearity but not a big concern. 
 ```
 
-Again, starting start with a seasonality plot to observe seasonal patterns.
+Again, starting with a seasonality plot to observe seasonal patterns.
 
 ```{r}
 # Convert SCMD data into `ts` object for seasonality plot
@@ -602,7 +602,7 @@ ggseasonplot(ts_scmd_all)
 # Seasonal effect less obvious but there seems to be a spike in March
 ```
 
-Now to fit the model: 
+Now to fit the model with dummy month factors: 
 
 ```{r}
 total_scmd_over_time$month_factor <- factor(
@@ -610,36 +610,86 @@ total_scmd_over_time$month_factor <- factor(
   levels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
 )
 
-scmd_all_seasonal_model0 <- lm(
+scmd_all_months_model0 <- lm(
   monthly_ddd_quantity ~ month_number + month_factor,
   data = total_scmd_over_time,
   subset = bnf_chemical_name == "All chemicals"
 )
 
-scmd_all_seasonal_model <- selgmented(
-  scmd_all_seasonal_model0,
+scmd_all_months_model <- selgmented(
+  scmd_all_months_model0,
   seg.Z = ~ month_number,
   type = "aic",
   refit = T, # improves model selection accuracy
   Kmax = 2, # max number of changepoints = 2 as 3 breakpoints makes calculation fail
-  check.dslope = F # ensures only AIC is used to select model
+  check.dslope = T 
 )
 # 2 breakpoints has lowest AIC (1822.564), which is lower than the model without the dummy month factor
 
-summary(scmd_all_seasonal_model) 
-# Estimated breakpoints: 32.202, 69.014, 91.001
-# Significant effect for Aug only
+summary(scmd_all_months_model) 
+# Estimated breakpoints: 23.933 (SE = 1.611), 70.805 (SE = 0.989)
+# Significant effect for Aug only (uncorrected p-values)
 
 # Check model fit
-check_model(scmd_all_seasonal_model)
+check_model(scmd_all_months_model)
 # Meets linearity, homoscedasticity, and normality of residual assumptions; similar to model w/o monthly dummy variable
 # No significant outliers; slightly better fit than model w/o monthly dummy variable in this sense 
 
-acf(residuals(scmd_all_seasonal_model))
+acf(residuals(scmd_all_months_model))
 # Autocorrelation still present at lag = 1, 7, and 17
 
 plot(scmd_all_seasonal_model)
 ```
+
+As for the GP data, due to the presence of autocorrelation, Newey-West adjustments for 95% confidence intervals (95% CIs) and p values. I will then use the Holm corection for multiple comparisons.
+
+```{r}
+# Automatically select lag (bandwidth) according to the model
+scmd_nw <- NeweyWest(scmd_all_months_model, lag = NULL, prewhite = FALSE, verbose = T)
+# Lag = 4 using Bartlett kernels for automatic bandwidth selection
+
+# Extract Newey-West covariance matrix
+scmd_nw_variance <- NeweyWest(scmd_all_months_model, lag = 4, prewhite = F)
+
+# Newey-West adjusted p values (before multiple testing correction)
+scmd_nw_coef_pvals <- coeftest(scmd_all_months_model, vcov. = scmd_nw_variance)[,4]
+
+# Add Holm correction for multiple testing to identify months with a significant effect
+scmd_holm_coef_pvals <- p.adjust(scmd_nw_coef_pvals, method = "holm")
+
+# Sanity test for Newey-West corrected 95% CIs
+round(coefci(scmd_all_months_model), digits = 5)
+round(coefci(scmd_all_months_model, vcov. = scmd_nw_variance), digits = 5)
+# CIs are sometimes wider and sometimes narrower after Newey-West correction, which can happen
+
+# Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
+# Same logic as for GP data but no need to exponentiate
+# And no need to interpret coefficients as percentage changes (they are absolute changes for a linear model)
+df_scmd_nw_coef <- data.frame(
+  est = scmd_all_months_model$coef,
+  coefci(scmd_all_months_model, vcov. = scmd_nw_variance)
+) |> 
+  rownames_to_column("coef") |> 
+  rename(lci = "X2.5..", uci = "X97.5..") |> 
+  mutate(
+    est = round(est, 5),
+    lci = round(lci, 5),
+    uci = round(uci, 5),
+    # Add adjusted p-values
+    holm_pvals = round(scmd_holm_coef_pvals, digits = 5),
+    # Identifier columns 
+    data_source = "SCMD",
+    bnf_chemical = "All chemicals"
+  ) |>
+  # Remove irrelevant rows
+  filter_out(coef %in% c("psi1.month_number", "psi2.month_number")) |> 
+  # Only show dummy month factors with a sig. effect
+  filter(holm_pvals < 0.0500) |> 
+  relocate(holm_pvals, .after = coef)
+
+# Only Aug is significantly different to Jan according to Newey-West p values adjusted for multiple corrections.
+```
+
 
 Model with only august as a dummy factor
 
@@ -662,12 +712,12 @@ scmd_all_aug_model <- selgmented(
   type = "aic",
   refit = T, # improves model selection accuracy
   Kmax = 3, # max number of changepoints = 3 
-  check.dslope = F # ensures only AIC is used to select model
+  check.dslope = T # ensures only AIC is used to select model
 )
 # 2 breakpoints has lowest AIC (1815.751), which is lower than the other two models
 
 summary(scmd_all_aug_model) 
-# Estimated breakpoints: 24.547, 70.388
+# Estimated breakpoints: 24.547 (SE = 1.566), 70.388 (SE = 1.040)
 # Significant effect for Aug factor
 
 # Check model fit
@@ -681,6 +731,57 @@ acf(residuals(scmd_all_aug_model))
 plot(scmd_all_aug_model)
 ```
 
+Newey-West adjusted coefficient 95% CIs and p values
+
+```{r}
+# Automatically select lag (bandwidth) according to the model
+scmd_aug_nw <- NeweyWest(scmd_all_aug_model, lag = NULL, prewhite = FALSE, verbose = T)
+# Lag = 3 using Bartlett kernels for automatic bandwidth selection
+
+# Extract Newey-West covariance matrix
+scmd_aug_nw_variance <- NeweyWest(scmd_all_aug_model, lag = 3, prewhite = F)
+
+# Newey-West adjusted p values (before multiple testing correction)
+scmd_aug_nw_coef_pvals <- coeftest(scmd_all_aug_model, vcov. = scmd_aug_nw_variance)[,4]
+
+# Add Holm correction for multiple testing to identify months with a significant effect
+scmd_aug_holm_coef_pvals <- p.adjust(scmd_aug_nw_coef_pvals, method = "holm")
+
+# Sanity test for Newey-West corrected 95% CIs
+round(coefci(scmd_all_aug_model), digits = 5)
+round(coefci(scmd_all_aug_model, vcov. = scmd_aug_nw_variance), digits = 5)
+# CIs are sometimes wider and sometimes narrower after Newey-West correction, which can happen
+
+# Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
+# Same logic as for GP data but no need to exponentiate
+# And no need to interpret coefficients as percentage changes (they are absolute changes for a linear model)
+df_scmd_aug_nw_coef <- data.frame(
+  est = scmd_all_aug_model$coef,
+  coefci(scmd_all_aug_model, vcov. = scmd_aug_nw_variance)
+) |> 
+  rownames_to_column("coef") |> 
+  rename(lci = "X2.5..", uci = "X97.5..") |> 
+  mutate(
+    est = round(est, 5),
+    lci = round(lci, 5),
+    uci = round(uci, 5),
+    # Add adjusted p-values
+    holm_pvals = round(scmd_aug_holm_coef_pvals, digits = 5),
+    # Identifier columns 
+    data_source = "SCMD",
+    bnf_chemical = "All chemicals"
+  ) |>
+  # Remove irrelevant rows
+  filter_out(coef %in% c("psi1.month_number", "psi2.month_number")) |> 
+  # Only show dummy month factors with a sig. effect
+  filter(holm_pvals < 0.0500) |> 
+  relocate(holm_pvals, .after = coef)
+
+# Only Aug is significantly different to Jan according to Newey-West p values adjusted for multiple corrections.
+```
+
+
+
 #### Calculating predicted values and slope
 
 Uses `predicted` for calculating predicted values and `slope3` for calculating 95% CI bounds for each segment. `Predicted` is similar to `predited_exp` but for linear models. `slope3` is very similar to Andrea's various `slope` functions. 
@@ -693,25 +794,77 @@ pred_scmd_all_lin3 <- predicted(scmd_all_lin3_model, "All chemicals", total_scmd
 # Generate df with slopes and 95% CI bounds for each segment
 slope_scmd_all_lin3 <- extract_lin_slopes(scmd_all_lin3_model, "All chemicals", "SCMD")
 
-pred_scmd_all_seasonal <- predicted(scmd_all_seasonal_model, "All chemicals", total_scmd_over_time, "SCMD")
 
-pred_scmd_all_aug <- predicted(scmd_all_aug_model, "All chemicals", total_scmd_over_time, "SCMD")
+# Linear model with month dummies
+# Need to calculate Newey-West SE to calculate 95%CIs
+# Extract model matrix
+scmd_mod_matrix <- model.matrix(scmd_all_months_model)
+View(as.data.frame(scmd_mod_matrix))
+# Mostly 0s and 1s and looks as expected
+
+# Check that ncol of model matrix matches nrow NW variance matrix, important for matrix multiplication step
+ncol(scmd_mod_matrix) == nrow(scmd_nw_variance)
+# [1] TRUE
+
+# Matrix multiplication to get SE for each predicted value
+scmd_nw_se <- sqrt(rowSums((scmd_mod_matrix %*% scmd_nw_variance) * scmd_mod_matrix))
+
+# Use functions to get prediction and slopes dfs
+
+pred_scmd_all_months <- predicted(scmd_all_months_model, "All chemicals", total_scmd_over_time, "SCMD", scmd_nw_se)
+
+slope_scmd_all_months <- extract_lin_slopes(scmd_all_months_model, "All chemicals", "SCMD", scmd_nw_variance)
+
+# Linear model with only Aug dummy
+# Need to calculate Newey-West SE to calculate 95%CIs
+# Extract model matrix
+scmd_aug_mod_matrix <- model.matrix(scmd_all_aug_model)
+View(as.data.frame(scmd_aug_mod_matrix))
+# Mostly 0s and 1s and looks as expected
+
+# Check that ncol of model matrix matches nrow NW variance matrix, important for matrix multiplication step
+ncol(scmd_aug_mod_matrix) == nrow(scmd_aug_nw_variance)
+# [1] TRUE
+
+# Matrix multiplication to get SE for each predicted value
+scmd_aug_nw_se <- sqrt(rowSums((scmd_aug_mod_matrix %*% scmd_aug_nw_variance) * scmd_aug_mod_matrix))
+
+pred_scmd_all_aug <- predicted(scmd_all_aug_model, "All chemicals", total_scmd_over_time, "SCMD", scmd_aug_nw_se)
+
+slope_scmd_all_aug <- extract_lin_slopes(scmd_all_aug_model, "All chemicals", "SCMD", scmd_aug_nw_variance)
 ```
 
 #### Plotting the linear model with observed data.
 
 ```{r}
 # Rounding breakpoints to nearest month
-scmd_all_break_months <- round(c( 
+scmd_lin3_break_months <- round(c( 
   slope_scmd_all_lin3$bp1, 
   slope_scmd_all_lin3$bp2,
   slope_scmd_all_lin3$bp3
   )
 )
 
+scmd_month_break_months <- round(c( 
+  slope_scmd_all_months$bp1, 
+  slope_scmd_all_months$bp2
+  )
+)
+
+scmd_aug_break_months <- round(c( 
+  slope_scmd_all_aug$bp1, 
+  slope_scmd_all_aug$bp2
+  )
+)
 # Convert month number into date
-scmd_all_break_dates <- scmd_all_chemicals$month[scmd_all_break_months + 1]
+scmd_lin3_break_dates <- scmd_all_chemicals$month[scmd_lin3_break_months + 1]
 # "2020-02-01", "2020-05-01", "2024-12-01"
+
+scmd_month_break_dates <- scmd_all_chemicals$month[scmd_month_break_months + 1]
+# "2021-01-01", "2024-12-01"
+
+scmd_aug_break_dates <- scmd_all_chemicals$month[scmd_aug_break_months + 1]
+# "2021-02-01", "2024-11-01"
 
 ggplot() +
   geom_point(
@@ -726,7 +879,7 @@ ggplot() +
     alpha = .7
   ) +
   geom_line(
-    data = pred_scmd_all_seasonal,
+    data = pred_scmd_all_months,
     aes(x= month, y = pred, colour = "Segmented seasonal model"),
     size = 1,
     alpha = .7
@@ -737,7 +890,9 @@ ggplot() +
     size = 1,
     alpha = .7
   ) +
-  geom_vline(xintercept = scmd_all_break_dates, colour = c("blue", "blue", "blue"), alpha = 0.5) +
+  geom_vline(xintercept = scmd_lin3_break_dates, colour = c("blue", "blue", "blue"), alpha = 0.5) +
+  geom_vline(xintercept = scmd_month_break_dates, colour = c("red", "red"), alpha = 0.5) +
+  geom_vline(xintercept = scmd_aug_break_dates, colour = c("green", "green"), alpha = 0.5) +
   scale_colour_manual(
     values = c(
       "Observed" = "black",

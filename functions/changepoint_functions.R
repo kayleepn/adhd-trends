@@ -26,10 +26,21 @@ log_mod_select <- function(data, chemical, monthly_measure) {
 # Predicted values for linear models with any number of changepoints
 # Enter any string for chemical and source in quotation marks
 # This is just to keep track of things when all predictions are combined as one file
-predicted <- function(model, chemical, data, source) {
+# Provide Newey-West standard errors `nw_se` only when needed
+predicted <- function(model, chemical, data, source, nw_se) {
   # Generate predicted values using segmented model
   # `"response"` allows plotting on the scale of the response variable
   pred <- predict(model, se.fit = TRUE, type = "response")
+
+  if (missing(nw_se)) {
+    # Simply use `pred$se.fit` if no Newey-West CIs are needed
+    lowerci <- pred$fit - 1.96 * pred$se.fit
+    upperci <- pred$fit + 1.96 * pred$se.fit
+  } else {
+    # Use provided Newey-West SE vector to calculate 95% CI bounds
+    lowerci <- pred$fit - 1.96 * nw_se
+    upperci <- pred$fit + 1.96 * nw_se
+  }
 
   dat <- data |>
     dplyr::filter(bnf_chemical_name == chemical)
@@ -44,8 +55,8 @@ predicted <- function(model, chemical, data, source) {
     lci = pred$fit - 1.96 * pred$se.fit,
     uci = pred$fit + 1.96 * pred$se.fit,
     # Labelling columns for chemical and data source
-    bnf_chemical = rep(chemical, length(pred$fit)),
-    data_source = rep(source, length(pred$fit))
+    bnf_chemical = chemical,
+    data_source = source
   )
   return(df.pred)
 }
@@ -93,8 +104,16 @@ predicted_exp <- function(model, chemical, data, source, nw_se) {
 
 # Slope calculation for linear models with up to 3 breakpoints
 # Avoids needing different functions for models with different numbers of breakpoints
-extract_lin_slopes <- function(model, chemical, source) {
-  slope_mat <- slope(model)$month_number
+# Only provide `nw_variance` if Newey-West corrections needed for slope CIs
+extract_lin_slopes <- function(model, chemical, source, nw_variance) {
+  # Construct slope matrix using `slope()`
+  if (missing(nw_variance)) {
+    # When Newey-West variance adjustment is not needed
+    slope_mat <- slope(model)$month_number
+  } else {
+    slope_mat <- slope(model, .vcov = nw_variance)$month_number
+  }
+
   # Return null after reaching the number of breakpoints specified in the model
   psi_mat <- tryCatch(summary(model)$psi, error = function(e) NULL)
 
