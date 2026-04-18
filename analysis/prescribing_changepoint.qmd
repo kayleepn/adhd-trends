@@ -703,3 +703,19 @@ ggplot() +
 ```
 
 The two close breakpoints (2020-02-01 and 2020-05-01) can be interpreted as an 'unusual' period due to the COVID-19 pandemic. 
+
+## Export useful things for plotting
+
+Combining predicted values and slope dataframes and exporting as csv
+
+```{r}
+pred_all <- mget(ls(pattern = "^pred_")) |> 
+  bind_rows()
+
+write.csv(pred_all, here("output", "changepoint_analysis", "predicted_values.csv"), row.names = FALSE)
+
+slope_all <- mget(ls(pattern = "^slope_")) |> 
+  bind_rows() 
+
+write.csv(slope_all, here("output", "changepoint_analysis", "model_slopes.csv"), row.names = FALSE)
+```
