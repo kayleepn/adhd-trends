@@ -13,6 +13,7 @@ summarise_yearly <- function(data, facet_name, desc) {
 plot_code_usage <- function(
   data,
   title_label,
+  legend_title,
   text_size = 16,
   point_size = 2,
   x_label = "End date of yearly reporting period",
@@ -30,25 +31,26 @@ plot_code_usage <- function(
     data,
     aes(x = end_date, y = usage, colour = breakdown)
   ) +
-    geom_line(alpha = .5) +
-    geom_point(size = point_size, alpha = .5) +
+    geom_line(alpha = .7) +
+    geom_point(size = point_size, alpha = .7) +
+    scale_colour_viridis_d(alpha = 0.7, end = 0.9, option = "H") +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    labs(x = x_label, y = y_label, title = title_label, colour = "Age group") +
+    labs(x = x_label, y = y_label, title = title_label, colour = legend_title) +
     # Using black and white theme
     theme_bw(
       base_size = text_size
     ) +
     theme(
       text = element_text(family = "Times New Roman"),
-      axis.text.x = element_text(size = 14),
-      axis.text.y = element_text(size = 14),
-      # Enable markdown in legend labels and sets strip text size
-      legend.text = element_markdown(size = 12),
+      axis.text.x = element_text(size = 16),
+      axis.text.y = element_text(size = 16),
+      # Enable markdown in legend labels
+      legend.text = element_markdown(size = 14),
       legend.title = element_text(family = "Times New Roman"),
       legend.key.spacing.y = unit(5, "pt"),
       legend.background = element_rect(

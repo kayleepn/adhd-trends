@@ -349,12 +349,12 @@ df_icd10_age_10_fig <- df_icd10_diag_breakdowns |>
   ) |>
   ungroup()
 
-fig_icd10_age_10_breakdowns <- plot_code_usage(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns")
+fig_icd10_age_10_breakdowns <- plot_code_usage(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns", "Age group")
 
 fig_icd10_age_10_breakdowns
 ```
 
-Note that the 10 colours are only distinguishable if I use the full colour spectrum, which not may be colour blind friendly. 
+Note that the 10 colours are only distinguishable if I use the 'turbo' option in `viridis`, which is a more colour-friendly version of a rainbow scale. 
 
 ### Sex breakdowns
 
@@ -377,17 +377,16 @@ df_icd10_sex_breakdowns_fig <- df_icd10_diag_breakdowns |>
     breakdown = paste0(breakdown, " (n = ", scales::comma(sum(usage)), ")")
   )
 
-fig_icd10_sex_breakdowns <- plot_code_usage(df_icd10_sex_breakdowns_fig, "ICD-10 Code Usage: Sex Breakdowns")
+fig_icd10_sex_breakdowns <- plot_code_usage(df_icd10_sex_breakdowns_fig, "ICD-10 Code Usage: Sex Breakdowns", "Sex")
 
 fig_icd10_sex_breakdowns
 ```
 
-Note that this is probably not colour blind friendly either.
 
 ### Combined figure for ICD-10 breakdowns
 
 ```{r}
-fig_icd10_breakdowns <- fig_icd10_age_10_breakdowns + fig_icd10_sex_breakdowns + plot_annotation(tag_levels = "A")
+fig_icd10_breakdowns <- fig_icd10_age_10_breakdowns / fig_icd10_sex_breakdowns + plot_annotation(tag_levels = "A")
 
 ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 15, height = 10)
 ```
