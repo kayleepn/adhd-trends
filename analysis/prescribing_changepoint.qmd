@@ -25,35 +25,6 @@ library(sandwich)
 library(lmtest)
 
 source(here("functions", "changepoint_functions.R"))
-
-foi_adhd_prescribing <- read_csv(
-  here(
-    "output",
-    "foi_prescribing",
-    "adhd_foi_prescribing.csv"
-  )
-)
-
-gp_adhd_prescribing <- read_parquet(
-  here(
-    "output",
-    "openprescribing",
-    "adhd_gp_prescribing_chemical.parquet"
-  )
-)
-
-scmd_adhd_issuing <- read_csv(
-  here(
-    "output",
-    "web-openprescribing-hospitals",
-    "adhd_oph_web_ddd_quantity.csv"
-  )
-) |> 
-  janitor::clean_names() |> 
-  rename(
-    month = date,
-    bnf_chemical_name = vtm_name
-  ) 
 ```
 
 ## Data sources 
