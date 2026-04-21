@@ -32,6 +32,8 @@ library(ggtext)
 library(ggnewscale)
 library(stringr)
 
+options(scipen = 999) # Turn off scientific notation
+
 source(here("functions", "medication_plots.R"))
 
 # Read in data files
@@ -235,7 +237,7 @@ unique(gp_adhd_prescribing$stp)
 # 43 unique values including "NA" (unidentified doctors)
 
 # Helper function for calculating ICB yearly totals for GP and FOI data ONLY
-icb_yearly_total <- function(data, icb_col, monthly_col){
+icb_yearly_total <- function(data, icb_col, monthly_col, dataset){
   data |> 
     mutate(
       # calculate reporting year (Aug 1st - Jul 31st) from month 
@@ -247,11 +249,14 @@ icb_yearly_total <- function(data, icb_col, monthly_col){
     summarise(
       yearly_items = sum({{monthly_col}}, na.rm = TRUE), .groups = "drop"
     ) |> 
-    mutate(end_date = as.factor(end_date))
+    mutate(
+      end_date = as.factor(end_date),
+      dataset = dataset # This is useful for summary stats later
+    )
 }
 
 # Map ICB codes to ICB names
-gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemical) |>  
+gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemical, "GP") |>  
   rename(icb_code = stp) |>
   left_join(icb_code_name_map, by = "icb_code") |> 
   select(-icb_code)
@@ -349,9 +354,9 @@ setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
 # ICB names match the mapping file but FOI data includes "Unidentified doctors")
 
 # Calculate yearly prescribing for each ICB
-foi_adhd_icb <- icb_yearly_total(foi_adhd_20to25, icb_name, items)
+foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
 # Rank ICBs according to yearly prescribing
-foi_adhd_icb_ranked <- rank_icb_yearly(foi_adhd_icb, yearly_items)
+foi_adhd_icb_ranked <- rank_icb_yearly(foi_adhd_icb_yearly, yearly_items)
 
 # Create top and bottom legends
 top_foi_legend <- create_top_legend(foi_adhd_icb_ranked)
@@ -401,7 +406,10 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
   group_by(icb_name, end_date) |> 
   summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
   # `end_date` needs to be a factor for the violin plot
-  mutate(end_date = as.factor(end_date))
+  mutate(
+    end_date = as.factor(end_date),
+    dataset = "SCMD" # This is useful for summary stats later
+  )
 
 # Rank ICBs by yearly DDD quantity
 scmd_adhd_icb_ranked <- rank_icb_yearly(scmd_adhd_icb_yearly, yearly_ddd_quantity)
@@ -435,20 +443,20 @@ Can have the following:
 
 ```{r}
 # Prepare GP, FOI, and SCMD dataframes to be combined
-gp_for_summary <- total_gp_over_time |> 
+gp_monthly_summary <- total_gp_over_time |> 
   mutate(dataset = "GP", unit = "items") |> 
   rename(monthly_value = monthly_items)
 
-foi_for_summary <- total_foi_over_time |> 
+foi_monthly_summary <- total_foi_over_time |> 
   mutate(dataset = "FOI", unit = "items") |> 
   rename(monthly_value = monthly_items)
 
-scmd_for_summary <- total_scmd_over_time |> 
+scmd_monthly_summary <- total_scmd_over_time |> 
   mutate(dataset = "SCMD", unit = "ddd_quantity") |> 
   rename(monthly_value = monthly_ddd_quantity)
 
 # Create summary table for total usage
-df_total_summary <- bind_rows(gp_for_summary, foi_for_summary, scmd_for_summary, .id = NULL) |> 
+df_total_summary <- bind_rows(gp_monthly_summary, foi_monthly_summary, scmd_monthly_summary, .id = NULL) |> 
   filter(bnf_chemical_name == "All chemicals") |> 
   group_by(dataset) |> 
   mutate(
@@ -466,9 +474,11 @@ df_total_summary <- bind_rows(gp_for_summary, foi_for_summary, scmd_for_summary,
   # Note that this is not necessarily 2015-08-01 as some chemicals were not recorded at first
   # Have to pick the first month with data as dividing by 0 doesn't work!
   mutate(pct_change = round((end_value - start_value) / start_value * 100, digits = 2))
+
+print(df_total_summary$total)
 ```
 
-- Percentage of FOI/GP prescribing for each chemical
+### Percentage of FOI/GP prescribing for each chemical
 
 Need to think about how I do this, as FOI data for atomoxetine and guanfacine is missing for the first few months. Currently doing first year vs last year comparison (but I might want to do second year vs last year, given that the first year won't be complete?).
 
@@ -498,9 +508,102 @@ df_foi_gp_pct <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, 
   ) |>
   select(-c(start_value, end_value, start_total, end_total, period_total, period_dataset_total)) |> 
   arrange(bnf_chemical_name)
-
 ```
 
-- Possibly the top total prescribing/issuing ICBs?
-- Percentage of FOI and GP prescribing by unidentified doctors (N/A for SCMD)
-- ICB quartiles for the first and last year (GP, FOI, SCMD)
+### Top total prescribing/issuing ICBs across all years
+
+```{r}
+# Prepare dfs for combination
+gp_icb_yearly_summary <- gp_adhd_icb_yearly |> 
+  mutate(unit = "items") |> 
+  rename(yearly_value = yearly_items)
+
+foi_icb_yearly_summary <- foi_adhd_icb_yearly |> 
+  mutate(unit = "items") |> 
+  rename(yearly_value = yearly_items)
+
+scmd_icb_yearly_summary <- scmd_adhd_icb_yearly |> 
+  mutate(unit = "ddd_quantity") |> 
+  rename(yearly_value = yearly_ddd_quantity)
+
+# Summary df with all datasets
+icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary) |> 
+  # Need to turn factors back into dates
+  mutate(end_date = as.Date(end_date))
+
+df_icbs_ranked <- icb_yearly_summary |> 
+  group_by(dataset, icb_name) |> 
+  # Total prescribing/issuing across entire analysis period for each dataset
+  mutate(total = sum(yearly_value)) |> 
+  ungroup() |> 
+  select(-c(end_date, yearly_value)) |> 
+  distinct() |> 
+  group_by(dataset) |> 
+  mutate(
+    icb_name = coalesce(icb_name, "Unidentified doctors"),
+    # Ranking ICBs by total prescribing/issuing
+    rank = min_rank(desc(total))
+  ) |> 
+  ungroup()
+
+df_icbs_summary <- df_icbs_ranked |> 
+  group_by(dataset) |> 
+  mutate(
+    all_icbs_total = sum(total),
+    top_icb = icb_name[which.min(rank)],
+    bottom_icb = icb_name[which.max(rank)],
+    unidentified_rank = first(rank[icb_name == "Unidentified doctors"], default = NA_integer_),
+    # Calculate quartiles and IQR
+    q1 = quantile(total, probs = 0.25, na.rm = TRUE),
+    median = quantile(total, probs = 0.5, na.rm = TRUE),
+    q3 = quantile(total, probs = 0.75, na.rm = TRUE),
+    iqr = q3 - q1
+  ) |> 
+  select(-c(icb_name, total, rank)) |> 
+  distinct()
+  
+df_icbs_summary
+```
+
+### Percentage of GP and FOI prescribing by unidentified doctors (N/A for SCMD)
+
+```{r}
+df_unidentified <- icb_yearly_summary |> 
+  # No unidentified issuing for SCMD so filtering out the dataset
+  filter_out(dataset == "SCMD") |> 
+  mutate(icb_name = if_else(is.na(icb_name), "unidentified", "identified")) |> 
+  group_by(dataset, icb_name) |> 
+  summarise(total_value = sum(yearly_value), .groups = "drop") |> 
+  group_by(dataset) |> 
+  summarise(pct_unidentified = (total_value[icb_name == "unidentified"] / sum(total_value)) * 100, .groups = "drop")
+
+df_unidentified
+```
+
+Unidentified doctors contributed to 0.468% and 0.972% of total GP and FOI prescribing respectively. 
+Note: no GP prescribing from unidentified doctors after 2020-07-31.
+
+### ICB quartiles for the first and last year (GP, FOI, SCMD)
+
+```{r}
+df_first_last_icb_quartiles <- icb_yearly_summary |>  
+  group_by(dataset) |> 
+  # Only keep rows for the first and last year of each dataset
+  filter(end_date == min(end_date) | end_date == max(end_date)) |> 
+  group_by(dataset, end_date) |> 
+  mutate(
+    # Calculate total yearly value
+    total_yearly_value = sum(yearly_value),
+    # Calculate quartiles and IQR
+    q1 = quantile(yearly_value, probs = 0.25, na.rm = TRUE),
+    median = quantile(yearly_value, probs = 0.5, na.rm = TRUE),
+    q3 = quantile(yearly_value, probs = 0.75, na.rm = TRUE),
+    iqr = q3 - q1
+  ) |> 
+  ungroup() |> 
+  select(-c(yearly_value, icb_name)) |> 
+  distinct()
+  
+```
+
+These quartiles include unidentified doctors for GP and FOI prescribing. 
