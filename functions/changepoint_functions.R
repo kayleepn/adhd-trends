@@ -120,36 +120,40 @@ extract_lin_slopes <- function(model, chemical, source, nw_variance) {
   # Defining the output structure and pre-filling "NA"s
   out <- list(
     bnf_chemical = chemical,
-    data_source = source,
-    slope1 = NA,
-    lci1 = NA,
-    uci1 = NA,
-    slope2 = NA,
-    lci2 = NA,
-    uci2 = NA,
-    slope3 = NA,
-    lci3 = NA,
-    uci3 = NA,
-    slope4 = NA,
-    lci4 = NA,
-    uci4 = NA,
+    dataset = source,
+    slope1 = NA_character_,
+    s1_lci = NA_character_,
+    s1_uci = NA_character_,
+    slope2 = NA_character_,
+    s2_lci = NA_character_,
+    s2_uci = NA_character_,
+    slope3 = NA_character_,
+    s3_lci = NA_character_,
+    s3_uci = NA_character_,
+    slope4 = NA_character_,
+    s4_lci = NA_character_,
+    s4_uci = NA_character_,
     # bp: breakpoint
-    bp1 = NA,
-    bp2 = NA,
-    bp3 = NA
+    bp1 = NA_character_,
+    bp2 = NA_character_,
+    bp3 = NA_character_
   )
 
   # Extracting coefficients and placing them in the output list
   for (i in seq_len(nrow(slope_mat))) {
-    out[[paste0("slope", i)]] <- slope_mat[i, "Est."]
-    out[[paste0("lci", i)]] <- slope_mat[i, "CI(95%).l"]
-    out[[paste0("uci", i)]] <- slope_mat[i, "CI(95%).u"]
+    out[[paste0("slope", i)]] <- as.character(slope_mat[i, "Est."])
+    out[[paste0("s", i, "_lci")]] <- as.character(slope_mat[i, "CI(95%).l"])
+    out[[paste0("s", i, "_uci")]] <- as.character(slope_mat[i, "CI(95%).u"])
   }
 
-  # Adding breakpoint month numbers only if the breakpoint exists
+  # Adding breakpoint month numbers and SE only if the breakpoint exists
   if (!is.null(psi_mat)) {
     for (i in seq_len(nrow(psi_mat))) {
       out[[paste0("bp", i)]] <- psi_mat[i, "Est."]
+      out[[paste0("bp", i, "_lci")]] <- psi_mat[i, "Est."] -
+        (psi_mat[i, "St.Err"] * 1.96)
+      out[[paste0("bp", i, "_uci")]] <- psi_mat[i, "Est."] +
+        (psi_mat[i, "St.Err"] * 1.96)
     }
   }
 
@@ -174,33 +178,45 @@ extract_exp_slopes <- function(model, chemical, source, nw_variance) {
   # Defining the output structure and pre-filling "NA"s
   out <- list(
     bnf_chemical = chemical,
-    data_source = source,
-    pct_change1 = NA,
-    pct_lci1 = NA,
-    pct_uci1 = NA,
-    pct_change2 = NA,
-    pct_lci2 = NA,
-    pct_uci2 = NA,
-    pct_change3 = NA,
-    pct_lci3 = NA,
-    pct_uci3 = NA,
-    pct_change4 = NA,
-    pct_lci4 = NA,
-    pct_uci4 = NA,
-    bp1 = NA,
-    bp2 = NA,
-    bp3 = NA
+    dataset = source,
+    slope1 = NA_character_,
+    s1_lci = NA_character_,
+    s1_uci = NA_character_,
+    slope2 = NA_character_,
+    s2_lci = NA_character_,
+    s2_uci = NA_character_,
+    slope3 = NA_character_,
+    s3_lci = NA_character_,
+    s3_uci = NA_character_,
+    slope4 = NA_character_,
+    s4_lci = NA_character_,
+    s4_uci = NA_character_,
+    bp1 = NA_character_,
+    bp2 = NA_character_
   )
-
+  # potentially round and THEN paste0?
   for (i in seq_len(nrow(slope_mat))) {
-    out[[paste0("pct_change", i)]] <- (exp(slope_mat[i, "Est."]) - 1) * 100
-    out[[paste0("pct_lci", i)]] <- (exp(slope_mat[i, "CI(95%).l"]) - 1) * 100
-    out[[paste0("pct_uci", i)]] <- (exp(slope_mat[i, "CI(95%).u"]) - 1) * 100
+    out[[paste0("slope", i)]] <- paste0(
+      round((exp(slope_mat[i, "Est."]) - 1) * 100, digits = 2),
+      "%"
+    )
+    out[[paste0("s", i, "_lci")]] <- paste0(
+      round((exp(slope_mat[i, "CI(95%).l"]) - 1) * 100, digits = 2),
+      "%"
+    )
+    out[[paste0("s", i, "_uci")]] <- paste0(
+      round((exp(slope_mat[i, "CI(95%).u"]) - 1) * 100, digits = 2),
+      "%"
+    )
   }
 
   if (!is.null(psi_mat)) {
     for (i in seq_len(nrow(psi_mat))) {
       out[[paste0("bp", i)]] <- psi_mat[i, "Est."]
+      out[[paste0("bp", i, "_lci")]] <- psi_mat[i, "Est."] -
+        (psi_mat[i, "St.Err"] * 1.96)
+      out[[paste0("bp", i, "_uci")]] <- psi_mat[i, "Est."] +
+        (psi_mat[i, "St.Err"] * 1.96)
     }
   }
 

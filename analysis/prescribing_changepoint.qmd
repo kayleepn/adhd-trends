@@ -165,6 +165,36 @@ ggseasonplot(ts_foi_all)
 # No clear seasonality pattern
 ```
 
+Adjusting model coefficient p-values for multiple comparisons
+
+```{r}
+# p values (before multiple testing correction)
+foi_coef_pvals <- coeftest(foi_all_log_model)[,4]
+
+# Add Holm correction for multiple testing
+foi_holm_coef_pvals <- p.adjust(foi_coef_pvals, method = "holm")
+
+coef_foi <- data.frame(
+  est = exp(foi_all_log_model$coef),
+  exp(coefci(foi_all_log_model))
+) |> 
+  rownames_to_column("coef") |> 
+  rename(lci = "X2.5..", uci = "X97.5..") |> 
+  mutate(
+    est = paste0(round((est - 1) * 100, digits = 2), "%"),
+    lci = paste0(round((lci - 1) * 100, digits = 2), "%"),
+    uci = paste0(round((uci - 1) * 100, digits = 2), "%"),
+    # Add adjusted p-values
+    holm_pvals = round(foi_holm_coef_pvals, digits = 3),
+    # Identifier columns 
+    dataset = "FOI",
+    bnf_chemical = "All chemicals"
+  ) |>
+  # Remove irrelevant rows and columns
+  filter_out(coef %in% c("(Intercept)", "psi1.month_number", "psi2.month_number")) |>  
+  relocate(holm_pvals, .after = coef)
+```
+
 #### Calculating predicted values and slope
 
 `predicted_exp` is a function based on Andrea's `predicted` functions but modified to deal with log-transformed data. It generates a df using the model with predicted monthly items and 95% CI bounds over time.
@@ -177,12 +207,12 @@ pred_foi_all_log <- predicted_exp(
 )
 
 slope_foi_all_log <- extract_exp_slopes(foi_all_log_model, "All chemicals", "FOI") |> 
-  # Round breakpoint locations
+  # Round only breakpoint estimates
   mutate(bp1 = round(bp1), bp2 = round(bp2)) |> 
   # Convert to date
   mutate(
-    bp1 = foi_all_chemicals$month[bp1 + 1],
-    bp2 = foi_all_chemicals$month[bp2 + 1]
+    across(starts_with("bp1"), ~ foi_all_chemicals$month[.x + 1]),
+    across(starts_with("bp2"), ~ foi_all_chemicals$month[.x + 1]),
   )
 ```
 
@@ -302,27 +332,24 @@ round(coefci(gp_all_months_model, vcov. = gp_nw_variance), digits = 5)
 # CIs are sometimes wider and sometimes narrower after Newey-West correction, which can sometimes happen
 
 # Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
-df_gp_nw_coef <- data.frame(
+coef_gp_nw <- data.frame(
   est = exp(gp_all_months_model$coef),
   exp(coefci(gp_all_months_model, vcov. = gp_nw_variance))
 ) |> 
   rownames_to_column("coef") |> 
   rename(lci = "X2.5..", uci = "X97.5..") |> 
   mutate(
-    est = round(est, 5),
-    lci = round(lci, 5),
-    uci = round(uci, 5),
-    pct_est = round((est - 1) * 100, digits = 2),
-    pct_lci = round((lci - 1) * 100, digits = 2),
-    pct_uci = round((uci - 1) * 100, digits = 2),
+    est = paste0(round((est - 1) * 100, digits = 2), "%"),
+    lci = paste0(round((lci - 1) * 100, digits = 2), "%"),
+    uci = paste0(round((uci - 1) * 100, digits = 2), "%"),
     # Add adjusted p-values
-    holm_pvals = round(gp_holm_coef_pvals, digits = 5),
+    holm_pvals = round(gp_holm_coef_pvals, digits = 3),
     # Identifier columns 
-    data_source = "GP",
+    dataset = "GP",
     bnf_chemical = "All chemicals"
   ) |>
   # Remove irrelevant rows
-  filter_out(coef %in% c("psi1.month_number", "psi2.month_number")) |> 
+  filter_out(coef %in% c("(Intercept)", "psi1.month_number", "psi2.month_number")) |>  
   # Only show dummy month factors with a sig. effect
   filter(holm_pvals < 0.0500) |> 
   relocate(holm_pvals, .after = coef)
@@ -353,12 +380,12 @@ pred_gp_all_months <- predicted_exp(
 
 # Use `extract_exp_slopes` to get slopes df, same as FOI data except I specify NW variance matrix
 slope_gp_all_months <- extract_exp_slopes(gp_all_months_model, "All chemicals", "GP", gp_nw_variance) |> 
-  # Round breakpoint locations
+  # Round only breakpoint estimates
   mutate(bp1 = round(bp1), bp2 = round(bp2)) |> 
   # Convert to date
   mutate(
-    bp1 = gp_all_chemicals$month[bp1 + 1],
-    bp2 = gp_all_chemicals$month[bp2 + 1]
+    across(starts_with("bp1"), ~ gp_all_chemicals$month[.x + 1]),
+    across(starts_with("bp2"), ~ gp_all_chemicals$month[.x + 1])
   )
 ```
 
@@ -467,24 +494,25 @@ round(coefci(scmd_all_lin3_model, vcov. = scmd_lin3_nw_variance), digits = 5)
 # Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
 # Same logic as for GP data but no need to exponentiate
 # And no need to interpret coefficients as percentage changes (they are absolute changes for a linear model)
-df_scmd_lin3_nw_coef <- data.frame(
+coef_scmd_lin3_nw <- data.frame(
   est = scmd_all_lin3_model$coef,
   coefci(scmd_all_lin3_model, vcov. = scmd_lin3_nw_variance)
 ) |> 
   rownames_to_column("coef") |> 
   rename(lci = "X2.5..", uci = "X97.5..") |> 
+  # Need to turn `est`, `lci`, and `uci` columns to characters for `bind_rows()` to work later
   mutate(
-    est = round(est, 5),
-    lci = round(lci, 5),
-    uci = round(uci, 5),
+    est = as.character(round(est, 2)),
+    lci = as.character(round(lci, 2)),
+    uci = as.character(round(uci, 2)),
     # Add adjusted p-values
-    holm_pvals = round(scmd_lin3_holm_coef_pvals, digits = 5),
+    holm_pvals = round(scmd_lin3_holm_coef_pvals, digits = 3),
     # Identifier columns 
-    data_source = "SCMD",
+    dataset = "SCMD",
     bnf_chemical = "All chemicals"
   ) |>
   # Remove irrelevant rows
-  filter_out(coef %in% c("psi1.month_number", "psi2.month_number", "psi3.month_number")) |> 
+  filter_out(coef %in% c("(Intercept)", "psi1.month_number", "psi2.month_number", "psi3.month_number")) |> 
   # Only show dummy month factors with a sig. effect
   filter(holm_pvals < 0.0500) |> 
   relocate(holm_pvals, .after = coef)
@@ -601,13 +629,13 @@ scmd_lin3_nw_se <- sqrt(rowSums((scmd_mod_matrix %*% scmd_lin3_nw_variance) * sc
 pred_scmd_all_lin3 <- predicted(scmd_all_lin3_model, "All chemicals", total_scmd_over_time, "SCMD", scmd_lin3_nw_se)
 
 slope_scmd_all_lin3 <- extract_lin_slopes(scmd_all_lin3_model, "All chemicals", "SCMD", scmd_lin3_nw_variance) |> 
-  # Round breakpoint locations
+  # Round only breakpoint estimations but not 95% CI
   mutate(bp1 = round(bp1), bp2 = round(bp2), bp3 = round(bp3)) |> 
   # Convert to date
   mutate(
-    bp1 = scmd_all_chemicals$month[bp1 + 1],
-    bp2 = scmd_all_chemicals$month[bp2 + 1],
-    bp3 = scmd_all_chemicals$month[bp3 + 1],
+    across(starts_with("bp1"), ~ scmd_all_chemicals$month[.x + 1]),
+    across(starts_with("bp2"), ~ scmd_all_chemicals$month[.x + 1]),
+    across(starts_with("bp3"), ~ scmd_all_chemicals$month[.x + 1]),
   )
 ```
 
@@ -657,8 +685,13 @@ pred_all <- mget(ls(pattern = "^pred_")) |>
 
 write.csv(pred_all, here("output", "changepoint_analysis", "predicted_values.csv"), row.names = FALSE)
 
-slope_all <- mget(ls(pattern = "^slope_")) |> 
+slopes_all <- mget(ls(pattern = "^slope_")) |> 
+  bind_rows()
+
+write.csv(slopes_all, here("output", "changepoint_analysis", "model_slopes.csv"), row.names = FALSE)
+
+model_coef_all <- mget(ls(pattern = "^coef_")) |> 
   bind_rows() 
 
-write.csv(slope_all, here("output", "changepoint_analysis", "model_slopes.csv"), row.names = FALSE)
+write.csv(model_coef_all, here("output", "changepoint_analysis", "model_coefficients.csv"), row.names = FALSE)
 ```
