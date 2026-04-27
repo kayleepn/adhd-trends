@@ -5,11 +5,13 @@ author:
 format: html
 ---
 
-Aiming to plot actual prescribing/issuing over time with the predicted values (+ 95% confidence intervals) from the change point analysis. Only results for analysing all chemicals combined are plotted. One point for each of:
+Aiming to plot actual prescribing/issuing over time with the predicted values (+ 95% confidence intervals) from the change point analysis. Only results for analysing all chemicals combined are plotted. One plot for each of:
 
 1. GP data
 2. FOI data
 3. SCMD data.
+
+Also contains a summary table for change point model coefficients. 
 
 # Methods
 
@@ -21,7 +23,7 @@ library(tidyverse)
 library(here)
 library(patchwork)
 library(viridis)
-library(ggrepel)
+library(flextable)
 ```
 
 ## Read in data
@@ -45,11 +47,14 @@ scmd_all_issuing <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_all_c
   mutate(data_source = "SCMD") |> 
   rename(observed = monthly_ddd_quantity)
 
-# Predicted values across all 3 data sources
+# Predicted values across all 3 datasets
 predicted_values <- read_csv(here("output", "changepoint_analysis", "predicted_values.csv"))
 
-# Slopes (including breakpoint locations) across data sources
+# Slopes (including breakpoint locations) across datasets
 slopes <- read_csv(here("output", "changepoint_analysis", "model_slopes.csv"))
+
+# Model coefficients across datasets
+coefs <- read_csv(here("output", "changepoint_analysis", "model_coefficients.csv"))
 ```
 
 ## Organise data for plotting
@@ -59,7 +64,7 @@ slopes <- read_csv(here("output", "changepoint_analysis", "model_slopes.csv"))
 df_plots <- bind_rows(foi_all_prescribing, gp_all_prescribing, scmd_all_issuing) |> 
   left_join(predicted_values, by = join_by(month, data_source)) |> 
   # Remove unnecessary columns
-  select(-c(bnf_chemical, bnf_chemical_name))
+  dplyr::select(-c(bnf_chemical, bnf_chemical_name))
 
 # Get breakpoint dates as a vector
 breakpoints <- slopes |> 
@@ -68,7 +73,7 @@ breakpoints <- slopes |>
 		na.omit(c(bp1 = bp1, bp2 = bp2, bp3 = bp3))
 	)) |> 
 	ungroup() |> 
-	select(data_source, vec) |> 
+	dplyr::select(dataset, vec) |> 
 	deframe()
 ```
 
@@ -133,6 +138,7 @@ plot_changepoints <- function(
 			panel.grid.major.x = element_blank(),
 			panel.grid.minor.x = element_blank(),
 			plot.title = element_text(size = 20, hjust = .5),
+			axis.ticks.x = element_line(),
 			axis.title.x = element_text(size = 16),
 			axis.text.x = element_text(size = 16),
 			legend.text = element_text(size = 14),
@@ -145,7 +151,10 @@ plot_changepoints <- function(
 			axis.text.y = element_text(size = 16),
 			axis.title.y = element_text(size = 16)
 		) +
-		guides(fill = "none") + # Remove redundant legend
+		guides(
+			fill = "none", # Remove redundant legend
+			colour = guide_legend(nrow = 1)
+		) + 
 		annotate(
 			x = breakpoint_dates, 
 			y = label_y_pos, 
@@ -160,8 +169,7 @@ plot_changepoints <- function(
 		plot <- plot +
 			theme(
 				axis.title.x = element_blank(),
-				axis.text.x = element_blank(),
-				axis.ticks.x = element_blank()
+				axis.text.x = element_blank()
 			)
 	}
 
@@ -169,7 +177,7 @@ plot_changepoints <- function(
 }
 ```
 
-# Results
+# Results: plots
 
 ```{r}
 fig_gp_changepoints <- plot_changepoints(
@@ -213,13 +221,15 @@ The warning messages are because the SCMD data has less data available so it doe
 ```{r}
 fig_combined_changepoints <- fig_gp_changepoints / fig_foi_changepoints / fig_scmd_changepoints + 
 	plot_layout(guides = "collect") +
-	plot_annotation(
-		tag_levels = "A",
-		theme = theme(
-			plot.title = element_text(size = 16), 
-			legend.position = "bottom",
-			legend.title = element_blank())
+	plot_annotation(tag_levels = "A") &
+	theme(
+		plot.title = element_text(size = 16),
+		plot.tag = element_text(size = 20), 
+		legend.position = "bottom",
+		legend.title = element_blank(),
+		legend.box = "horizontal"
 	)
+	
 
 ggsave(
 	here("output", "figures", "fig_combined_changepoints.png"),
@@ -227,4 +237,10 @@ ggsave(
 	width = 10,
 	height = 10
 )
+```
+
+# Results: table
+
+```{r}
+
 ```
