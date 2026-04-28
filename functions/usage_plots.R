@@ -144,7 +144,10 @@ plot_code_usage <- function(
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
       # Place legend inside plot
-      legend.position = c(.3, .7),
+      #legend.position = c(.3, .7),
+      legend.position = c(.05, .95),
+      legend.box.just = "left",
+      legend.justification = c("left", "top"),
       legend.title = element_blank(),
       legend.text = element_text(size = 16),
       legend.background = element_rect(
@@ -160,8 +163,7 @@ plot_code_usage <- function(
     plot <- plot +
       theme(
         axis.title.x = element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()
+        axis.text.x = element_blank()
       )
   }
 

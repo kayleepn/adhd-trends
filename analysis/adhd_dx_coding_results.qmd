@@ -30,7 +30,7 @@ library(officer)
 library(ggtext)
 
 # Function for creating facet plots for age breakdowns
-source(here("functions", "create_facet_plots.R"))
+#source(here("functions", "create_facet_plots.R"))
 
 # Functions for creating usage plots
 source(here("functions", "usage_plots.R"))
@@ -106,8 +106,8 @@ summarise_yearly <- function(data, desc) {
 snomed_all_codes_usage <- summarise_yearly(snomed_usage, "All SNOMED CT codes")
 
 # Plot figure
-# `plot_icd10_breakdowns` is in `usage_plots.R`
-fig_snomed_all_usage <- plot_icd10breakdowns(
+# `plot_code_usage` is in `usage_plots.R`
+fig_snomed_all_usage <- plot_code_usage(
   data = snomed_all_codes_usage, 
   title = "Yearly usage for all SNOMED CT codes", 
   show_legend = FALSE, 
@@ -121,7 +121,7 @@ fig_snomed_all_usage
 icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
 
 # Plot figure
-fig_icd10_all_usage <- plot_icd10_breakdowns(
+fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
   title = "Yearly usage for all ICD-10 codes", 
   show_legend = FALSE, 
@@ -184,7 +184,7 @@ snomed_adhd_usage <- bind_rows(
 # Plot as graph
 
 # None of these figures are going to look good until the `ggsave()` step because of scaling issues
-fig_snomed_adhd_usage <- plot_icd10_breakdowns(
+fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
   title = "ADHD diagnosis-related SNOMED CT code usage",
   show_legend = TRUE,
@@ -205,7 +205,7 @@ icd10_adhd_usage <- summarise_yearly(
 
 # Plot figure
 # None of these figures are going to look good until the `ggsave()` step because of scaling issues
-fig_icd10_adhd_usage <- plot_icd10breakdowns(
+fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
   title = "ADHD diagnosis-related ICD-10 code usage",
   show_legend = TRUE,
@@ -256,7 +256,6 @@ calc_total_usage <- function(data_all, data_adhd, ref_desc, ref_ignore){
     )) |> 
     dplyr::select(-ref)
 }
-
 
 df_snomed_total_usage <- calc_total_usage(
   snomed_all_codes_usage,
