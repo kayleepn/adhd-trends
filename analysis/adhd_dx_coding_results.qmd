@@ -30,25 +30,25 @@ library(officer)
 library(ggtext)
 
 # Function for creating facet plots for age breakdowns
-source(here("functions", "create_facet_plots.R"))
+#source(here("functions", "create_facet_plots.R"))
 
 # Functions for creating usage plots
 source(here("functions", "usage_plots.R"))
 
-# Load SNOMED CT ADHD diagnosis coding activity from OpenCodeCounts
+# Load SNOMED CT ADHD diagnosis coding activity codelist from OpenCodeCounts
 snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/adhd_cod/20250912/")
 
-df_snomed_diag_usage <- snomed_usage |>
+snomed_diag_usage <- snomed_usage |>
   filter(snomed_code %in% snomed_diag_codelist$code)
 
-# Load ICD-10 ADHD diagnosis coding activity from OpenCodeCounts
-icd10_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/")
+# Load ICD-10 ADHD diagnosis coding activity codelist from OpenCodeCounts
+icd10_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/66fd3a31/")
 
-df_icd10_diag_usage <- icd10_usage |>
+icd10_diag_usage <- icd10_usage |>
   filter(icd10_code %in% icd10_diag_codelist$code)
 
 # Load ICD-10 usage with age, sex, and diagnosis position breakdowns
-df_icd10_diag_breakdowns <- icd10_usage_breakdowns |>
+icd10_diag_breakdowns <- icd10_usage_breakdowns |>
   filter(icd10_code %in% icd10_diag_codelist$code)
 
 # Set flextable defaults
@@ -74,14 +74,14 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 
 ## Codelists
 
-2 codelists indicating ADHD diagnosis for SNOMED CT[^codelist-adhd-snomed] and ICD-10[^codelist-adhd-icd10] respectively were developed using OpenCodelists. The ICD-10 codelist in particular is pending review.
+2 codelists indicating ADHD diagnosis for SNOMED CT[^codelist-adhd-snomed] and ICD-10[^codelist-adhd-icd10] respectively were developed using OpenCodelists. Note that the ICD-10 code only has 1 code. 
 
 [^codelist-adhd-snomed]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone2/45183c88/
-[^codelist-adhd-icd10]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/
+[^codelist-adhd-icd10]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/66fd3a31/
 
 ### ICD-10 Breakdown variables
 
-**Diagnostic codes**: The following four-character ICD-10 codes were included: Disturbance of activity and attention (F900); _Hyperkinetic conduct disorder_ (F901); _Other hyperkinetic disorders_ (F908); _Hyperkinetic disorder, unspecified_ (F909).
+**Diagnostic codes**: Only the four-character ICD-10 code "Disturbance of activity and attention (F900)" was included.
 
 **Diagnostic position**: Usage counts represent FCEs with a specific code in any diagnostic position ("all diagnoses") or as the primary reason for admission ("main diagnosis").
 
@@ -89,7 +89,68 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 
 # Results
 
-## Total ADHD code usage compared to all SNOMED CT/ICD-10 code usage
+## Yearly usage for all codes (SNOMED CT vs ICD-10)
+
+```{r}
+# Helper function for summarising yearly code usage of a codelist
+summarise_yearly <- function(data, desc) {
+  data |>
+    group_by(end_date) |>
+    summarise(usage = sum(usage), .groups = "drop") |>
+    mutate(description = desc)
+}
+```
+
+```{r}
+# Get total yearly usage for all SNOMED CT codes
+snomed_all_codes_usage <- summarise_yearly(snomed_usage, "All SNOMED CT codes")
+
+# Plot figure
+# `plot_code_usage` is in `usage_plots.R`
+fig_snomed_all_usage <- plot_code_usage(
+  data = snomed_all_codes_usage, 
+  title = "Yearly usage for all SNOMED CT codes", 
+  show_legend = FALSE, 
+  show_x = TRUE,
+  # `n_breaks` = 14 as there are 14 years of data
+  n_breaks = 14
+)
+fig_snomed_all_usage
+
+# Get total yearly usage for all ICD-10 codes
+icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
+
+# Plot figure
+fig_icd10_all_usage <- plot_code_usage(
+  data = icd10_all_codes_usage, 
+  title = "Yearly usage for all ICD-10 codes", 
+  show_legend = FALSE, 
+  show_x = TRUE,
+  n_breaks = 13
+)
+fig_icd10_all_usage
+```
+
+### Combine figures
+
+Produces a 1:2 figure of all SNOMED CT code vs all ICD-10 code usage. The x-axes are intentionally scaled so that the years line up for easier comparison. A shared x-axis looks odd because of the different yearly aggregation periods. 
+
+```{r}
+fig_all_codes_usage <- fig_snomed_all_usage / fig_icd10_all_usage + 
+	plot_layout(guides = "collect") +
+	plot_annotation(
+		tag_levels = "A",
+		theme = theme(
+			plot.title = element_text(size = 16), 
+			legend.position = "bottom",
+			legend.title = element_blank())
+	)
+
+fig_all_codes_usage
+ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 15, height = 10)
+```
+
+## Yearly ADHD code usage
 
 ### SNOMED CT
 ```{r}
@@ -98,106 +159,115 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 #| fig-width: 10
 #| fig-height: 6
 
-# Get total yearly usage for top 5 SNOMED CT ADHD diagnosis codes
-top5_snomed_diag_codes <- df_snomed_diag_usage |>
+# Get the top 5 SNOMED CT ADHD diagnosis codes in the codelist
+top5_snomed_diag_codes <- snomed_diag_usage |>
   group_by(snomed_code, description) |> 
   summarise(total_usage = sum(usage), .groups = "drop") |> 
   slice_max(total_usage, n = 5) |> 
   pull(snomed_code)
 
-df_top5_snomed_usage <- df_snomed_diag_usage |>
+# Get yearly usage for top 5 SNOMED CT ADHD diagnosis codes
+top5_snomed_usage <- snomed_diag_usage |>
   group_by(end_date, snomed_code, description) |> 
-  summarise(yearly_usage = sum(usage), .groups = "drop") |> 
+  summarise(usage = sum(usage), .groups = "drop") |> 
   filter(snomed_code %in% top5_snomed_diag_codes) |> 
   # Remove semantic tag in brackets so legend labels don't get too long
   mutate(description = sub(" \\(.*", "", description)) |> 
-  mutate(facet_group = "All ADHD diagnosis-related SNOMED CT codes") |> 
   dplyr::select(-snomed_code)
 
-# Get total yearly usage for codes
-
-df_snomed_yearly_usage <- bind_rows(
-  # Specify facet grouping here
-  summarise_yearly(snomed_usage, "All SNOMED CT codes", "All SNOMED CT codes"),
-  summarise_yearly(df_snomed_diag_usage, "All ADHD diagnosis-related SNOMED CT codes", "All ADHD diagnosis-related SNOMED CT codes"),
-  df_top5_snomed_usage
+# Combining yearly usage for all ADHD codes combined and top 5 ADHD codes
+snomed_adhd_usage <- bind_rows(
+  summarise_yearly(snomed_diag_usage, "All ADHD diagnosis-related SNOMED CT codes"),
+  top5_snomed_usage
 )  
 
 # Plot as graph
 
 # None of these figures are going to look good until the `ggsave()` step because of scaling issues
-fig_snomed_adhd_vs_all <- plot_usage_facets(df_snomed_yearly_usage, "SNOMED CT Code Usage", "All SNOMED CT codes") 
+fig_snomed_adhd_usage <- plot_code_usage(
+  data = snomed_adhd_usage, 
+  title = "ADHD diagnosis-related SNOMED CT code usage",
+  show_legend = TRUE,
+  show_x = TRUE,
+  n_breaks = 14
+) 
+
+fig_snomed_adhd_usage
 ```
 
 ### ICD-10 
 ```{r}
-# There are actually only 4 ICD-10 codes but I've left it as is because this is not the final codelist
-top5_icd10_diag_codes <- df_icd10_diag_usage |>
-  group_by(icd10_code, description) |> 
-  summarise(total_usage = sum(usage), .groups = "drop") |> 
-  slice_max(total_usage, n = 5) |> 
-  pull(icd10_code)
-
-df_top5_icd10_usage <- df_icd10_diag_usage |>
-  group_by(end_date, icd10_code, description) |> 
-  summarise(yearly_usage = sum(usage), .groups = "drop") |> 
-  filter(icd10_code %in% top5_icd10_diag_codes) |> 
-  mutate(facet_group = "All ADHD diagnosis-related ICD-10 codes" ) |> 
-  dplyr::select(-icd10_code)
-
-df_icd10_yearly_usage <- bind_rows(
-  summarise_yearly(icd10_usage, "All ICD-10 codes", "All ICD-10 codes"),
-  summarise_yearly(df_icd10_diag_usage, "All ADHD diagnosis-related ICD-10 codes", "All ADHD diagnosis-related ICD-10 codes"),
-  df_top5_icd10_usage
+# There is only one ICD-10 code in the codelist so don't need to deal with top 5 codes
+icd10_adhd_usage <- summarise_yearly(
+  icd10_diag_usage, 
+  "F90.0 Disturbance of activity and attention"
 )
 
-fig_icd10_adhd_vs_all <- plot_usage_facets(df_icd10_yearly_usage, "ICD-10 Code Usage", "All ICD-10 codes") 
+# Plot figure
+# None of these figures are going to look good until the `ggsave()` step because of scaling issues
+fig_icd10_adhd_usage <- plot_code_usage(
+  data = icd10_adhd_usage, 
+  title = "ADHD diagnosis-related ICD-10 code usage",
+  show_legend = TRUE,
+  show_x = TRUE,
+  n_breaks = 14
+) 
+
+fig_icd10_adhd_usage
 ```
 
 ### Combining both graphs with patchwork
 
 ```{r}
-fig_total_snomed_icd10 <- fig_snomed_adhd_vs_all + fig_icd10_adhd_vs_all + plot_annotation(tag_levels = "A")
+# Combined figure for SNOMED CT and ICD-10 ADHD code usage
+fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage + 
+  plot_layout(heights = c(1.5, 1)) +
+	plot_annotation(tag_levels = "A") &
+	theme(
+		plot.title = element_text(size = 20),
+		legend.title = element_blank()
+  )
 
-ggsave(here("output", "figures", "fig_total_snomed_icd10.png"), width = 15, height = 15)
+ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 15, height = 11)
 ```
 
 
 ## Usage counts for top 5 codes in each codelist
 
-Aim: produce table with total usage (across all years) for all codes and the top 5 codes for SNOMED CT and ICD-10 + proportion of coding activity contributed by each code.
+Aim: produce table with total usage (across all years) for all codes and ADHD codes for SNOMED CT (only the top 5 codes) and ICD-10 + proportion of coding activity contributed by each code.
 
 ADHD coding only takes up 0.0068% of all SNOMED CT coding so it makes more sense to calculate the proportion of coding each of the top 5 codes take up within ADHD codes.
 
 ```{r}
 # Helper function for calculating total usage and each code's contribution to total ADHD coding
 # `ref_desc` is the description for the reference codes (all ADHD diagnosis-related codes in this case)
-calc_total_usage <- function(data, ref_desc, ref_ignore){
-  data |> 
+calc_total_usage <- function(data_all, data_adhd, ref_desc, ref_ignore){
+  bind_rows(data_all, data_adhd, .id = NULL) |> 
     group_by(description) |> 
-    summarise(total_usage = sum(yearly_usage), .groups = "drop") |> 
+    summarise(total_usage = sum(usage), .groups = "drop") |> 
     arrange(desc(total_usage)) |>
     # Calculate percentage of code usage compared to all ADHD code usage 
     mutate(ref = total_usage[description == ref_desc]) |> 
     # Doesn't make sense to calculate all SNOMED usage as a percentage of all ADHD code usage so setting the value in that row to NA
     mutate(percentage = if_else(
       description == ref_ignore,
-      NA_real_,
-      round(total_usage/ref * 100, digits = 2)
+      NA_character_,
+      paste0(round(total_usage/ref * 100, digits = 2), "%")
     )) |> 
     dplyr::select(-ref)
 }
 
-
 df_snomed_total_usage <- calc_total_usage(
-  df_snomed_yearly_usage,
+  snomed_all_codes_usage,
+  snomed_adhd_usage,
   ref_desc = "All ADHD diagnosis-related SNOMED CT codes",
   ref_ignore = "All SNOMED CT codes"
 )
 
 df_icd10_total_usage <- calc_total_usage(
-  df_icd10_yearly_usage,
-  ref_desc = "All ADHD diagnosis-related ICD-10 codes",
+  icd10_all_codes_usage,
+  icd10_adhd_usage,
+  ref_desc = "F90.0 Disturbance of activity and attention",
   ref_ignore = "All ICD-10 codes"
 )
 
@@ -205,24 +275,25 @@ df_icd10_total_usage <- calc_total_usage(
 # Important: note that "Attention deficit hyperactivity disorder, combined type" only starts being recorded in 2018-19
 
 # Helper function to calculate pct change
-calc_pct_change <- function(data){
-  data |> 
+calc_pct_change <- function(data_all, data_adhd){
+  bind_rows(data_all, data_adhd, .id = NULL) |> 
   group_by(description) |> 
   summarise(
     min_date = min(end_date, na.rm = TRUE),
     max_date = max(end_date, na.rm = TRUE),
-    start_usage = yearly_usage[end_date == min_date][1],
-    end_usage = yearly_usage[end_date == max_date][1],
+    start_usage = usage[end_date == min_date][1],
+    end_usage = usage[end_date == max_date][1],
     change = end_usage - start_usage,
-    pct_change = round(change / start_usage * 100, digits = 2),
+    pct_change = paste0(round(change / start_usage * 100, digits = 2), "%"),
     .groups = "drop"
    ) |> 
   select(description, pct_change)
 }
 
 # Calculate pct changes for SNOMED CT and ICD-10
-df_snomed_pct_change <- calc_pct_change(df_snomed_yearly_usage)
-df_icd10_pct_change <- calc_pct_change(df_icd10_yearly_usage)
+df_snomed_pct_change <- calc_pct_change(snomed_all_codes_usage, snomed_adhd_usage)
+df_icd10_pct_change <- calc_pct_change(icd10_all_codes_usage, icd10_adhd_usage)
+
 ```
 
 ### Constructing the usage table
@@ -258,7 +329,7 @@ usage_table <- flextable(df_usage_table) |>
     percentage = "Percentage of total ADHD diagnosis-related usage",
     pct_change = "Percent change compared to start of analysis period"
   ) |> 
-  colformat_num(na_str = "N/A") |> 
+  colformat_char(na_str = "N/A") |> 
   # Formatting header rows for SNOMED CT and ICD-10 codes
   merge_at(i = 1, j = 1:4) |> 
   merge_at(i = 9, j = 1:4) |> 
@@ -289,12 +360,12 @@ save_as_docx(
 
 ## ICD-10 breakdowns
 
-The usage table above shows that F900 accounts for 97.73% of all F90 code usage. 
+Breakdowns are only calculated for F90.0, which is the only code on the codelist and accounts for 97.73% of all F90 code usage. 
 
 ```{r}
-# Same code as secondary care breakdown analysis report
+# Same code as secondary care breakdown analysis report but different codelist (F90.0 only)
 
-df_icd10_diag_positions <- df_icd10_diag_breakdowns |> 
+df_icd10_diag_positions <- icd10_diag_breakdowns |> 
   filter(breakdown %in% c("all_diagnoses", "main_diagnosis")) |>
   group_by(icd10_code, description, breakdown) |>
   summarise(n = sum(usage)) |> 
@@ -304,62 +375,22 @@ df_icd10_diag_positions <- df_icd10_diag_breakdowns |>
 ratio_all_vs_main <- sum(df_icd10_diag_positions$main_diagnosis, na.rm = TRUE) / sum(df_icd10_diag_positions$all_diagnoses, na.rm = TRUE)
 
 round(ratio_all_vs_main * 100, 2)
-# [1] 0.79
+# [1] 0.67
 ```
 
-Main diagnoses represent only 0.79% of all F90 diagnosis codes, indicating that ADHD is rarely the primary reason for inpatient admission. Therefore, the following analyses focus on F900 only and do not differentiate between diagnosis positions.
+Main diagnoses represent only 0.67% of F90.0 codes, indicating that ADHD is rarely the primary reason for inpatient admission. Therefore, the following analyses do not differentiate between diagnosis positions.
 
 ### Age breakdowns
 
-This code is very similar to the previous secondary care report but I aggregate the "age_0" and "age_1_4" groups and plot each age group as one line instead of using facets. 
+This code is very similar to the previous secondary care report but I aggregate 5-year age groups into 10-year age groups and plot each age group as one line instead of using facets. This allows easier interpretation and takes up less space.
+
 ```{r}
 #| label: fig-icd10-age-breakdowns
-#| fig-cap: "ICD-10 F900 usage over time by age group (ages 0-4 and 15-19 aggregated). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
-#| fig-width: 10
-#| fig-height: 11
-
-df_icd10_age_breakdowns_fig <- df_icd10_diag_breakdowns |>
-  filter(icd10_code == "F900") |>
-  filter(str_starts(breakdown, "age")) |>
-  # Aggregate factor levels age_15 to age_19
-  mutate(
-    breakdown = fct_collapse(
-      breakdown,
-      "age_0_4" = c("age_0", "age_1_4"),
-      "age_15_19" = c("age_15", "age_16", "age_17", "age_18", "age_19")
-    )
-  ) |>
-  # Need to also group by end_date to plot over time
-  group_by(breakdown, end_date) |>
-  summarise(usage = sum(usage), .groups = "drop") |>
-  ungroup() |>
-  group_by(breakdown) |>
-  # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
-  mutate(
-    breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
-    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
-    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
-  ) |>
-  ungroup() |>
-  mutate(
-    breakdown = fct_reorder(breakdown, parse_number(breakdown))
-  )
-
-fig_icd10_age_breakdowns <- plot_code_usage(df_icd10_age_breakdowns_fig, "ICD-10 Code Usage: F900 Age Breakdowns")
-
-fig_icd10_age_breakdowns
-```
-
-Version with 10-year age groups: 
-
-```{r}
-#| label: fig-icd10-age-10-breakdowns
 #| fig-cap: "ICD-10 F900 usage over time by age group (aggregated 10-year age groups). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
 #| fig-width: 10
 #| fig-height: 11
 
-df_icd10_age_10_fig <- df_icd10_diag_breakdowns |> 
-  filter(icd10_code == "F900") |>
+df_icd10_age_10_fig <- icd10_diag_breakdowns |> 
   filter(str_starts(breakdown, "age")) |>
   mutate(
     breakdown = fct_collapse(
@@ -388,16 +419,57 @@ df_icd10_age_10_fig <- df_icd10_diag_breakdowns |>
   ) |>
   ungroup()
 
-fig_icd10_age_10_breakdowns <- plot_code_usage(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns (10 groups)")
+fig_icd10_age_10_breakdowns <- plot_icd10_breakdowns(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns", "Age group")
 
 fig_icd10_age_10_breakdowns
-
-age_group_comparison_fig <- fig_icd10_age_breakdowns + fig_icd10_age_10_breakdowns + plot_annotation(tag_levels = "A")
-
-ggsave(here("output", "figures", "age_group_comparison_fig.png"), width = 15, height = 10)
 ```
 
-I feel like 19 colours for the 5-year age group breakdowns are quite difficult to tell apart so the 10-year age group breakdowns are better. However 10 colours are only distinguishable if I use the full colour spectrum, which not may be colour blind friendly. 
+Note that the 10 colours are only distinguishable if I use the 'turbo' option in `viridis`, which is a more colour-friendly version of a rainbow scale. 
+
+The below is a version where I separate the 0-4 and 5-9 age bands. 
+```{r}
+df_icd10_age_5_10_fig <- icd10_diag_breakdowns |> 
+  filter(str_starts(breakdown, "age")) |>
+  mutate(
+    breakdown = fct_collapse(
+      breakdown,
+      "age_0_4" = c("age_0", "age_1_4"),
+      "age_5_9" = c("age_5_9"),
+      "age_10_19" = c("age_10_14", "age_15", "age_16", "age_17", "age_18", "age_19"),
+      "age_20_29" = c("age_20_24", "age_25_29"),
+      "age_30_39" = c("age_30_34", "age_35_39"),
+      "age_40_49" = c("age_40_44", "age_45_49"),
+      "age_50_59" = c("age_50_54", "age_55_59"),
+      "age_60_69" = c("age_60_64", "age_65_69"),
+      "age_70_79" = c("age_70_74", "age_75_79"),
+      "age_80_89" = c("age_80_84", "age_85_89")
+    )
+  ) |>
+  # Need to also group by end_date to plot over time
+  group_by(breakdown, end_date) |>
+  summarise(usage = sum(usage), .groups = "drop") |>
+  ungroup() |>
+  group_by(breakdown) |>
+    # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
+  mutate(
+    breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
+    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
+    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
+  ) |>
+  ungroup() |> 
+  mutate(breakdown = fct_reorder(breakdown, parse_number(breakdown)))
+
+fig_icd10_age_5_10_breakdowns <- plot_icd10_breakdowns(
+  data = df_icd10_age_5_10_fig, 
+  title = "ICD-10 F90.0 code usage: age breakdowns", 
+  legend_title = "Age group",
+  show_x = FALSE
+)
+
+fig_icd10_age_5_10_breakdowns
+```
+
+I think the version with 0-4 and 5-9 as separate groups looks better and is more informative. 
 
 ### Sex breakdowns
 
@@ -410,8 +482,7 @@ Gender unknown remains low throughout the period.
 #| fig-width: 10
 #| fig-height: 4
 
-df_icd10_sex_breakdowns_fig <- df_icd10_diag_breakdowns |>
-  filter(icd10_code == "F900") |>
+df_icd10_sex_breakdowns_fig <- icd10_diag_breakdowns |>
   filter(breakdown %in% c("male", "female", "gender_unknown")) |>
   group_by(breakdown) |>
   mutate(
@@ -420,7 +491,27 @@ df_icd10_sex_breakdowns_fig <- df_icd10_diag_breakdowns |>
     breakdown = paste0(breakdown, " (n = ", scales::comma(sum(usage)), ")")
   )
 
-fig_icd10_sex_breakdowns <- plot_code_usage(df_icd10_sex_breakdowns_fig, "ICD-10 Code Usage: Sex Breakdowns")
+fig_icd10_sex_breakdowns <- plot_icd10_breakdowns(
+  data = df_icd10_sex_breakdowns_fig, 
+  title = "ICD-10 F90.0 code usage: sex breakdowns", 
+  legend_title = "Sex",
+  show_x = TRUE
+)
 
 fig_icd10_sex_breakdowns
+```
+
+
+### Combined figure for ICD-10 breakdowns
+
+```{r}
+fig_icd10_breakdowns <- fig_icd10_age_5_10_breakdowns / fig_icd10_sex_breakdowns + 
+  plot_layout(heights = c(1.5, 1)) +
+	plot_annotation(tag_levels = "A") &
+	theme(
+		plot.title = element_text(size = 20),
+		legend.title = element_blank()
+  ) 
+
+ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 15, height = 11)
 ```
