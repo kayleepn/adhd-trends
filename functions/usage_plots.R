@@ -1,16 +1,15 @@
 # Helper functions for creating usage plots
 
 # Summarise yearly code usage
-summarise_yearly <- function(data, facet_name, desc) {
+summarise_yearly <- function(data, desc) {
   data |>
     group_by(end_date) |>
-    summarise(yearly_usage = sum(usage), .groups = "drop") |>
-    mutate(facet_group = facet_name) |>
+    summarise(usage = sum(usage), .groups = "drop") |>
     mutate(description = desc)
 }
 
 # Code usage plot
-plot_code_usage <- function(
+plot_icd10_breakdowns <- function(
   data,
   title_label,
   legend_title,
@@ -62,16 +61,20 @@ plot_code_usage <- function(
     )
 }
 
-# Faceted plot - this is very similar to the above function
-plot_usage_facets <- function(
+# This is very similar to the above function
+plot_code_usage <- function(
   data,
   title,
-  label_to_remove,
+  show_legend = TRUE,
+  show_x = TRUE,
   text_size = 16,
   x_label = "End date of yearly reporting period",
   y_label = "Usage count",
-  n_breaks = 4
+  n_breaks
 ) {
+  # Define common x-axis limits, this helps years align
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31"))
+
   # Get unique dates and pick 4 evenly spaced ones for x-axis labels
   # Same as the `plot_breakdown_facet` function in `create_facet_plots.R`
   all_dates <- sort(unique(data$end_date))
@@ -79,41 +82,34 @@ plot_usage_facets <- function(
   scale_x_date_breaks <- all_dates[idx]
 
   # Create plot
-  ggplot(
+  plot <- ggplot(
     data,
     aes(
       x = end_date,
-      y = yearly_usage,
+      y = usage,
       colour = description,
       shape = description,
       fill = description
     )
   ) +
-    geom_line(alpha = .5, linewidth = 1) +
-    geom_point(alpha = .5, size = 5) +
-    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    geom_line(alpha = .5, linewidth = 2) +
+    geom_point(alpha = .7, size = 5) +
+    scale_y_continuous(
+      limits = c(0, NA),
+      labels = scales::comma,
+      expand = expansion(mult = c(0.02, 0.1))
+    ) +
     scale_x_date(
+      limits = common_x_limits,
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
     # Wrapping legend label text and removing unnecessary label
-    scale_colour_viridis_d(
-      labels = \(x) str_wrap(x, width = 40),
-      breaks = \(x) x[x != label_to_remove],
-      end = .75
-    ) +
-    # Have to manually specify shapes (and fill) as 7 is too many to handle automatically
-    scale_shape_manual(
-      values = c(21, 22, 23, 3, 4, 24, 25, 11),
-      labels = \(legend_labels) str_wrap(legend_labels, width = 40),
-      breaks = \(x) x[x != label_to_remove],
-    ) +
-    scale_fill_viridis_d(
-      end = .75,
-      labels = \(legend_labels) str_wrap(legend_labels, width = 40),
-      breaks = \(x) x[x != label_to_remove],
-    ) +
+    scale_colour_viridis_d(end = .9, option = "H") +
+    # Have to manually specify shapes (and fill) for easier visualisation
+    scale_shape_manual(values = c(24, 25, 21, 22, 23, 3)) +
+    scale_fill_viridis_d(end = .9, option = "H") +
     labs(x = x_label, y = y_label, title = title) +
     # Using black and white theme
     theme_bw(
@@ -121,12 +117,19 @@ plot_usage_facets <- function(
     ) +
     theme(
       text = element_text(family = "Times New Roman"),
-      axis.text.x = element_text(size = 14),
-      axis.text.y = element_text(size = 14),
-      # Place legend inside first facet plot
-      legend.position = c(0.4, 0.9),
+      plot.title = element_text(size = 20, hjust = .5),
+      axis.title.x = element_text(size = 20),
+      axis.text.x = element_text(size = 16),
+      axis.title.y = element_text(size = 20),
+      axis.text.y = element_text(size = 16),
+      # panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      # Place legend inside plot
+      legend.position = c(.3, .7),
       legend.title = element_blank(),
-      legend.text = element_text(size = 14),
+      legend.text = element_text(size = 16),
       legend.background = element_rect(
         fill = "white",
         linetype = "solid",
@@ -134,11 +137,23 @@ plot_usage_facets <- function(
       ),
       strip.text = element_text(size = text_size)
     ) +
-    guides(colour = guide_legend(ncol = 1)) +
-    facet_wrap(
-      vars(facet_group),
-      ncol = 1,
-      labeller = label_wrap_gen(width = 60),
-      scales = "free_y"
-    )
+    guides(colour = guide_legend(ncol = 1))
+
+  # Common x-axis
+  if (show_x == FALSE) {
+    plot <- plot +
+      theme(
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()
+      )
+  }
+
+  # Control legend appearance
+  if (show_legend == FALSE) {
+    plot <- plot +
+      theme(legend.position = "none")
+  }
+
+  plot
 }
