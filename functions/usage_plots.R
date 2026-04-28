@@ -1,18 +1,11 @@
 # Helper functions for creating usage plots
 
-# Summarise yearly code usage
-summarise_yearly <- function(data, desc) {
-  data |>
-    group_by(end_date) |>
-    summarise(usage = sum(usage), .groups = "drop") |>
-    mutate(description = desc)
-}
-
 # Code usage plot
 plot_icd10_breakdowns <- function(
   data,
   title_label,
   legend_title,
+  show_x = TRUE,
   text_size = 16,
   point_size = 2,
   x_label = "End date of yearly reporting period",
@@ -26,11 +19,11 @@ plot_icd10_breakdowns <- function(
   scale_x_date_breaks <- all_dates[idx]
 
   # Create plot
-  ggplot(
+  plot <- ggplot(
     data,
     aes(x = end_date, y = usage, colour = breakdown)
   ) +
-    geom_line(alpha = .7) +
+    geom_line(linewidth = 2, alpha = .7) +
     geom_point(size = point_size, alpha = .7) +
     scale_colour_viridis_d(alpha = 0.7, end = 0.9, option = "H") +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
@@ -46,10 +39,22 @@ plot_icd10_breakdowns <- function(
     ) +
     theme(
       text = element_text(family = "Times New Roman"),
+      plot.title = element_text(size = 20, hjust = .5),
+      axis.title.x = element_text(size = 20),
       axis.text.x = element_text(size = 16),
+      axis.ticks.x.bottom = element_line(),
+      axis.title.y = element_text(size = 20),
       axis.text.y = element_text(size = 16),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      # Place legend inside plot
+      legend.position = c(.05, .95),
+      legend.box.just = "left",
+      legend.justification = c("left", "top"),
       # Enable markdown in legend labels
-      legend.text = element_markdown(size = 14),
+      legend.text = element_markdown(size = 16),
       legend.title = element_text(family = "Times New Roman"),
       legend.key.spacing.y = unit(5, "pt"),
       legend.background = element_rect(
@@ -57,8 +62,20 @@ plot_icd10_breakdowns <- function(
         linetype = "solid",
         colour = "black",
         linewidth = 0.5
-      ),
-    )
+      )
+    ) +
+    guides(colour = guide_legend(ncol = 2))
+
+  # Common x-axis
+  if (show_x == FALSE) {
+    plot <- plot +
+      theme(
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank()
+      )
+  }
+
+  plot
 }
 
 # This is very similar to the above function
@@ -134,8 +151,7 @@ plot_code_usage <- function(
         fill = "white",
         linetype = "solid",
         colour = "black"
-      ),
-      strip.text = element_text(size = text_size)
+      )
     ) +
     guides(colour = guide_legend(ncol = 1))
 
