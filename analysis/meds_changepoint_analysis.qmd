@@ -659,9 +659,9 @@ ncol(scmd_mod_matrix) == nrow(scmd_lin2_nw_variance)
 scmd_lin2_nw_se <- sqrt(rowSums((scmd_mod_matrix %*% scmd_lin2_nw_variance) * scmd_mod_matrix))
 
 # Use functions to get prediction and slopes dfs, specifying NW SE/variance
-pred_scmd_all_lin2 <- predicted(scmd_all_lin2_model, "All chemicals", total_scmd_over_time, "SCMD", scmd_lin2_nw_se)
+df_pred_scmd_all_lin2 <- predicted(scmd_all_lin2_model, "All chemicals", total_scmd_over_time, "SCMD", scmd_lin2_nw_se)
 
-slope_scmd_all_lin2 <- extract_lin_slopes(scmd_all_lin2_model, "All chemicals", "SCMD", scmd_lin2_nw_variance) |> 
+df_slope_scmd_all_lin2 <- extract_lin_slopes(scmd_all_lin2_model, "All chemicals", "SCMD", scmd_lin2_nw_variance) |> 
   # Round only breakpoint estimations but not 95% CI
   mutate(bp1 = round(bp1), bp2 = round(bp2)) |> 
   # Convert to date
@@ -681,7 +681,7 @@ ggplot() +
     alpha = .7
   ) +
   geom_line(
-    data = pred_scmd_all_lin2,
+    data = df_pred_scmd_all_lin2,
     aes(x= month, y = pred, colour = "Segmented linear model (2bps)"),
     size = 1,
     alpha = .7
@@ -693,7 +693,7 @@ ggplot() +
     alpha = .7
   ) +
   geom_vline(
-    xintercept = c(slope_scmd_all_lin2$bp1, slope_scmd_all_lin2$bp2, slope_scmd_covid$bp1), 
+    xintercept = c(df_slope_scmd_all_lin2$bp1, df_slope_scmd_all_lin2$bp2, slope_scmd_covid$bp1), 
     colour = "grey", 
     alpha = 0.5
   ) +
@@ -714,7 +714,7 @@ The linear model with COVID-19 disruption dummies is the best fit when looking a
 
 ## Export useful things for plotting
 
-Combining predicted values and slope dataframes and exporting as csv
+Combining predicted values and slope dataframes and exporting as csv.
 
 ```{r}
 pred_all <- mget(ls(pattern = "^pred_")) |> 
