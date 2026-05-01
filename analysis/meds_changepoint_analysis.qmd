@@ -615,6 +615,7 @@ df_scmd_lin2_nw <- data.frame(
 Use `predicted` for calculating predicted values and `extract_lin_slopes` for calculating 95% CI bounds for each segment. Both functions are the linear equivalent of the functions used above.
 
 Predicted values for model with COVID-19 dummies:
+
 ```{r}
 # Need to calculate Newey-West SE to calculate 95%CIs
 # Extract model matrix
@@ -641,7 +642,8 @@ slope_scmd_covid <- extract_lin_slopes(scmd_covid_model, "All chemicals", "SCMD"
   )
 ```
 
-Predicted values for model without COVID-19 dummies: 
+Predicted values for model without COVID-19 dummies:
+
 ```{r}
 # Need to calculate Newey-West SE to calculate 95%CIs
 # Extract model matrix
