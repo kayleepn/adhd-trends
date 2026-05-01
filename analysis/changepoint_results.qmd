@@ -1,0 +1,380 @@
+---
+title: "Plots for change point analysis of ADHD prescribing/issuing activity"
+author:
+  - Kaylee Poon
+format: html
+---
+
+Aiming to plot actual prescribing/issuing over time with the predicted values (+ 95% confidence intervals) from the change point analysis. Only results for analysing all chemicals combined are plotted. One plot for each of:
+
+1. GP data
+2. FOI data
+3. SCMD data.
+
+Also contains a summary table for change point model coefficients. 
+
+# Methods
+
+```{r}
+#| label: set-up
+#| output: false
+
+library(tidyverse)
+library(here)
+library(patchwork)
+library(viridis)
+library(flextable)
+library(officer)
+
+# Set flextable defaults
+set_flextable_defaults(
+  font.family = "Times New Roman",
+  font.size = 12,
+  font.colour = "black",
+  border.colour = "black",
+  layout = "autofit",
+  width = 1
+)
+```
+
+## Read in data
+
+Also doing some preparation for creating the plotting dataframe here.
+
+```{r}
+#| label: read-data
+#| output: false
+
+# Actual prescribing/issuing data
+gp_all_prescribing <- read_csv(here("output", "monthly_op_gp", "adhd_gp_all_chemicals.csv")) |> 
+  mutate(data_source = "GP") |> 
+  rename(observed = monthly_items)
+
+foi_all_prescribing <- read_csv(here("output", "foi_prescribing", "adhd_foi_all_chemicals.csv")) |> 
+  mutate(data_source = "FOI") |> 
+  rename(observed = monthly_items)
+
+scmd_all_issuing <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv")) |> 
+  mutate(data_source = "SCMD") |> 
+  rename(observed = monthly_ddd_quantity)
+
+# Predicted values across all 3 datasets
+predicted_values <- read_csv(here("output", "changepoint_analysis", "predicted_values.csv"))
+
+# Slopes (including breakpoint locations) across datasets
+slopes <- read_csv(here("output", "changepoint_analysis", "model_slopes.csv"))
+
+# Model coefficients across datasets
+coefs <- read_csv(here("output", "changepoint_analysis", "model_coefficients.csv"))
+```
+
+## Organise data for plotting
+
+```{r}
+# Join predicted and observed data dfs
+df_plots <- bind_rows(foi_all_prescribing, gp_all_prescribing, scmd_all_issuing) |> 
+  left_join(predicted_values, by = join_by(month, data_source)) |> 
+  # Remove unnecessary columns
+  dplyr::select(-c(bnf_chemical, bnf_chemical_name))
+
+# Get breakpoint dates as a vector
+breakpoints <- slopes |> 
+	rowwise() |> 
+	mutate(vec = list(
+		na.omit(c(bp1 = bp1, bp2 = bp2, bp3 = bp3))
+	)) |> 
+	ungroup() |> 
+	dplyr::select(dataset, vec) |> 
+	deframe()
+```
+
+## Helper function for plotting
+
+```{r}
+plot_changepoints <- function(
+	source,
+	y_label,
+	title,
+	show_x = TRUE,
+	breakpoint_dates,
+	label_y_pos
+) {
+	# Define common x axis scale
+	common_x_scale <- scale_x_date(
+		date_breaks = "1 year",
+		date_labels = "%b\n%Y",
+		limits = as.Date(c("2015-08-01", "2025-07-01"))
+	)
+
+	# Define plot colours
+	plot_colours = viridis(2, alpha = 0.7, begin = 0.25, end = 0.6, option = "D")
+
+	# Subset data to plot
+	dat <- df_plots |> 
+		subset(data_source == source)
+
+	# Create plot
+	plot <- ggplot(dat, aes(x = month)) +
+		# Plot observed values
+		geom_point(
+			aes(y = observed, colour = "Observed value"), 
+			size = 2, 
+			alpha = 0.7
+		) +
+		# Plot 95% CI
+		geom_ribbon(
+			aes(ymin = lci, ymax = uci, fill = "Fitted values with 95% CI (shaded area)"), 
+			alpha = .2
+		) +
+		# Plot line for predicted values
+		geom_line(
+			aes(y = pred, colour = "Fitted values with 95% CI (shaded area)"), 
+			linewidth = 1, 
+			alpha = 0.7
+		) +
+		# Plot breakpoint locations with vertical dashed line
+		geom_vline(
+			xintercept = breakpoint_dates, 
+			linetype = "dashed",
+			colour = plot_colours[1], 
+			alpha = 0.7) +
+		scale_colour_manual(values = plot_colours) +
+		scale_fill_manual(values = plot_colours) +
+		common_x_scale + # x-axis scale
+		scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+		labs(x = "Month", y = y_label, title = title) +
+		theme_bw() +
+		theme(
+			text = element_text(family = "Times New Roman"),
+			panel.grid.major.x = element_blank(),
+			panel.grid.minor.x = element_blank(),
+			plot.title = element_text(size = 20, hjust = .5),
+			axis.ticks.x = element_line(),
+			axis.title.x = element_text(size = 16),
+			axis.text.x = element_text(size = 16),
+			legend.text = element_text(size = 14),
+			legend.title = element_blank(),
+			legend.background = element_rect(
+				fill = "white",
+				linetype = "solid",
+				colour = "black"
+			),
+			axis.text.y = element_text(size = 16),
+			axis.title.y = element_text(size = 16)
+		) +
+		guides(
+			fill = "none", # Remove redundant legend
+			colour = guide_legend(nrow = 1)
+		) + 
+		annotate(
+			x = breakpoint_dates, 
+			y = label_y_pos, 
+			label = breakpoint_dates, 
+			geom = "label",
+			size = 5,
+			family = "Times New Roman"
+		) 
+
+	# Common x-axis
+	if (show_x == FALSE) {
+		plot <- plot +
+			theme(
+				axis.title.x = element_blank(),
+				axis.text.x = element_blank()
+			)
+	}
+
+	plot
+}
+```
+
+# Results: plots
+
+```{r}
+fig_gp_changepoints <- plot_changepoints(
+	source = "GP",
+	y_label = "Monthly items",
+	title = "GP Prescribing",
+	show_x = FALSE,
+	breakpoint_dates = breakpoints$GP,
+	label_y_pos = c(225000, 225000)
+)
+
+fig_gp_changepoints
+
+fig_foi_changepoints <- plot_changepoints(
+	source = "FOI",
+	y_label = "Monthly items",
+	title = "FOI Prescribing",
+	show_x = FALSE,
+	breakpoint_dates = breakpoints$FOI,
+	label_y_pos = c(75000, 50000)
+)
+
+fig_foi_changepoints
+
+fig_scmd_changepoints <- plot_changepoints(
+	source = "SCMD",
+	y_label = "Monthly DDD quantity",
+	title = "SCMD Issuing",
+	show_x = TRUE,
+	breakpoint_dates = breakpoints$SCMD,
+	label_y_pos = c(210000, 175000, 100000)
+)
+
+fig_scmd_changepoints
+```
+
+The warning messages are because the SCMD data has less data available so it doesn't span the whole common x axis. This is normal and it's fine to ignore the warnings. 
+
+## Combined figure
+
+```{r}
+fig_combined_changepoints <- fig_gp_changepoints / fig_foi_changepoints / fig_scmd_changepoints + 
+	plot_layout(guides = "collect") +
+	plot_annotation(tag_levels = "A") &
+	theme(
+		plot.title = element_text(size = 16),
+		plot.tag = element_text(size = 20), 
+		legend.position = "bottom",
+		legend.title = element_blank(),
+		legend.box = "horizontal"
+	)
+	
+
+ggsave(
+	here("output", "figures", "fig_combined_changepoints.png"),
+	fig_combined_changepoints,
+	width = 10,
+	height = 10
+)
+```
+
+# Results: table
+
+```{r}
+df_slopes <- slopes |> 
+	select(-bnf_chemical)  
+
+slope_cols <- names(df_slopes) |> 
+	str_subset("^slope")
+
+for(col in slope_cols) {
+	idx <- str_extract(col, "\\d?$")
+	
+	lci_col <- paste0("s", idx, "_lci")
+	uci_col <- paste0("s", idx, "_uci")
+
+	df_slopes[[col]] <- paste0(
+		df_slopes[[col]], " (",
+		df_slopes[[lci_col]], " to ",
+		df_slopes[[uci_col]], ")"
+	)
+}
+# Repeat for 95% CIs for breakpoints
+bp_cols <- names(df_slopes) |> 
+	str_subset("^bp")
+
+for(col in bp_cols) {
+	idx <- str_extract(col, "\\d?$")
+	
+	lci_col <- paste0("bp", idx, "_lci")
+	uci_col <- paste0("bp", idx, "_uci")
+
+	df_slopes[[col]] <- paste0(
+		df_slopes[[col]], " (",
+		df_slopes[[lci_col]], " to ",
+		df_slopes[[uci_col]], ")"
+	)
+}
+
+df_slopes <- df_slopes |> 
+	select(-c(contains("lci"), contains("uci")))
+
+```
+
+Model coefficients
+
+```{r}
+df_coefs <- coefs |> 
+	mutate(
+		est = paste0(
+			est, " (",
+			lci, " to ",
+			uci, ")"
+		)
+	) |> 
+	dplyr::select(-c(bnf_chemical, lci, uci)) |> 
+	pivot_wider(names_from = coef, values_from = c(est, holm_pvals)) |> 
+	dplyr::select(-contains("factor"))
+
+```
+
+Combine dfs and construct table
+
+```{r}
+df_changepoint_table <- left_join(df_slopes, df_coefs) |> 
+	select(-c(est_month_number, holm_pvals_month_number)) |> 
+	# Reordering rows
+	mutate(dataset = factor(dataset, levels = c("GP", "FOI", "SCMD"))) |> 
+	# Rename `est` columns (slope change compared to the previous segment)
+	rename_with(
+		~ paste0("est", str_extract(.x, "\\d+")),
+		starts_with("est")
+	) |> 
+	# Rename p-value columns (for the change in slope)
+	rename_with(
+		~ paste0("level_p", str_extract(.x, "\\d+")),
+		starts_with("holm")
+	) |> 
+	# Subtract 1 from slope number as slope1 is actually the initial slope
+	rename_with(
+		~ paste0("slope", as.numeric(str_extract(.x, "\\d+")) - 1),
+		starts_with("slope")
+	) |> 
+	pivot_longer(
+		cols = -dataset,
+		names_to = c(".value", "idx"),
+		names_pattern = "([a-z]+)(\\d+)"
+	) |> 
+	arrange(dataset, as.numeric(idx)) |> 
+	# Remove rows for breakpoints/changepoints that don't actually exist
+	filter_out(slope == "NA (NA to NA)") |> 
+	# More accurate representation of rounded p-values
+	mutate(p = ifelse(p < 0.001, "<0.001", p)) |> 
+	relocate(bp, .after = idx)
+```
+
+## Format table
+
+If you're reading this for code review reasons, just stop here and read the thesis later because this table is not in its final formatted form. I've just turned the dataframe above into a crude table in Word.
+
+In the interest of time I'm not going to bother with too much formatting using flextable in R, because I want rows with change-point number/idx = 0 to be a merged sub-header row showing the data source and the initial monthly change. Then I'll delete the "Data source" column. From making a table for code usage results previously, I know MS word won't play nice with flextable merging anyway so I might as well format in Word/Gdocs. Adding sub-header rows in the middle of a flextable is also a massive pain. I later decided to remove the p-value column and put it in brackets in the level change column instead. 
+
+```{r}
+changepoint_table <- flextable(df_changepoint_table) |> 
+  theme_booktabs() |> 
+  set_caption("Changes in ADHD medication prescribing/issuing") |> 
+  set_header_labels(
+    dataset = "Data source",
+		idx = "Change-point number",
+    slope = "Segment slope",
+    bp = "Change-point location estimate",
+		est = "Change in slope",
+    p = "P-value of slope change"
+  ) |> 
+	# Formatting what will later become sub-header rows
+	bold(i = c(1, 4, 7)) |> 
+	hline(
+    i = c(1, 3, 4, 6, 7),
+    border = fp_border(color = "#666666", width = 1.5),
+    part = "body"
+  )
+	
+changepoint_table
+
+save_as_docx(
+  "Changepoint Analysis Summary Table" = changepoint_table,
+  path = "output/tables/changepoint_table.docx"
+)
+```
