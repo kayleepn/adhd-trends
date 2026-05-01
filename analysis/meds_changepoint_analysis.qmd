@@ -95,17 +95,20 @@ Guanfacine prescribing was not recorded until 2016-02-01. The 6 months from 2015
 
 ### OP Hospitals SCMD
 
-Adding SCMD data (from the OpenPrescribing-Hospitals website) from 2019-01-01 to 2025-12-01.
+Adding SCMD data (from the OpenPrescribing-Hospitals website) from 2019-01-01 to 2025-12-01. Note that only data from 2019-01-01 to 2024-12-01 will be analysed as some trusts have not submitted data after 2024-12-01. 
 
 ```{r}
 #| label: calculate-scmd-monthly-issuing
 #| output: false
 
-scmd_by_chemical <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_by_chemical.csv"))
+scmd_by_chemical <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_by_chemical.csv")) |> 
+  filter_out(month > as.Date("2024-12-01"))
 
-scmd_all_chemicals <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv"))
+scmd_all_chemicals <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv")) |> 
+  filter_out(month > as.Date("2024-12-01"))
 
 total_scmd_over_time <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_total.csv")) |> 
+  filter_out(month > as.Date("2024-12-01")) |> 
   group_by(bnf_chemical_name) |>   
 # Add column for month number starting from 0, this makes interpreting the model easier
   mutate(month_number = row_number() - 1) |> 
@@ -113,8 +116,8 @@ total_scmd_over_time <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_t
 
 # Same logic for missing data check
 n_distinct(total_scmd_over_time$month)
-# [1] 84
-# As 84 * 6 = 504 (= number of rows), each chemical has been issued at least once each month.
+# [1] 72
+# As 72 * 6 = 432 (= number of rows in the df), each chemical has been issued at least once each month.
 ```
 
 ## Change point analysis
@@ -436,67 +439,66 @@ scmd_all_model0 <- lm(
 # `log_mod_select` or `mod_select` won't work for this because I don't want a Poisson model 
 # Using `selgmented` to fit the model with 3 breakpoints - this will generate very similar results to Andrea's `mod_aic`
 
-scmd_all_lin3_model <- selgmented(
+scmd_all_lin2_model <- selgmented(
   scmd_all_model0,
   type = "aic",
   refit = T,
   Kmax = 3,
   check.dslope = T
   )
-# 3 breakpoints has lowest AIC (1828.880)
-# If I use Kmax = 5, 3 breakpoints still has the lowest AIC
+# 2 breakpoints has lowest AIC (1563.666)
 
-summary(scmd_all_lin3_model)
-# Estimated break points: 12.948 (SE = 0.678), 15.694 (SE = 0.773), 70.992 (SE = 0.942)
+summary(scmd_all_lin2_model)
+# Estimated break points: 18.995 (SE = 2.588), 37.000 (SE = 5.596)
 ```
 
 Checking model fit and assumptions 
 
 ```{r}
-acf(residuals(scmd_all_lin3_model))
-# A tiny bit of significant autocorrelation at lag = 6, 7, 12 and 13 but not too bad. Possibly a seasonal effect.
+acf(residuals(scmd_all_lin2_model))
+# A bit of significant autocorrelation at lag = 5 and 7 but not too bad. 
 
-check_model(scmd_all_lin3_model)
-# Reasonable linearity, homogeneity of variance, and normality of residuals. 2 outliers detected. Some high collinearity but not a big concern. 
+check_model(scmd_all_lin2_model)
+# Reasonable linearity and normality of residuals. Slight heterogeneity of variance.No outliers detected. Some high collinearity but not a big concern. 
 ```
 
 Seasonality plot to observe seasonal patterns:
 
 ```{r}
 # Convert SCMD data into `ts` object for seasonality plot
-ts_scmd_all <- ts(data = scmd_all_chemicals$monthly_ddd_quantity, frequency = 12, start = c(2019, 1), end = c(2025, 12))
+ts_scmd_all <- ts(data = scmd_all_chemicals$monthly_ddd_quantity, frequency = 12, start = c(2019, 1), end = c(2024, 12))
 # Season plot
 ggseasonplot(ts_scmd_all)
 # Seasonal effect less obvious but there seems to be a dip in August
 ```
 
-As for the GP data, due to the presence of autocorrelation, Newey-West adjustments for 95% confidence intervals (95% CIs) and p values. I will then use the Holm corection for multiple comparisons.
+As for the GP data, due to the presence of autocorrelation, I use Newey-West adjustments for 95% confidence intervals (95% CIs) and p values. I will then use the Holm corection for multiple comparisons.
 
 ```{r}
 # Automatically select lag (bandwidth) according to the model
-scmd_lin3_nw <- NeweyWest(scmd_all_lin3_model, lag = NULL, prewhite = FALSE, verbose = T)
-# Lag = 8 using Bartlett kernels for automatic bandwidth selection
+scmd_lin2_nw <- NeweyWest(scmd_all_lin2_model, lag = NULL, prewhite = FALSE, verbose = T)
+# Lag = 14 using Bartlett kernels for automatic bandwidth selection
 
 # Extract Newey-West covariance matrix
-scmd_lin3_nw_variance <- NeweyWest(scmd_all_lin3_model, lag = 8, prewhite = F)
+scmd_lin2_nw_variance <- NeweyWest(scmd_all_lin2_model, lag = 14, prewhite = F)
 
 # Newey-West adjusted p values (before multiple testing correction)
-scmd_lin3_nw_coef_pvals <- coeftest(scmd_all_lin3_model, vcov. = scmd_lin3_nw_variance)[,4]
+scmd_lin2_nw_coef_pvals <- coeftest(scmd_all_lin2_model, vcov. = scmd_lin2_nw_variance)[,4]
 
 # Add Holm correction for multiple testing to identify months with a significant effect
-scmd_lin3_holm_coef_pvals <- p.adjust(scmd_lin3_nw_coef_pvals, method = "holm")
+scmd_lin2_holm_coef_pvals <- p.adjust(scmd_lin2_nw_coef_pvals, method = "holm")
 
 # Sanity test for Newey-West corrected 95% CIs
-round(coefci(scmd_all_lin3_model), digits = 5)
-round(coefci(scmd_all_lin3_model, vcov. = scmd_lin3_nw_variance), digits = 5)
-# CIs are all narrower after Newey-West correction, which is unusual but can happen
+round(coefci(scmd_all_lin2_model), digits = 5)
+round(coefci(scmd_all_lin2_model, vcov. = scmd_lin2_nw_variance), digits = 5)
+# CIs are sometimes wider and sometimes narrower after correction, which is normal. 
 
 # Construct df with Newey-West corrected 95% CI/p values and Holm corrected p values for model 'intercepts' (step changes)
 # Same logic as for GP data but no need to exponentiate
 # And no need to interpret coefficients as percentage changes (they are absolute changes for a linear model)
-coef_scmd_lin3_nw <- data.frame(
-  est = scmd_all_lin3_model$coef,
-  coefci(scmd_all_lin3_model, vcov. = scmd_lin3_nw_variance)
+coef_scmd_lin2_nw <- data.frame(
+  est = scmd_all_lin2_model$coef,
+  coefci(scmd_all_lin2_model, vcov. = scmd_lin2_nw_variance)
 ) |> 
   rownames_to_column("coef") |> 
   rename(lci = "X2.5..", uci = "X97.5..") |> 
@@ -506,13 +508,13 @@ coef_scmd_lin3_nw <- data.frame(
     lci = as.character(round(lci, 2)),
     uci = as.character(round(uci, 2)),
     # Add adjusted p-values
-    holm_pvals = round(scmd_lin3_holm_coef_pvals, digits = 3),
+    holm_pvals = round(scmd_lin2_holm_coef_pvals, digits = 3),
     # Identifier columns 
     dataset = "SCMD",
     bnf_chemical = "All chemicals"
   ) |>
   # Remove irrelevant rows
-  filter_out(coef %in% c("(Intercept)", "psi1.month_number", "psi2.month_number", "psi3.month_number")) |> 
+  filter_out(coef %in% c("(Intercept)", "psi1.month_number", "psi2.month_number")) |> 
   # Only show dummy month factors with a sig. effect
   filter(holm_pvals < 0.0500) |> 
   relocate(holm_pvals, .after = coef)
@@ -538,13 +540,13 @@ scmd_all_months_model <- selgmented(
   seg.Z = ~ month_number,
   type = "aic",
   refit = T, # improves model selection accuracy
-  Kmax = 2, # max number of changepoints = 2 as 3 breakpoints makes calculation fail
+  Kmax = 3, # max number of changepoints = 3
   check.dslope = T 
 )
-# 2 breakpoints has lowest AIC (1822.564), which is lower than the model without the dummy month factor
+# 2 breakpoints has lowest AIC (1561.146), which is slightly lower than the model without the dummy month factor
 
 summary(scmd_all_months_model) 
-# Estimated breakpoints: 23.933 (SE = 1.611), 70.805 (SE = 0.989)
+# Estimated breakpoints: 18.901 (SE = 2.445), 36.399 (SE = 5.309)
 # Significant effect for Aug only (uncorrected p-values)
 
 # Check model fit
@@ -553,7 +555,7 @@ check_model(scmd_all_months_model)
 # No significant outliers; slightly better fit than model w/o monthly dummy variable in this sense 
 
 acf(residuals(scmd_all_months_model))
-# Autocorrelation still present at lag = 1, 7, and 17
+# Autocorrelation still present at lag = 1 and 7
 
 plot(scmd_all_months_model)
 ```
@@ -563,10 +565,10 @@ As for the GP data, due to the presence of autocorrelation, Newey-West adjustmen
 ```{r}
 # Automatically select lag (bandwidth) according to the model
 scmd_nw <- NeweyWest(scmd_all_months_model, lag = NULL, prewhite = FALSE, verbose = T)
-# Lag = 4 using Bartlett kernels for automatic bandwidth selection
+# Lag = 3 using Bartlett kernels for automatic bandwidth selection
 
 # Extract Newey-West covariance matrix
-scmd_nw_variance <- NeweyWest(scmd_all_months_model, lag = 4, prewhite = F)
+scmd_nw_variance <- NeweyWest(scmd_all_months_model, lag = 3, prewhite = F)
 
 # Newey-West adjusted p values (before multiple testing correction)
 scmd_nw_coef_pvals <- coeftest(scmd_all_months_model, vcov. = scmd_nw_variance)[,4]
@@ -603,13 +605,49 @@ df_scmd_nw_coef <- data.frame(
   # Only show dummy month factors with a sig. effect
   filter(holm_pvals < 0.0500) |> 
   relocate(holm_pvals, .after = coef)
+```
 
-# Only Aug is significantly different to Jan according to Newey-West p values adjusted for multiple corrections.
+No months are significantly different to Jan according to Newey-West p values adjusted for multiple corrections.
+
+
+#### Trying a log-transformed y-axis
+
+```{r}
+
 ```
 
 #### Calculating predicted values and slope
 
 Use `predicted` for calculating predicted values and `extract_lin_slopes` for calculating 95% CI bounds for each segment. Both functions are the linear equivalent of the functions used above. Predicted values and slopes are not calculated or plotted for models other than the 3-breakpoint linear model. 
+
+```{r}
+# Need to calculate Newey-West SE to calculate 95%CIs
+# Extract model matrix
+scmd_mod_matrix <- model.matrix(scmd_all_lin2_model)
+View(as.data.frame(scmd_mod_matrix))
+# Mostly 0s and 1s and looks as expected
+
+# Check that ncol of model matrix matches nrow NW variance matrix, important for matrix multiplication step
+ncol(scmd_mod_matrix) == nrow(scmd_lin2_nw_variance)
+# [1] TRUE
+
+# Matrix multiplication to get SE for each predicted value
+scmd_lin2_nw_se <- sqrt(rowSums((scmd_mod_matrix %*% scmd_lin2_nw_variance) * scmd_mod_matrix))
+
+# Use functions to get prediction and slopes dfs, specifying NW SE/variance
+pred_scmd_all_lin2 <- predicted(scmd_all_lin2_model, "All chemicals", total_scmd_over_time, "SCMD", scmd_lin2_nw_se)
+
+slope_scmd_all_lin2 <- extract_lin_slopes(scmd_all_lin2_model, "All chemicals", "SCMD", scmd_lin2_nw_variance) |> 
+  # Round only breakpoint estimations but not 95% CI
+  mutate(bp1 = round(bp1), bp2 = round(bp2)) |> 
+  # Convert to date
+  mutate(
+    across(starts_with("bp1"), ~ scmd_all_chemicals$month[.x + 1]),
+    across(starts_with("bp2"), ~ scmd_all_chemicals$month[.x + 1])
+  )
+```
+
+Calculating predicted values and slope for log model
 
 ```{r}
 # Need to calculate Newey-West SE to calculate 95%CIs
@@ -651,25 +689,24 @@ ggplot() +
     alpha = .7
   ) +
   geom_line(
-    data = pred_scmd_all_lin3,
-    aes(x= month, y = pred, colour = "Segmented linear model (3bps)"),
+    data = pred_scmd_all_lin2,
+    aes(x= month, y = pred, colour = "Segmented linear model (2bps)"),
     size = 1,
     alpha = .7
   ) +
   geom_vline(
-    xintercept = c(slope_scmd_all_lin3$bp1, slope_scmd_all_lin3$bp2, slope_scmd_all_lin3$bp3), 
+    xintercept = c(slope_scmd_all_lin2$bp1, slope_scmd_all_lin2$bp2), 
     colour = "blue", 
     alpha = 0.5
   ) +
   scale_colour_manual(
     values = c(
       "Observed" = "black",
-      "Segmented linear model (3bps)" = "blue"
+      "Segmented linear model (2bps)" = "blue"
     )
   ) +
-  annotate(x = ymd("2020-02-01"), y = 200000, label = "2020-02-01", geom = "label", colour = "blue") +
-  annotate(x = ymd("2020-05-01"), y = 175000, label = "2020-05-01", geom = "label", colour = "blue") +
-  annotate(x = ymd("2024-12-01"), y = 100000, label = "2024-12-01", geom = "label", colour = "blue") +
+  annotate(x = ymd("2020-08-01"), y = 200000, label = "2020-08-01", geom = "label", colour = "blue") +
+  annotate(x = ymd("2022-02-01"), y = 175000, label = "2022-02-01", geom = "label", colour = "blue") +
   theme(legend.position = "right")
 ```
 
