@@ -13,12 +13,12 @@ log_mod_select <- function(data, chemical, monthly_measure) {
     ),
     data = dat
   )
-  # These settings produce the closest results to Andrea's 'mod_aic' function
+  # Choose number of breakpoints depending on model fit and slope change
   selgmented(
     model0,
     type = "aic",
     refit = T, # improves model selection accuracy
-    Kmax = 3, # max number of changepoints = 3
+    Kmax = 3, # max number of breakpoints = 3
     check.dslope = T # removes breakpoints without a significant slope change
   )
 }
