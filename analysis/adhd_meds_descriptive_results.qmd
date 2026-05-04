@@ -8,9 +8,11 @@ format: html
 
 This analysis explores prescribing/issuing data for ADHD medications using the following data sources:
 
-1. GP prescribing data (OpenPrescribing) from 2015-08-01 to 2025-07-01 (monthly items). 
-2. FOI prescribing data from 2015-08-01 to 2025-07-01 (monthly items).
-3. SCMD issuing data (OpenPrescribing-Hospitals website) from 2019-01-01 to 2025-12-01 (monthly DDD quantity).
+1. GP prescribing data (OpenPrescribing) from 2015-08-01 to 2025-07-01 (yearly items). 
+2. FOI prescribing data from 2015-08-01 to 2025-07-01 (yearly items).
+3. SCMD issuing data (OpenPrescribing-Hospitals website) from 2019-04-01 to 2025-03-01 (yearly DDD quantity).
+
+In reality it's 2015-08-01 to 2025-07-31 and so on, but each month's data is recorded using the first day of each month. 
 
 I will produce the following figures for the thesis: 
 
@@ -69,48 +71,19 @@ scmd_adhd_issuing <- read_csv(
     month = date,
     bnf_chemical_name = vtm_name,
     icb_name = icb
-  ) 
+  ) |> 
+  # Filter for only months in our analysis period
+  filter(between(month, as.Date("2019-04-01"), as.Date("2025-03-01")))
 
-total_scmd_over_time <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_total.csv"))
+total_scmd_over_time <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_total.csv")) |> 
+  # Filter for only months in our analysis period
+  filter(between(month, as.Date("2019-04-01"), as.Date("2025-03-01")))
 
 # Read in ICB code -> ICB name mapping
 icb_code_name_map <- read_csv(here("output", "icb_mapping", "icb_code_name_map.csv"))
 ```
 
-# Results: medication usage
-
-
-## Prescribing/issuing by chemical (monthly)
-```{r}
-fig_monthly_gp_by_chemical <- plot_med_usage(total_gp_over_time, monthly_items, "Monthly items", "GP Prescribing")
-
-fig_monthly_gp_by_chemical
-
-fig_monthly_foi_by_chemical <- plot_med_usage(total_foi_over_time, monthly_items, "Monthly items", "FOI Prescribing")
-
-fig_monthly_foi_by_chemical
-
-fig_monthly_scmd_by_chemical <- plot_med_usage(total_scmd_over_time, monthly_ddd_quantity, "Monthly DDD quantity", "SCMD issuing")
-
-fig_monthly_scmd_by_chemical
-
-combined_monthly_fig_1col <- fig_monthly_gp_by_chemical / fig_monthly_foi_by_chemical / fig_monthly_scmd_by_chemical + 
-  plot_annotation(tag_levels = "A") +
-  plot_layout(guides = "collect")
-
-combined_monthly_fig_1col
-
-ggsave(
-  here("output", "figures", "fig_1col_monthly_med_usage.png"),
-  combined_monthly_fig_1col,
-  width = 15,
-  height = 15
-)
-```
-
-I find that a 1*3 layout works better. If this ends up in the thesis, it would be nice to use a common x-axis. 
-
-Might be good to do some % calculations for each chemical? Also think about if I should aggregate this into yearly data instead. 
+# Results: Yearly medication coding 
 
 ## Prescribing/issuing by chemical (yearly)
 
@@ -140,7 +113,12 @@ df_yearly_gp_by_chemical <- calc_yearly_total(
   monthly_items
 )
 
-fig_yearly_gp_by_chemical <- plot_med_usage_shapes(df_yearly_gp_by_chemical, end_date, yearly_items, "GP Prescribing")
+fig_yearly_gp_by_chemical <- plot_med_usage_shapes(
+  data = df_yearly_gp_by_chemical, 
+  usage_measure = yearly_items, 
+  title_label = "GP Prescribing (Yearly Items)",
+  n_breaks = 10
+)
 
 fig_yearly_gp_by_chemical
 
@@ -151,7 +129,12 @@ df_yearly_foi_by_chemical <- calc_yearly_total(
   monthly_items
 )
 
-fig_yearly_foi_by_chemical <- plot_med_usage_shapes(df_yearly_foi_by_chemical, end_date, yearly_items, "FOI Prescribing")
+fig_yearly_foi_by_chemical <- plot_med_usage_shapes(
+  data = df_yearly_foi_by_chemical,  
+  usage_measure = yearly_items, 
+  title_label = "FOI Prescribing (Yearly Items)",
+  n_breaks = 10
+)
 
 fig_yearly_foi_by_chemical
 
@@ -168,62 +151,34 @@ df_yearly_scmd_by_chemical <- total_scmd_over_time |>
     yearly_ddd_quantity = sum(monthly_ddd_quantity, na.rm = TRUE), .groups = "drop"
   )
 
-fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(df_yearly_scmd_by_chemical, end_date, yearly_ddd_quantity, "SCMD Prescribing")
+fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(
+  data = df_yearly_scmd_by_chemical, 
+  usage_measure = yearly_ddd_quantity, 
+  title_label = "SCMD Issuing (Yearly DDD Quantity)",
+  n_breaks = 6
+)
 
 fig_yearly_scmd_by_chemical
 ```
 
-It's now easier to distinguish between different lines. Will need to fix x-axis tick labelling if we end up reporting yearly data at this point. 
-
-### Percentage stacked bar chart for GP and FOI prescribing (total prescribing by chemical)
-
-We will report the percentages shown in this chart as text instead - need to calculate!
-
-```{r}
-# df_total_gp_foi <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "source") |> 
-#   mutate(
-#     source = recode(source, "1" = "GP", "2" = "FOI")
-#   ) |> 
-#   group_by(bnf_chemical_name, source) |> 
-#   summarise(total_items = sum(yearly_items), na.rm = T, .groups = "drop")
-
-# fig_total_gp_foi <- ggplot(
-#   df_total_gp_foi,
-#   aes(fill = source, y = total_items, x = bnf_chemical_name)
-# ) +
-#   # Stacked percentage bar chart
-#   geom_bar(position = "fill", stat = "identity") +
-#   scale_y_continuous(limits = c(0, NA), labels = scales::percent) +
-#   scale_fill_viridis_d(begin = 0.25, end = 0.5) +
-#   labs(title = "Percentage of GP/FOI Prescribing by Chemical") +
-#   theme_bw(base_size = 12) +
-#   theme(text = element_text(family = "Times New Roman"))
-
-# fig_total_gp_foi
-```
-
-Kind of ugly but does the job. Can add percentage labels. 
+Not doing a shared x-axis as the yearly aggregation periods are different. 
 
 ### Combined figures
 
 ```{r}
-combined_monthly_plot <- ((fig_monthly_gp_by_chemical / fig_monthly_foi_by_chemical) | plot_spacer() | fig_monthly_scmd_by_chemical / fig_total_gp_foi) + 
+combined_yearly_plot <- (fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical / fig_yearly_scmd_by_chemical) + 
   plot_annotation(tag_levels = "A") +
-  plot_layout(widths = c(1, 0.05, 1))
+  # Shared legend
+  plot_layout(guides = "collect") &
+	theme(
+		plot.tag = element_text(size = 20),
+    legend.position = "bottom",
+		legend.title = element_blank(),
+		legend.box = "horizontal"
+	)
 
-combined_monthly_plot
-
-ggsave(here("output", "figures", "fig_monthly_med_usage.png"), combined_monthly_plot, width = 15, height = 15)
-
-combined_yearly_plot <- ((fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical) | plot_spacer() | (fig_yearly_scmd_by_chemical / fig_total_gp_foi)) + 
-  plot_annotation(title = "Version with yearly data", tag_levels = "A") +
-  plot_layout(widths = c(1, 0.05, 1))
-
-combined_yearly_plot
-
-ggsave(here("output", "figures", "fig_yearly_med_usage.png"), combined_yearly_plot, width = 15, height = 15)
+ggsave(here("output", "figures", "fig_yearly_med_coding.png"), combined_yearly_plot, width = 10, height = 12)
 ```
-
 
 # Results: ICB-level analysis
 
