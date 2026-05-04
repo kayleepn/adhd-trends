@@ -27,12 +27,13 @@ I will produce the following figures for the thesis:
 
 library(tidyverse)
 library(here)
-library(nhstt)
 library(arrow)
 library(patchwork)
 library(ggtext)
 library(ggnewscale)
 library(stringr)
+library(flextable)
+library(officer)
 
 options(scipen = 999) # Turn off scientific notation
 
@@ -306,24 +307,18 @@ FOI data prior to 2020-04-01 is given with Area Team codes instead of ICB codes.
 
 ```{r}
 foi_adhd_20to25 <- foi_adhd_prescribing |> 
-  filter(month >= "2020-08-01" & month < "2025-08-01") |> 
+  filter(between(month, as.Date("2020-08-01"), as.Date("2025-07-01"))) |> 
   # Using the mapping file to ensure consistent formatting of ICB names
   left_join(icb_code_name_map, by = "icb_code") |> 
   select(-icb_name.x) |> 
   rename(icb_name = icb_name.y)
 
+# Checking if ICB names look correct
 setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
 # ICB names match the mapping file but FOI data includes "Unidentified doctors")
 
 # Calculate yearly prescribing for each ICB
 foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
-# Rank ICBs according to yearly prescribing
-foi_adhd_icb_ranked <- rank_icb_yearly(foi_adhd_icb_yearly, yearly_items)
-
-# Create top and bottom legends
-top_foi_legend <- create_top_legend(foi_adhd_icb_ranked)
-bottom_foi_legend <- create_bottom_legend(foi_adhd_icb_ranked)
-
 
 fig_foi_icb_violins <- plot_yearly_violins(
   data = foi_adhd_icb_yearly,
@@ -351,7 +346,7 @@ scmd_adhd_issuing_caps <- scmd_adhd_issuing |>
 setequal(scmd_adhd_issuing_caps$icb_name, icb_code_name_map$icb_name)
 # [1] TRUE
 
-# Calculate yearly DDD quantity for each ICB
+# Calculate yearly DDD quantity issued for each ICB
 # Can't use `icb_yearly_total` as I am aggregating from April 1st to March 31st but the code follows the same logic
 scmd_adhd_icb_yearly <- scmd_adhd_issuing |>  
   mutate(
@@ -364,13 +359,6 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
   summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
   # `end_date` needs to be a factor for the violin plot
   mutate(dataset = "SCMD") # This is useful for summary stats later
-
-# Rank ICBs by yearly DDD quantity
-scmd_adhd_icb_ranked <- rank_icb_yearly(scmd_adhd_icb_yearly, yearly_ddd_quantity)
-
-# Create top and bottom legends
-top_scmd_legend <- create_top_legend(scmd_adhd_icb_ranked)
-bottom_scmd_legend <- create_bottom_legend(scmd_adhd_icb_ranked)
 
 fig_scmd_icb_violins <- plot_yearly_violins(
   data = scmd_adhd_icb_yearly,
@@ -396,77 +384,9 @@ combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_
 ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_violins, width = 10, height = 12)
 ```
 
-
-
 ### Top total prescribing/issuing ICBs across all years
 
 ```{r}
-
-
-# Helper function for ranking ICBs according to yearly medication usage
-# `yearly_col` is the column name of yearly quantity measures (items or ddd quantity)
-
-rank_icb_yearly <- function(data, yearly_col){
-  data |> 
-    group_by(end_date) |>
-    mutate(
-      icb_name = coalesce(icb_name, "Unidentified doctors"),
-      # Ranking ICBs by yearly items each year
-      year_rank = min_rank(desc({{yearly_col}})),
-      max_rank = max(year_rank, na.rm = T),
-      # Create columns to highlight top/bottom 5 ICBs in the fig
-      year_top5 = year_rank <= 5,
-      year_bottom5 = year_rank > max_rank - 5
-    ) |> 
-    # Turn ICB names into title case and remove "NHS" prefix
-    mutate(icb_name = icb_name |> 
-        str_remove("^NHS\\s*") |>
-        str_remove("\\s*Integrated Care Board$") |> 
-        str_to_title()
-    ) |> 
-    ungroup()
-}
-
-gp_adhd_icb_ranked <- rank_icb_yearly(gp_adhd_icb_yearly, yearly_items)
-
-
-# Helper function for creating a legend for top 5 ICBs
-# Need to be very specific here because I want the legend as
-# "ICB name, (years the ICB was in the top 5) 
-create_top_legend <- function(data){
-  data |> 
-    filter(year_top5 == T) |> 
-    mutate(year = format(as.Date(end_date), "%Y")) |> 
-    distinct(icb_name, year) |> 
-    group_by(icb_name) |> 
-    summarise(
-      years = paste(sort(unique(year)), collapse = ", "),
-      .groups = "drop"
-    ) |> 
-    mutate(label = paste0(icb_name, "<br>(", years, ")"))
-}
-
-# Helper function for creating a legend for bottom 5 ICBs - same logic as above
-
-create_bottom_legend <- function(data){
-  data |> 
-    filter(year_bottom5 == T) |> 
-    mutate(year = format(as.Date(end_date), "%Y")) |> 
-    distinct(icb_name, year) |> 
-    group_by(icb_name) |> 
-    summarise(
-      years = paste(sort(unique(year)), collapse = ", "),
-      .groups = "drop"
-    ) |> 
-    mutate(label = paste0(icb_name, "<br>(", years, ")"))
-}
-
-top_gp_legend <- create_top_legend(gp_adhd_icb_ranked)
-bottom_gp_legend <- create_bottom_legend(gp_adhd_icb_ranked)
-
-
-
-
 # Prepare dfs for combination
 gp_icb_yearly_summary <- gp_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
@@ -480,10 +400,8 @@ scmd_icb_yearly_summary <- scmd_adhd_icb_yearly |>
   mutate(unit = "ddd_quantity") |> 
   rename(yearly_value = yearly_ddd_quantity)
 
-# Summary df with all datasets
-icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary) |> 
-  # Need to turn factors back into dates
-  mutate(end_date = as.Date(end_date))
+# Summary df with all datasets, also useful later
+icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary)
 
 df_icbs_ranked <- icb_yearly_summary |> 
   group_by(dataset, icb_name) |> 
@@ -504,8 +422,12 @@ df_icbs_summary <- df_icbs_ranked |>
   group_by(dataset) |> 
   mutate(
     all_icbs_total = sum(total),
-    top_icb = icb_name[which.min(rank)],
-    bottom_icb = icb_name[which.max(rank)],
+    # Get top and bottom ICBs
+    top_icb = icb_name[which.min(rank)], bottom_icb = icb_name[which.max(rank)],
+    # Get top and bottom 5 ICBs
+    top_5 = paste(icb_name[order(rank)][1:5], collapse = ", "),
+    bottom_5 = paste(icb_name[order(rank, decreasing = T)][1:5], collapse = ", "),
+    # Look at rank for "Unidentified doctors" specifically
     unidentified_rank = first(rank[icb_name == "Unidentified doctors"], default = NA_integer_),
     # Calculate quartiles and IQR
     q1 = quantile(total, probs = 0.25, na.rm = TRUE),
@@ -517,6 +439,22 @@ df_icbs_summary <- df_icbs_ranked |>
   distinct()
   
 df_icbs_summary
+```
+
+Quick and dirty export into Word for easier viewing - unlikely to be a table in the thesis but useful for writing up.
+
+```{r}
+icb_summary_table <- flextable(df_icbs_summary) |> 
+  theme_booktabs() |> 
+  set_caption("Total prescribing/issuing summary for ICBs") 
+
+icb_summary_table
+
+# Save as Word document
+save_as_docx(
+  "ICB Medication Summary Table" = icb_summary_table,
+  path = "output/tables/icb_meds_summary_table.docx"
+)
 ```
 
 ### Percentage of GP and FOI prescribing by unidentified doctors (N/A for SCMD)
@@ -557,7 +495,6 @@ df_first_last_icb_quartiles <- icb_yearly_summary |>
   ungroup() |> 
   select(-c(yearly_value, icb_name)) |> 
   distinct()
-  
 ```
 
 These quartiles include unidentified doctors for GP and FOI prescribing. 
