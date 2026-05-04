@@ -13,12 +13,12 @@ log_mod_select <- function(data, chemical, monthly_measure) {
     ),
     data = dat
   )
-  # These settings produce the closest results to Andrea's 'mod_aic' function
+  # Choose number of breakpoints depending on model fit and slope change
   selgmented(
     model0,
     type = "aic",
     refit = T, # improves model selection accuracy
-    Kmax = 3, # max number of changepoints = 3
+    Kmax = 3, # max number of breakpoints = 3
     check.dslope = T # removes breakpoints without a significant slope change
   )
 }
@@ -120,23 +120,7 @@ extract_lin_slopes <- function(model, chemical, source, nw_variance) {
   # Defining the output structure and pre-filling "NA"s
   out <- list(
     bnf_chemical = chemical,
-    dataset = source,
-    slope1 = NA_character_,
-    s1_lci = NA_character_,
-    s1_uci = NA_character_,
-    slope2 = NA_character_,
-    s2_lci = NA_character_,
-    s2_uci = NA_character_,
-    slope3 = NA_character_,
-    s3_lci = NA_character_,
-    s3_uci = NA_character_,
-    slope4 = NA_character_,
-    s4_lci = NA_character_,
-    s4_uci = NA_character_,
-    # bp: breakpoint
-    bp1 = NA_character_,
-    bp2 = NA_character_,
-    bp3 = NA_character_
+    dataset = source
   )
 
   # Extracting coefficients and placing them in the output list
@@ -178,23 +162,9 @@ extract_exp_slopes <- function(model, chemical, source, nw_variance) {
   # Defining the output structure and pre-filling "NA"s
   out <- list(
     bnf_chemical = chemical,
-    dataset = source,
-    slope1 = NA_character_,
-    s1_lci = NA_character_,
-    s1_uci = NA_character_,
-    slope2 = NA_character_,
-    s2_lci = NA_character_,
-    s2_uci = NA_character_,
-    slope3 = NA_character_,
-    s3_lci = NA_character_,
-    s3_uci = NA_character_,
-    slope4 = NA_character_,
-    s4_lci = NA_character_,
-    s4_uci = NA_character_,
-    bp1 = NA_character_,
-    bp2 = NA_character_
+    dataset = source
   )
-  # potentially round and THEN paste0?
+
   for (i in seq_len(nrow(slope_mat))) {
     out[[paste0("slope", i)]] <- paste0(
       round((exp(slope_mat[i, "Est."]) - 1) * 100, digits = 2),
@@ -222,86 +192,3 @@ extract_exp_slopes <- function(model, chemical, source, nw_variance) {
 
   as.data.frame(out)
 }
-
-# The following functions are not used in the script but I have kept them as they might be useful for analysing individual chemicals.
-
-# # Calculate AIC for models with 0, 1, 2, and 3 breakpoints
-# # Note that `glm()` is used to create a Poisson model instead
-# mod_aic <- function(data, chemical, monthly_measure) {
-#   model0 <- glm(
-#     reformulate("month_number", response = monthly_measure),
-#     family = poisson,
-#     data = data,
-#     subset = bnf_chemical_name == chemical
-#   )
-
-#   # As the lowest AIC is often found at 2 breakpoints, I wanted to also calculate AIC for 3 breakpoints
-#   # However when the data doesn't fit 3 breakpoints, AIC calculation can fail
-#   # So I'm using another function to return "NULL" when AIC calculation fails
-#   safe_seg <- function(...) {
-#     tryCatch(
-#       segmented::segmented(...),
-#       error = function(e) NULL
-#     )
-#   }
-#   seg.model1 <- safe_seg(model0, seg.Z = ~month_number, npsi = 1)
-#   seg.model2 <- safe_seg(model0, seg.Z = ~month_number, npsi = 2)
-#   seg.model3 <- safe_seg(model0, seg.Z = ~month_number, npsi = 3)
-
-#   get_aic <- function(model) {
-#     if (is.null(model)) NA else AIC(model)
-#   }
-
-#   aic <- data.frame(
-#     num_breaks = c("0", "1", "2", "3"),
-#     aic = c(
-#       AIC(model0),
-#       get_aic(seg.model1),
-#       get_aic(seg.model2),
-#       get_aic(seg.model3)
-#     )
-#   )
-#   return(aic)
-# }
-
-# # Create segmented model with optimal number of breakpoints minimising AIC
-# mod_select <- function(data, chemical, monthly_measure) {
-#   dat <- data |>
-#     dplyr::filter(bnf_chemical_name == chemical)
-
-#   model0 <- glm(
-#     reformulate("month_number", response = monthly_measure),
-#     family = poisson,
-#     data = dat
-#   )
-#   selgmented(
-#     model0,
-#     type = "aic",
-#     refit = T,
-#     Kmax = 3,
-#     check.dslope = F
-#   )
-# }
-
-# Slope calculation for model with 1 breakpoint
-# Same logic as `slope0` but more segments
-# slope1 <- function(model, chemical, source) {
-#   slope <- slope(model)
-#   month <- slope(model)$month_number
-#   psi <- summary(model)$psi
-
-#   df.slope <- data.frame(
-#     slope1 = month[1, "Est."],
-#     lci1 = month[1, "CI(95%).l"],
-#     uci1 = month[1, "CI(95%).u"],
-
-#     slope2 = month[2, "Est."],
-#     lci2 = month[2, "CI(95%).l"],
-#     uci2 = month[2, "CI(95%).u"],
-
-#     change1 = psi[1, "Est."],
-
-#     bnf_chemical = chemical,
-#     data_source = source
-#   )
-# }

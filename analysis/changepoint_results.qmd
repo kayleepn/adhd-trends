@@ -23,6 +23,7 @@ library(tidyverse)
 library(here)
 library(patchwork)
 library(viridis)
+library(ggnewscale)
 library(flextable)
 library(officer)
 
@@ -56,16 +57,20 @@ foi_all_prescribing <- read_csv(here("output", "foi_prescribing", "adhd_foi_all_
 
 scmd_all_issuing <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv")) |> 
   mutate(data_source = "SCMD") |> 
-  rename(observed = monthly_ddd_quantity)
+  rename(observed = monthly_ddd_quantity) |> 
+  filter_out(month > as.Date("2024-12-01"))
 
 # Predicted values across all 3 datasets
-predicted_values <- read_csv(here("output", "changepoint_analysis", "predicted_values.csv"))
+predicted_values <- read_csv(here("output", "changepoint_analysis", "predicted_values.csv")) |> 
+	select(-bnf_chemical)
 
 # Slopes (including breakpoint locations) across datasets
-slopes <- read_csv(here("output", "changepoint_analysis", "model_slopes.csv"))
+slopes <- read_csv(here("output", "changepoint_analysis", "model_slopes.csv")) |> 
+	select(-bnf_chemical)
 
 # Model coefficients across datasets
-coefs <- read_csv(here("output", "changepoint_analysis", "model_coefficients.csv"))
+coefs <- read_csv(here("output", "changepoint_analysis", "model_coefficients.csv")) |> 
+	select(-bnf_chemical)
 ```
 
 ## Organise data for plotting
@@ -74,14 +79,14 @@ coefs <- read_csv(here("output", "changepoint_analysis", "model_coefficients.csv
 # Join predicted and observed data dfs
 df_plots <- bind_rows(foi_all_prescribing, gp_all_prescribing, scmd_all_issuing) |> 
   left_join(predicted_values, by = join_by(month, data_source)) |> 
-  # Remove unnecessary columns
-  dplyr::select(-c(bnf_chemical, bnf_chemical_name))
+  # Remove unnecessary column
+  dplyr::select(-bnf_chemical_name)
 
 # Get breakpoint dates as a vector
 breakpoints <- slopes |> 
 	rowwise() |> 
 	mutate(vec = list(
-		na.omit(c(bp1 = bp1, bp2 = bp2, bp3 = bp3))
+		na.omit(c(bp1 = bp1, bp2 = bp2))
 	)) |> 
 	ungroup() |> 
 	dplyr::select(dataset, vec) |> 
@@ -96,6 +101,7 @@ plot_changepoints <- function(
 	y_label,
 	title,
 	show_x = TRUE,
+	show_legend = TRUE,
 	breakpoint_dates,
 	label_y_pos
 ) {
@@ -184,6 +190,12 @@ plot_changepoints <- function(
 			)
 	}
 
+	# Control legend appearance
+  if (show_legend == FALSE) {
+    plot <- plot +
+      theme(legend.position = "none")
+  }
+
 	plot
 }
 ```
@@ -197,7 +209,8 @@ fig_gp_changepoints <- plot_changepoints(
 	title = "GP Prescribing",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$GP,
-	label_y_pos = c(225000, 225000)
+	# Ensure breakpoint date labels don't overlap with data
+	label_y_pos = c(225000, 225000) 
 )
 
 fig_gp_changepoints
@@ -213,14 +226,35 @@ fig_foi_changepoints <- plot_changepoints(
 
 fig_foi_changepoints
 
+# Create df for shading COVID-19 disruption periods in the plot - only the SCMD changepoint analysis needs this specified in the model
+
+scmd_covid <- tibble(
+	xmin = as.Date(c("2020-04-01", "2020-07-01")),
+	xmax = as.Date(c("2020-06-01", "2021-02-01")),
+	ymin = -Inf,
+	ymax = Inf,
+	period = c("1st COVID-19 disruption period", "2nd COVID-19 disruption period")
+)
+
 fig_scmd_changepoints <- plot_changepoints(
 	source = "SCMD",
 	y_label = "Monthly DDD quantity",
 	title = "SCMD Issuing",
 	show_x = TRUE,
+	show_legend = FALSE,
 	breakpoint_dates = breakpoints$SCMD,
-	label_y_pos = c(210000, 175000, 100000)
-)
+	label_y_pos = 210000
+) +
+	# Add shading for COVID-19 disruption periods
+	new_scale_fill() + # `plot_changepoints` already has one 'fill' scale
+	geom_rect(
+	data = scmd_covid,
+	aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = period),
+	inherit.aes = FALSE,
+	alpha = 0.3
+	) +
+	# Just making things look good
+	scale_fill_viridis_d(name = waiver(), alpha = .5, begin = .25, end = .75, option = "turbo") 
 
 fig_scmd_changepoints
 ```
@@ -229,18 +263,36 @@ The warning messages are because the SCMD data has less data available so it doe
 
 ## Combined figure
 
+I need to first combine the GP and FOI figures and collect the line/point legends, then have the SCMD figure as its own object so that the legends for shading the COVID-19 disruption periods exists in the SCMD figure. Then I can combine all the figures together for the final figure. 
+
 ```{r}
-fig_combined_changepoints <- fig_gp_changepoints / fig_foi_changepoints / fig_scmd_changepoints + 
-	plot_layout(guides = "collect") +
-	plot_annotation(tag_levels = "A") &
+# Combining GP and FOI figures with common legend at the bottom
+p1 <- fig_gp_changepoints / fig_foi_changepoints +
+	plot_layout(guides = "collect") &
 	theme(
 		plot.title = element_text(size = 16),
-		plot.tag = element_text(size = 20), 
 		legend.position = "bottom",
 		legend.title = element_blank(),
 		legend.box = "horizontal"
 	)
 	
+p1
+
+# Specifying legend position for COVID-19 period shading and keeping it in the final fig
+p2 <- fig_scmd_changepoints +
+	plot_layout(guides = "keep") +
+	guides(colour = "none") +
+	theme(
+		legend.position = c(0.05, 0.9),
+		legend.justification = c("left", "top")
+	)
+	
+p2
+
+# Combined figures with all 3 datasets and annotated panels
+fig_combined_changepoints <- p1 / p2 + 
+	plot_annotation(tag_levels = "A") &
+	theme(plot.tag = element_text(size = 20))
 
 ggsave(
 	here("output", "figures", "fig_combined_changepoints.png"),
@@ -253,18 +305,21 @@ ggsave(
 # Results: table
 
 ```{r}
-df_slopes <- slopes |> 
-	select(-bnf_chemical)  
+# Create dataframe for slopes
+df_slopes <- slopes 
 
-slope_cols <- names(df_slopes) |> 
+# Put lower and upper 95% CI bounds in brackets after each slope estimate
+slope_cols <- names(slopes) |> 
 	str_subset("^slope")
 
 for(col in slope_cols) {
+	# Telling R which columns contain lower and upper 95% CI bounds
 	idx <- str_extract(col, "\\d?$")
 	
 	lci_col <- paste0("s", idx, "_lci")
 	uci_col <- paste0("s", idx, "_uci")
 
+	# Formatting the slopes as "estimate(lci to uci)"
 	df_slopes[[col]] <- paste0(
 		df_slopes[[col]], " (",
 		df_slopes[[lci_col]], " to ",
@@ -288,12 +343,12 @@ for(col in bp_cols) {
 	)
 }
 
+# Remove `lci` and `uci` columns now that they aren't needed
 df_slopes <- df_slopes |> 
 	select(-c(contains("lci"), contains("uci")))
-
 ```
 
-Model coefficients
+Now repeating the above process for model coefficients:
 
 ```{r}
 df_coefs <- coefs |> 
@@ -304,27 +359,36 @@ df_coefs <- coefs |>
 			uci, ")"
 		)
 	) |> 
-	dplyr::select(-c(bnf_chemical, lci, uci)) |> 
-	pivot_wider(names_from = coef, values_from = c(est, holm_pvals)) |> 
-	dplyr::select(-contains("factor"))
-
+	dplyr::select(-c(lci, uci)) |> 
+	pivot_wider(names_from = coef, values_from = c(est, holm_pvals)) |>
+	# Remove monthly factor dummies - will report in text but not table 
+	dplyr::select(-contains("factor")) |> 
+	# Remove `est_month_number` as it is identical to slope_1 in `df_slopes`
+	dplyr::select(-est_month_number)
 ```
+
+Note that the columns `est_covid1` and `est_covid2` represent the level change during the 1st and 2nd COVID-19 disruption periods as defined in the model. The level changes are -37289.17 (95% CI: -41014.43 to -33563.91) and -17809.68 (95% CI: -23569.28 to -12050.07) respectively compared to the initial slope. 
+
+Likewise, the columns `holm_pvals_covid1` and `holm_pvals_covid2` represent the p-values for the above level changes. Both p-values are <0.001 but they should be interpreted carefully as the COVID-19 disruption periods were added manually to control COVID-19 variation and allow more accurate change point estimation. These columns will be reported in the main text and not in the table below to avoid confusion. 
 
 Combine dfs and construct table
 
 ```{r}
 df_changepoint_table <- left_join(df_slopes, df_coefs) |> 
-	select(-c(est_month_number, holm_pvals_month_number)) |> 
+	# Remove COVID-19 level change columns
+	dplyr::select(-contains("covid"))	|> 
 	# Reordering rows
 	mutate(dataset = factor(dataset, levels = c("GP", "FOI", "SCMD"))) |> 
-	# Rename `est` columns (slope change compared to the previous segment)
+	# Rename initial slope p-value columns - useful because initial slope for SCMD is not significantly different from 0
+	rename(p_slope0 = holm_pvals_month_number) |> 
+	# Rename other `est` columns (slope change compared to the previous segment)
 	rename_with(
 		~ paste0("est", str_extract(.x, "\\d+")),
 		starts_with("est")
 	) |> 
 	# Rename p-value columns (for the change in slope)
 	rename_with(
-		~ paste0("level_p", str_extract(.x, "\\d+")),
+		~ paste0("p_slope", str_extract(.x, "\\d+")),
 		starts_with("holm")
 	) |> 
 	# Subtract 1 from slope number as slope1 is actually the initial slope
@@ -332,16 +396,21 @@ df_changepoint_table <- left_join(df_slopes, df_coefs) |>
 		~ paste0("slope", as.numeric(str_extract(.x, "\\d+")) - 1),
 		starts_with("slope")
 	) |> 
+	# Turn everything into characters for `pivot_longer` below
+  mutate(across(everything(), as.character)) |> 
+	# Pivot longer into an easier-to-read format
 	pivot_longer(
 		cols = -dataset,
+		# Extracting characters in original column names for the new column names
+		# And extracting numbers for `idx` (breakpoint number)
 		names_to = c(".value", "idx"),
-		names_pattern = "([a-z]+)(\\d+)"
+		names_pattern = "(.+?)(\\d+)"
 	) |> 
 	arrange(dataset, as.numeric(idx)) |> 
 	# Remove rows for breakpoints/changepoints that don't actually exist
 	filter_out(slope == "NA (NA to NA)") |> 
 	# More accurate representation of rounded p-values
-	mutate(p = ifelse(p < 0.001, "<0.001", p)) |> 
+	mutate(p_slope = ifelse(p_slope < 0.001, "<0.001", p_slope)) |> 
 	relocate(bp, .after = idx)
 ```
 
@@ -361,7 +430,7 @@ changepoint_table <- flextable(df_changepoint_table) |>
     slope = "Segment slope",
     bp = "Change-point location estimate",
 		est = "Change in slope",
-    p = "P-value of slope change"
+    p_slope = "P-value of slope change"
   ) |> 
 	# Formatting what will later become sub-header rows
 	bold(i = c(1, 4, 7)) |> 
@@ -373,6 +442,7 @@ changepoint_table <- flextable(df_changepoint_table) |>
 	
 changepoint_table
 
+# Save as Word document
 save_as_docx(
   "Changepoint Analysis Summary Table" = changepoint_table,
   path = "output/tables/changepoint_table.docx"
