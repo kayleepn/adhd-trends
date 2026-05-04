@@ -23,6 +23,7 @@ library(tidyverse)
 library(here)
 library(patchwork)
 library(viridis)
+library(ggnewscale)
 library(flextable)
 library(officer)
 
@@ -56,7 +57,8 @@ foi_all_prescribing <- read_csv(here("output", "foi_prescribing", "adhd_foi_all_
 
 scmd_all_issuing <- read_csv(here("output", "monthly_oph_scmd", "adhd_scmd_all_chemicals.csv")) |> 
   mutate(data_source = "SCMD") |> 
-  rename(observed = monthly_ddd_quantity)
+  rename(observed = monthly_ddd_quantity) |> 
+  filter_out(month > as.Date("2024-12-01"))
 
 # Predicted values across all 3 datasets
 predicted_values <- read_csv(here("output", "changepoint_analysis", "predicted_values.csv"))
@@ -81,7 +83,7 @@ df_plots <- bind_rows(foi_all_prescribing, gp_all_prescribing, scmd_all_issuing)
 breakpoints <- slopes |> 
 	rowwise() |> 
 	mutate(vec = list(
-		na.omit(c(bp1 = bp1, bp2 = bp2, bp3 = bp3))
+		na.omit(c(bp1 = bp1, bp2 = bp2))
 	)) |> 
 	ungroup() |> 
 	dplyr::select(dataset, vec) |> 
@@ -96,6 +98,7 @@ plot_changepoints <- function(
 	y_label,
 	title,
 	show_x = TRUE,
+	show_legend = TRUE,
 	breakpoint_dates,
 	label_y_pos
 ) {
@@ -184,6 +187,12 @@ plot_changepoints <- function(
 			)
 	}
 
+	# Control legend appearance
+  if (show_legend == FALSE) {
+    plot <- plot +
+      theme(legend.position = "none")
+  }
+
 	plot
 }
 ```
@@ -213,14 +222,34 @@ fig_foi_changepoints <- plot_changepoints(
 
 fig_foi_changepoints
 
+# Create df for shading COVID-19 disruption periods in the plot - only the SCMD changepoint analysis needs this specified in the model
+
+scmd_covid <- tibble(
+	xmin = as.Date(c("2020-04-01", "2020-07-01")),
+	xmax = as.Date(c("2020-06-01", "2021-02-01")),
+	ymin = -Inf,
+	ymax = Inf,
+	period = c("1st COVID-19 disruption period", "2nd COVID-19 disruption period")
+)
+
 fig_scmd_changepoints <- plot_changepoints(
 	source = "SCMD",
 	y_label = "Monthly DDD quantity",
 	title = "SCMD Issuing",
 	show_x = TRUE,
+	show_legend = FALSE,
 	breakpoint_dates = breakpoints$SCMD,
-	label_y_pos = c(210000, 175000, 100000)
-)
+	label_y_pos = 210000
+) +
+	# Add shading for COVID-19 disruption periods
+	new_scale_fill() +
+	geom_rect(
+	data = scmd_covid,
+	aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = period),
+	inherit.aes = FALSE,
+	alpha = 0.3
+	) +
+	scale_fill_viridis_d(name = waiver(), alpha = .5, begin = .25, end = .75, option = "turbo") 
 
 fig_scmd_changepoints
 ```
@@ -229,18 +258,33 @@ The warning messages are because the SCMD data has less data available so it doe
 
 ## Combined figure
 
+I need to first combine the GP and FOI figures and collect the line/point legends, then have the SCMD figure as its own object so that the legends for shading the COVID-19 disruption periods exists in the SCMD figure. Then I can combine all the figures together for the final figure. 
+
 ```{r}
-fig_combined_changepoints <- fig_gp_changepoints / fig_foi_changepoints / fig_scmd_changepoints + 
-	plot_layout(guides = "collect") +
-	plot_annotation(tag_levels = "A") &
+p1 <- fig_gp_changepoints / fig_foi_changepoints +
+	plot_layout(guides = "collect") &
 	theme(
 		plot.title = element_text(size = 16),
-		plot.tag = element_text(size = 20), 
 		legend.position = "bottom",
 		legend.title = element_blank(),
 		legend.box = "horizontal"
 	)
 	
+p1
+
+p2 <- fig_scmd_changepoints +
+	plot_layout(guides = "keep") +
+	guides(colour = "none") +
+	theme(
+		legend.position = c(0.05, 0.9),
+		legend.justification = c("left", "top")
+	)
+	
+p2
+
+fig_combined_changepoints <- p1 / p2 + 
+	plot_annotation(tag_levels = "A") &
+	theme(plot.tag = element_text(size = 20))
 
 ggsave(
 	here("output", "figures", "fig_combined_changepoints.png"),
