@@ -127,7 +127,7 @@ df_yearly_foi_by_chemical <- calc_yearly_total(
   total_foi_over_time,
   "yearly_items",
   monthly_items
-)
+) 
 
 fig_yearly_foi_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_foi_by_chemical,  
@@ -141,7 +141,7 @@ fig_yearly_foi_by_chemical
 # SCMD issuing - we want to aggregate from Apr 1st to Mar 31st to enable comparisons with ICD-10 code usage
 df_yearly_scmd_by_chemical <- total_scmd_over_time |> 
   mutate(
-    # calculate reporting year (Apr 1st - Mar 31st) from month 
+    # Calculate reporting year (Apr 1st - Mar 31st) from month 
     reporting_year = if_else(month(month) >= 4, year(month) + 1, year(month)),
     # Add end date of reporting year
     end_date = as.Date(paste0(reporting_year, "-03-31"))
@@ -180,6 +180,79 @@ combined_yearly_plot <- (fig_yearly_gp_by_chemical / fig_yearly_foi_by_chemical 
 ggsave(here("output", "figures", "fig_yearly_med_coding.png"), combined_yearly_plot, width = 10, height = 12)
 ```
 
+## Summary statistics
+
+### Yearly medication coding summary
+
+Includes total prescribing/issuing across all years, actual prescribing/issuing numbers for the first and last years for each dataset, and percentage change in prescribing/issuing combined for all chemicals between the first and last years. Will be reported as text in the thesis.
+
+```{r}
+# Prepare GP, FOI, and SCMD dataframes to be combined
+gp_summary <- df_yearly_gp_by_chemical |> 
+  mutate(dataset = "GP", unit = "items") |> 
+  rename(yearly_value = yearly_items)
+
+foi_summary <- df_yearly_foi_by_chemical |> 
+  mutate(dataset = "FOI", unit = "items") |> 
+  rename(yearly_value = yearly_items)
+
+scmd_summary <-  df_yearly_scmd_by_chemical |> 
+  mutate(dataset = "SCMD", unit = "ddd_quantity") |> 
+  rename(yearly_value = yearly_ddd_quantity)
+
+# Create summary table for total usage
+df_yearly_summary <- bind_rows(gp_summary, foi_summary, scmd_summary) |> 
+  filter(bnf_chemical_name == "All chemicals") |> 
+  group_by(dataset) |> 
+  mutate(
+    # Start and end dates for each dataset - can change if appropriate
+    start_year = min(end_date),
+    start_value = yearly_value[which.min(end_date)],
+    end_year = max(end_date),
+    end_value = yearly_value[which.max(end_date)],
+    # Total prescribing/issuing across time period 
+    total = sum(yearly_value)
+  ) |> 
+  select(-c(end_date, yearly_value, bnf_chemical_name)) |> 
+  distinct() |> 
+  # Percentage change of last aggregation year vs first aggregation year
+  mutate(pct_change = round((end_value - start_value) / start_value * 100, digits = 2))
+
+print(df_total_summary$total)
+```
+
+### Percentage of FOI/GP prescribing for each chemical
+
+Need to think about how I do this, as FOI data for atomoxetine and guanfacine is missing for the first few months. Currently doing first year vs last year comparison (but I might want to do second year vs last year, given that the first year won't be complete?). Also reported as text in thesis.
+
+```{r}
+# Same analysis time period: 2015-08-01 to 2025-07-01
+df_foi_gp_pct <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "dataset") |> 
+  mutate(
+    dataset = recode(dataset, "1" = "GP", "2" = "FOI")
+  ) |> 
+  group_by(dataset, bnf_chemical_name) |> 
+  mutate(
+    start_value = yearly_items[which.min(end_date)],
+    end_value = yearly_items[which.max(end_date)],
+    period_dataset_total = sum(yearly_items)
+  ) |> 
+  ungroup() |>
+  select(-c(end_date, yearly_items)) |> 
+  distinct() |> 
+  group_by(bnf_chemical_name) |> 
+  mutate(
+    start_total = sum(start_value),
+    start_pct = round(start_value / start_total * 100, digits = 2),
+    end_total = sum(end_value),
+    end_pct = round(end_value / end_total * 100, digits = 2),
+    period_total = sum(period_dataset_total),
+    period_pct = round(period_dataset_total / period_total * 100, digits = 2)
+  ) |>
+  select(-c(start_value, end_value, start_total, end_total, period_total, period_dataset_total)) |> 
+  arrange(bnf_chemical_name)
+```
+
 # Results: ICB-level analysis
 
 ## GP ICB-level analysis
@@ -204,10 +277,7 @@ icb_yearly_total <- function(data, icb_col, monthly_col, dataset){
     summarise(
       yearly_items = sum({{monthly_col}}, na.rm = TRUE), .groups = "drop"
     ) |> 
-    mutate(
-      end_date = as.factor(end_date),
-      dataset = dataset # This is useful for summary stats later
-    )
+    mutate(dataset = dataset) # This is useful for summary stats later
 }
 
 # Map ICB codes to ICB names
@@ -215,6 +285,123 @@ gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemic
   rename(icb_code = stp) |>
   left_join(icb_code_name_map, by = "icb_code") |> 
   select(-icb_code)
+
+# Create violin plots
+# `plot_yearly_violins` is in `medication_plots.R`
+fig_gp_icb_violins <- plot_yearly_violins(
+  data = gp_adhd_icb_yearly,
+  usage_measure = yearly_items,
+  title_label = "Yearly GP Prescribing by ICB (Items)",
+  n_breaks = 10
+)
+
+fig_gp_icb_violins
+
+# ggsave(here("output", "figures", "fig_gp_icb_violins.png"), fig_gp_icb_violins, width = 15, height = 10)
+```
+
+## FOI ICB-level analysis
+
+FOI data prior to 2020-04-01 is given with Area Team codes instead of ICB codes. Without practice-level information, it's impossible to map Area Team onto ICB accurately. Therefore, I will only analyse FOI data from 2020-08-01 to 2025-07-31 (to match with SNOMED CT code usage reporting years).
+
+```{r}
+foi_adhd_20to25 <- foi_adhd_prescribing |> 
+  filter(month >= "2020-08-01" & month < "2025-08-01") |> 
+  # Using the mapping file to ensure consistent formatting of ICB names
+  left_join(icb_code_name_map, by = "icb_code") |> 
+  select(-icb_name.x) |> 
+  rename(icb_name = icb_name.y)
+
+setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
+# ICB names match the mapping file but FOI data includes "Unidentified doctors")
+
+# Calculate yearly prescribing for each ICB
+foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
+# Rank ICBs according to yearly prescribing
+foi_adhd_icb_ranked <- rank_icb_yearly(foi_adhd_icb_yearly, yearly_items)
+
+# Create top and bottom legends
+top_foi_legend <- create_top_legend(foi_adhd_icb_ranked)
+bottom_foi_legend <- create_bottom_legend(foi_adhd_icb_ranked)
+
+
+fig_foi_icb_violins <- plot_yearly_violins(
+  data = foi_adhd_icb_yearly,
+  usage_measure = yearly_items,
+  title_label = "Yearly FOI Prescribing by ICB (Items)",
+  n_breaks = 5
+)
+
+fig_foi_icb_violins
+
+# ggsave(here("output", "figures", "fig_foi_icb_violins.png"), fig_foi_icb_violins, width = 15, height = 10)
+```
+
+## SCMD ICB-level analysis
+
+SCMD data is only available from 2019-01-01 to 2025-12-31. To match analysis time periods with ICD-10 code usage reporting years, I will only analyse SCMD hospital issuing from 2019-04-01 to 2025-03-31. 
+
+```{r}
+# ICB names in SCMD essentially match the mapping file but are formatted differently
+scmd_adhd_issuing_caps <- scmd_adhd_issuing |> 
+  mutate(
+    icb_name = paste0(icb_name, " Integrated Care Board") |> 
+    str_to_upper() 
+  )
+setequal(scmd_adhd_issuing_caps$icb_name, icb_code_name_map$icb_name)
+# [1] TRUE
+
+# Calculate yearly DDD quantity for each ICB
+# Can't use `icb_yearly_total` as I am aggregating from April 1st to March 31st but the code follows the same logic
+scmd_adhd_icb_yearly <- scmd_adhd_issuing |>  
+  mutate(
+    # calculate reporting year (Apr 1st - Mar 31st) from month 
+    reporting_year = if_else(month(month) >= 4, year(month) + 1, year(month)),
+    # Add end date of reporting year
+    end_date = as.Date(paste0(reporting_year, "-03-31"))
+    ) |> 
+  group_by(icb_name, end_date) |> 
+  summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
+  # `end_date` needs to be a factor for the violin plot
+  mutate(dataset = "SCMD") # This is useful for summary stats later
+
+# Rank ICBs by yearly DDD quantity
+scmd_adhd_icb_ranked <- rank_icb_yearly(scmd_adhd_icb_yearly, yearly_ddd_quantity)
+
+# Create top and bottom legends
+top_scmd_legend <- create_top_legend(scmd_adhd_icb_ranked)
+bottom_scmd_legend <- create_bottom_legend(scmd_adhd_icb_ranked)
+
+fig_scmd_icb_violins <- plot_yearly_violins(
+  data = scmd_adhd_icb_yearly,
+  usage_measure = yearly_ddd_quantity,
+  title_label = "Yearly SCMD Issuing by ICB (DDD Quantity)",
+  n_breaks = 6
+)
+
+fig_scmd_icb_violins
+
+# ggsave(here("output", "figures", "fig_scmd_icb_violins.png"), fig_scmd_icb_yearly, width = 15, height = 10)
+```
+
+Attempting a combined figure
+
+```{r}
+combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_icb_violins) + 
+  plot_annotation(tag_levels = "A") &
+	theme(
+		plot.tag = element_text(size = 20)
+	)
+
+ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_violins, width = 10, height = 12)
+```
+
+
+
+### Top total prescribing/issuing ICBs across all years
+
+```{r}
+
 
 # Helper function for ranking ICBs according to yearly medication usage
 # `yearly_col` is the column name of yearly quantity measures (items or ddd quantity)
@@ -241,6 +428,7 @@ rank_icb_yearly <- function(data, yearly_col){
 }
 
 gp_adhd_icb_ranked <- rank_icb_yearly(gp_adhd_icb_yearly, yearly_items)
+
 
 # Helper function for creating a legend for top 5 ICBs
 # Need to be very specific here because I want the legend as
@@ -276,198 +464,9 @@ create_bottom_legend <- function(data){
 top_gp_legend <- create_top_legend(gp_adhd_icb_ranked)
 bottom_gp_legend <- create_bottom_legend(gp_adhd_icb_ranked)
 
-# Create violin plots
-# `plot_yearly_violins` is in `medication_plots.R`
-gp_shape_values <- c(21, 22, 23, 24, 25, 8)
-fig_gp_icb_violins <- plot_yearly_violins(
-  data = gp_adhd_icb_ranked,
-  usage_measure = yearly_items,
-  top_legend = top_gp_legend,
-  bottom_legend = bottom_gp_legend,
-  shape_values = gp_shape_values,
-  title_label = "Yearly GP Prescribing by ICB"
-)
 
-fig_gp_icb_violins
 
-ggsave(here("output", "figures", "fig_gp_icb_violins.png"), fig_gp_icb_violins, width = 15, height = 10)
-```
 
-## FOI ICB-level analysis
-
-FOI data prior to 2020-04-01 is given with Area Team codes instead of ICB codes. Without practice-level information, it's impossible to map Area Team onto ICB accurately. Therefore, I will only analyse FOI data from 2020-08-01 to 2025-07-31 (to match with SNOMED CT code usage reporting years).
-
-```{r}
-foi_adhd_20to25 <- foi_adhd_prescribing |> 
-  filter(month >= "2020-08-01" & month < "2025-08-01") |> 
-  # Using the mapping file to ensure consistent formatting of ICB names
-  left_join(icb_code_name_map, by = "icb_code") |> 
-  select(-icb_name.x) |> 
-  rename(icb_name = icb_name.y)
-
-setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
-# ICB names match the mapping file but FOI data includes "Unidentified doctors")
-
-# Calculate yearly prescribing for each ICB
-foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
-# Rank ICBs according to yearly prescribing
-foi_adhd_icb_ranked <- rank_icb_yearly(foi_adhd_icb_yearly, yearly_items)
-
-# Create top and bottom legends
-top_foi_legend <- create_top_legend(foi_adhd_icb_ranked)
-bottom_foi_legend <- create_bottom_legend(foi_adhd_icb_ranked)
-
-# Create violin plot
-foi_shape_values <- c(21, 22, 23, 24, 25, 8, 11)
-
-fig_foi_icb_violins <- plot_yearly_violins(
-  data = foi_adhd_icb_ranked,
-  usage_measure = yearly_items,
-  top_legend = top_foi_legend,
-  bottom_legend = bottom_foi_legend,
-  shape_values = foi_shape_values,
-  title_label = "Yearly FOI Prescribing by ICB"
-)
-
-fig_foi_icb_violins
-
-ggsave(here("output", "figures", "fig_foi_icb_violins.png"), fig_foi_icb_violins, width = 15, height = 10)
-```
-
-## SCMD ICB-level analysis
-
-SCMD data is only available from 2019-01-01 to 2025-12-31. To match analysis time periods with ICD-10 code usage reporting years, I will only analyse SCMD hospital issuing from 2019-04-01 to 2025-03-31. 
-
-```{r}
-# ICB names in SCMD essentially match the mapping file but are formatted differently
-scmd_adhd_issuing_caps <- scmd_adhd_issuing |> 
-  mutate(
-    icb_name = paste0(icb_name, " Integrated Care Board") |> 
-    str_to_upper() 
-  )
-setequal(scmd_adhd_issuing_caps$icb_name, icb_code_name_map$icb_name)
-# [1] TRUE
-
-# Calculate yearly DDD quantity for each ICB
-# Can't use `icb_yearly_total` as I am aggregating from April 1st to March 31st but the code follows the same logic
-scmd_adhd_icb_yearly <- scmd_adhd_issuing |> 
-  filter(month >= "2019-04-01" & month < "2025-04-01") |> 
-  mutate(
-    # calculate reporting year (Apr 1st - Mar 31st) from month 
-    reporting_year = if_else(month(month) >= 4, year(month) + 1, year(month)),
-      # Add end date of reporting year
-      end_date = as.Date(paste0(reporting_year, "-03-31"))
-    ) |> 
-  group_by(icb_name, end_date) |> 
-  summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
-  # `end_date` needs to be a factor for the violin plot
-  mutate(
-    end_date = as.factor(end_date),
-    dataset = "SCMD" # This is useful for summary stats later
-  )
-
-# Rank ICBs by yearly DDD quantity
-scmd_adhd_icb_ranked <- rank_icb_yearly(scmd_adhd_icb_yearly, yearly_ddd_quantity)
-
-# Create top and bottom legends
-top_scmd_legend <- create_top_legend(scmd_adhd_icb_ranked)
-bottom_scmd_legend <- create_bottom_legend(scmd_adhd_icb_ranked)
-
-# Create violin plot
-scmd_shape_values <- c(21, 22, 23, 24, 25, 8, 11)
-
-fig_scmd_icb_violins <- plot_yearly_violins(
-  data = scmd_adhd_icb_ranked,
-  usage_measure = yearly_ddd_quantity,
-  top_legend = top_scmd_legend,
-  bottom_legend = bottom_scmd_legend,
-  shape_values = scmd_shape_values,
-  title_label = "Yearly SCMD Issuing by ICB"
-)
-
-fig_scmd_icb_violins
-
-ggsave(here("output", "figures", "fig_scmd_icb_violins.png"), fig_scmd_icb_yearly, width = 15, height = 10)
-```
-
-## Summary statistics
-
-Can have the following:
-
-- Total prescribing/issuing quantity for each data source for the entire analysis period (for every single month or to match yearly totals? currently the stats below include all SCMD data which doesn't match yearly aggregated data because there are some extra months) and percentage change
-
-```{r}
-# Prepare GP, FOI, and SCMD dataframes to be combined
-gp_monthly_summary <- total_gp_over_time |> 
-  mutate(dataset = "GP", unit = "items") |> 
-  rename(monthly_value = monthly_items)
-
-foi_monthly_summary <- total_foi_over_time |> 
-  mutate(dataset = "FOI", unit = "items") |> 
-  rename(monthly_value = monthly_items)
-
-scmd_monthly_summary <- total_scmd_over_time |> 
-  mutate(dataset = "SCMD", unit = "ddd_quantity") |> 
-  rename(monthly_value = monthly_ddd_quantity)
-
-# Create summary table for total usage
-df_total_summary <- bind_rows(gp_monthly_summary, foi_monthly_summary, scmd_monthly_summary, .id = NULL) |> 
-  filter(bnf_chemical_name == "All chemicals") |> 
-  group_by(dataset) |> 
-  mutate(
-    # Start and end dates for each dataset - can change if appropriate
-    start_date = min(month),
-    start_value = monthly_value[which.min(month)],
-    end_date = max(month),
-    end_value = monthly_value[which.max(month)],
-    # Total prescribing/issuing across time period 
-    total = sum(monthly_value)
-  ) |> 
-  select(-c(month, monthly_value, bnf_chemical_name)) |> 
-  distinct() |> 
-  # Percentage change of last month with data compared to first month with data
-  # Note that this is not necessarily 2015-08-01 as some chemicals were not recorded at first
-  # Have to pick the first month with data as dividing by 0 doesn't work!
-  mutate(pct_change = round((end_value - start_value) / start_value * 100, digits = 2))
-
-print(df_total_summary$total)
-```
-
-### Percentage of FOI/GP prescribing for each chemical
-
-Need to think about how I do this, as FOI data for atomoxetine and guanfacine is missing for the first few months. Currently doing first year vs last year comparison (but I might want to do second year vs last year, given that the first year won't be complete?).
-
-```{r}
-# Same analysis time period: 2015-08-01 to 2025-07-01
-df_foi_gp_pct <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, .id = "dataset") |> 
-  mutate(
-    dataset = recode(dataset, "1" = "GP", "2" = "FOI")
-  ) |> 
-  group_by(dataset, bnf_chemical_name) |> 
-  mutate(
-    start_value = yearly_items[which.min(end_date)],
-    end_value = yearly_items[which.max(end_date)],
-    period_dataset_total = sum(yearly_items)
-  ) |> 
-  ungroup() |>
-  select(-c(end_date, yearly_items)) |> 
-  distinct() |> 
-  group_by(bnf_chemical_name) |> 
-  mutate(
-    start_total = sum(start_value),
-    start_pct = round(start_value / start_total * 100, digits = 2),
-    end_total = sum(end_value),
-    end_pct = round(end_value / end_total * 100, digits = 2),
-    period_total = sum(period_dataset_total),
-    period_pct = round(period_dataset_total / period_total * 100, digits = 2)
-  ) |>
-  select(-c(start_value, end_value, start_total, end_total, period_total, period_dataset_total)) |> 
-  arrange(bnf_chemical_name)
-```
-
-### Top total prescribing/issuing ICBs across all years
-
-```{r}
 # Prepare dfs for combination
 gp_icb_yearly_summary <- gp_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
