@@ -16,9 +16,6 @@ Also contains a summary table for change point model coefficients.
 # Methods
 
 ```{r}
-#| label: set-up
-#| output: false
-
 library(tidyverse)
 library(here)
 library(patchwork)
@@ -98,7 +95,6 @@ breakpoints <- slopes |>
 ```{r}
 plot_changepoints <- function(
 	source,
-	y_label,
 	title,
 	show_x = TRUE,
 	show_legend = TRUE,
@@ -148,7 +144,7 @@ plot_changepoints <- function(
 		scale_fill_manual(values = plot_colours) +
 		common_x_scale + # x-axis scale
 		scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
-		labs(x = "Month", y = y_label, title = title) +
+		labs(x = "Month", title = title) +
 		theme_bw() +
 		theme(
 			text = element_text(family = "Times New Roman"),
@@ -158,20 +154,21 @@ plot_changepoints <- function(
 			axis.ticks.x = element_line(),
 			axis.title.x = element_text(size = 16),
 			axis.text.x = element_text(size = 16),
+			axis.text.y = element_text(size = 16),
+			axis.title.y = element_blank(),
 			legend.text = element_text(size = 14),
 			legend.title = element_blank(),
 			legend.background = element_rect(
 				fill = "white",
 				linetype = "solid",
 				colour = "black"
-			),
-			axis.text.y = element_text(size = 16),
-			axis.title.y = element_text(size = 16)
+			)
 		) +
 		guides(
 			fill = "none", # Remove redundant legend
 			colour = guide_legend(nrow = 1)
 		) + 
+		# Add labels for breakpoint dates
 		annotate(
 			x = breakpoint_dates, 
 			y = label_y_pos, 
@@ -205,8 +202,7 @@ plot_changepoints <- function(
 ```{r}
 fig_gp_changepoints <- plot_changepoints(
 	source = "GP",
-	y_label = "Monthly items",
-	title = "GP Prescribing",
+	title = "GP Prescribing Data (Monthly Items)",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$GP,
 	# Ensure breakpoint date labels don't overlap with data
@@ -217,8 +213,7 @@ fig_gp_changepoints
 
 fig_foi_changepoints <- plot_changepoints(
 	source = "FOI",
-	y_label = "Monthly items",
-	title = "FOI Prescribing",
+	title = "FOI Prescribing Data (Monthly Items)",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$FOI,
 	label_y_pos = c(75000, 50000)
@@ -238,8 +233,7 @@ scmd_covid <- tibble(
 
 fig_scmd_changepoints <- plot_changepoints(
 	source = "SCMD",
-	y_label = "Monthly DDD quantity",
-	title = "SCMD Issuing",
+	title = "SCMD Hospital Issuing (Monthly DDD Quantity)",
 	show_x = TRUE,
 	show_legend = FALSE,
 	breakpoint_dates = breakpoints$SCMD,
@@ -270,7 +264,7 @@ I need to first combine the GP and FOI figures and collect the line/point legend
 p1 <- fig_gp_changepoints / fig_foi_changepoints +
 	plot_layout(guides = "collect") &
 	theme(
-		plot.title = element_text(size = 16),
+		plot.title = element_text(size = 20),
 		legend.position = "bottom",
 		legend.title = element_blank(),
 		legend.box = "horizontal"
