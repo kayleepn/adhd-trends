@@ -1,84 +1,6 @@
 # Helper functions for creating usage plots
 
-# Code usage plot
-plot_icd10_breakdowns <- function(
-  data,
-  title_label,
-  legend_title,
-  show_x = TRUE,
-  text_size = 16,
-  point_size = 2,
-  x_label = "End date of yearly reporting period",
-  y_label = "Usage count",
-  n_breaks = 4
-) {
-  # Get unique dates and pick 4 evenly spaced ones for x-axis labels
-  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R`
-  all_dates <- sort(unique(data$end_date))
-  idx <- round(seq(1, length(all_dates), length.out = n_breaks))
-  scale_x_date_breaks <- all_dates[idx]
-
-  # Create plot
-  plot <- ggplot(
-    data,
-    aes(x = end_date, y = usage, colour = breakdown)
-  ) +
-    geom_line(linewidth = 2, alpha = .7) +
-    geom_point(size = point_size, alpha = .7) +
-    scale_colour_viridis_d(alpha = 0.7, end = 0.9, option = "H") +
-    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
-    scale_x_date(
-      breaks = scale_x_date_breaks,
-      # x-axis scale labels: abbreviated month (new line) YYYY
-      labels = scales::label_date("%b\n%Y")
-    ) +
-    labs(x = x_label, y = y_label, title = title_label, colour = legend_title) +
-    # Using black and white theme
-    theme_bw(
-      base_size = text_size
-    ) +
-    theme(
-      text = element_text(family = "Times New Roman"),
-      plot.title = element_text(size = 20, hjust = .5),
-      axis.title.x = element_text(size = 20),
-      axis.text.x = element_text(size = 16),
-      axis.ticks.x.bottom = element_line(),
-      axis.title.y = element_text(size = 20),
-      axis.text.y = element_text(size = 16),
-      panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
-      panel.grid.major.y = element_blank(),
-      panel.grid.minor.y = element_blank(),
-      # Place legend inside plot
-      legend.position = c(.05, .95),
-      legend.box.just = "left",
-      legend.justification = c("left", "top"),
-      # Enable markdown in legend labels
-      legend.text = element_markdown(size = 16),
-      legend.title = element_text(family = "Times New Roman"),
-      legend.key.spacing.y = unit(5, "pt"),
-      legend.background = element_rect(
-        fill = "white",
-        linetype = "solid",
-        colour = "black",
-        linewidth = 0.5
-      )
-    ) +
-    guides(colour = guide_legend(ncol = 2))
-
-  # Common x-axis
-  if (show_x == FALSE) {
-    plot <- plot +
-      theme(
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank()
-      )
-  }
-
-  plot
-}
-
-# This is very similar to the above function
+# Plots yearly code usage
 plot_code_usage <- function(
   data,
   title,
@@ -138,14 +60,13 @@ plot_code_usage <- function(
       axis.title.x = element_text(size = 20),
       axis.text.x = element_text(size = 16),
       axis.title.y = element_text(size = 20),
-      axis.text.y = element_text(size = 16),
+      axis.text.y = element_text(size = 16, angle = 45),
       # panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
       # Place legend inside plot
-      #legend.position = c(.3, .7),
-      legend.position = c(.05, .95),
+      legend.position = c(0.01, .99),
       legend.box.just = "left",
       legend.justification = c("left", "top"),
       legend.title = element_blank(),
@@ -171,6 +92,85 @@ plot_code_usage <- function(
   if (show_legend == FALSE) {
     plot <- plot +
       theme(legend.position = "none")
+  }
+
+  plot
+}
+
+# This is very similar to the above function
+# Creates plots for ICD-10 breakdowns
+plot_icd10_breakdowns <- function(
+  data,
+  title_label,
+  legend_title,
+  show_x = TRUE,
+  text_size = 16,
+  point_size = 2,
+  x_label = "End date of yearly reporting period",
+  y_label = "Usage count",
+  n_breaks = 14
+) {
+  # Get unique dates and picks evenly spaced ones for x-axis labels
+  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R` used for previous secondary care reports
+  all_dates <- sort(unique(data$end_date))
+  idx <- round(seq(1, length(all_dates), length.out = n_breaks))
+  scale_x_date_breaks <- all_dates[idx]
+
+  # Create plot
+  plot <- ggplot(
+    data,
+    aes(x = end_date, y = usage, colour = breakdown)
+  ) +
+    geom_line(linewidth = 2, alpha = .7) +
+    geom_point(size = point_size, alpha = .7) +
+    scale_colour_viridis_d(alpha = 0.7, end = 0.9, option = "H") +
+    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    scale_x_date(
+      breaks = scale_x_date_breaks,
+      # x-axis scale labels: abbreviated month (new line) YYYY
+      labels = scales::label_date("%b\n%Y")
+    ) +
+    labs(x = x_label, y = y_label, title = title_label, colour = legend_title) +
+    # Using black and white theme
+    theme_bw(
+      base_size = text_size
+    ) +
+    theme(
+      text = element_text(family = "Times New Roman"),
+      plot.title = element_text(size = 20, hjust = .5),
+      axis.title.x = element_text(size = 20),
+      axis.text.x = element_text(size = 16),
+      axis.ticks.x.bottom = element_line(),
+      axis.title.y = element_text(size = 20),
+      axis.text.y = element_text(size = 16),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      # Place legend inside plot
+      legend.position = c(.01, .99),
+      legend.box.just = "left",
+      legend.justification = c("left", "top"),
+      # Enable markdown in legend labels
+      legend.text = element_markdown(size = 16),
+      legend.title = element_text(family = "Times New Roman"),
+      legend.key.spacing.y = unit(5, "pt"),
+      legend.background = element_rect(
+        fill = "white",
+        linetype = "solid",
+        colour = "black",
+        linewidth = 0.5
+      )
+    ) +
+    guides(colour = guide_legend(ncol = 2))
+
+  # Common x-axis
+  if (show_x == FALSE) {
+    plot <- plot +
+      theme(
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank()
+      )
   }
 
   plot

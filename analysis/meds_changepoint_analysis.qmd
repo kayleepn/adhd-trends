@@ -10,9 +10,6 @@ This analysis uses the `segmented` R package to conduct change point analysis on
 # Methods
 
 ```{r}
-#| label: setup
-#| output: false
-
 library(tidyverse)
 library(here)
 library(ggplot2)
@@ -36,8 +33,6 @@ Data cleaning was performed in `get_foi_data.R`, `get-adhd-meds-op`, and `get-we
 We will start with FP34PCD prescribing FOI data from 2015-08-01 to 2025-07-01 as it is the most simple. Note that only prescription item counts are available and DDD quantity cannot be calculated without quantity information. Here we calculate monthly prescribing for indiviudal chemicals and all chemicals. 
 
 ```{r}
-# Deliberately not using functions to simplify this as keeping the intermediate dfs is useful for plotting later. This will not be the final plot but is good for an intuitive visual check of model fit. 
-
 foi_by_chemical <- read_csv(here("output", "foi_prescribing", "adhd_foi_by_chemical.csv"))
 
 foi_all_chemicals <- read_csv(here("output", "foi_prescribing", "adhd_foi_all_chemicals.csv"))
@@ -268,6 +263,7 @@ slope_gp_all_months <- extract_exp_slopes(gp_all_months_model, "All chemicals", 
 ```
 
 #### Plotting log-transformed models with observed data
+
 ```{r}
 # Simple plot to visually check model fit
 ggplot() +

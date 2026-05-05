@@ -147,18 +147,13 @@ fig_all_codes_usage <- fig_snomed_all_usage / fig_icd10_all_usage +
 	)
 
 fig_all_codes_usage
-ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 15, height = 10)
+ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height = 10)
 ```
 
 ## Yearly ADHD code usage
 
 ### SNOMED CT
 ```{r}
-#| label: fig-snomed-adhd-vs-all
-#| fig-cap: "SNOMED CT ADHD diagnosis code usage compared to all SNOMED CT codes. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
-#| fig-width: 10
-#| fig-height: 6
-
 # Get the top 5 SNOMED CT ADHD diagnosis codes in the codelist
 top5_snomed_diag_codes <- snomed_diag_usage |>
   group_by(snomed_code, description) |> 
@@ -182,7 +177,6 @@ snomed_adhd_usage <- bind_rows(
 )  
 
 # Plot as graph
-
 # None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
@@ -228,7 +222,7 @@ fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage +
 		legend.title = element_blank()
   )
 
-ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 15, height = 11)
+ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height = 11)
 ```
 
 
@@ -356,15 +350,12 @@ save_as_docx(
 )
 ```
 
-
-
 ## ICD-10 breakdowns
 
 Breakdowns are only calculated for F90.0, which is the only code on the codelist and accounts for 97.73% of all F90 code usage. 
 
 ```{r}
 # Same code as secondary care breakdown analysis report but different codelist (F90.0 only)
-
 df_icd10_diag_positions <- icd10_diag_breakdowns |> 
   filter(breakdown %in% c("all_diagnoses", "main_diagnosis")) |>
   group_by(icd10_code, description, breakdown) |>
@@ -382,51 +373,10 @@ Main diagnoses represent only 0.67% of F90.0 codes, indicating that ADHD is rare
 
 ### Age breakdowns
 
-This code is very similar to the previous secondary care report but I aggregate 5-year age groups into 10-year age groups and plot each age group as one line instead of using facets. This allows easier interpretation and takes up less space.
-
-```{r}
-#| label: fig-icd10-age-breakdowns
-#| fig-cap: "ICD-10 F900 usage over time by age group (aggregated 10-year age groups). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
-#| fig-width: 10
-#| fig-height: 11
-
-df_icd10_age_10_fig <- icd10_diag_breakdowns |> 
-  filter(str_starts(breakdown, "age")) |>
-  mutate(
-    breakdown = fct_collapse(
-      breakdown,
-      "age_0_9" = c("age_0", "age_1_4", "age_5_9"),
-      "age_10_19" = c("age_10_14", "age_15", "age_16", "age_17", "age_18", "age_19"),
-      "age_20_29" = c("age_20_24", "age_25_29"),
-      "age_30_39" = c("age_30_34", "age_35_39"),
-      "age_40_49" = c("age_40_44", "age_45_49"),
-      "age_50_59" = c("age_50_54", "age_55_59"),
-      "age_60_69" = c("age_60_64", "age_65_69"),
-      "age_70_79" = c("age_70_74", "age_75_79"),
-      "age_80_89" = c("age_80_84", "age_85_89")
-    )
-  ) |>
-  # Need to also group by end_date to plot over time
-  group_by(breakdown, end_date) |>
-  summarise(usage = sum(usage), .groups = "drop") |>
-  ungroup() |>
-  group_by(breakdown) |>
-    # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
-  mutate(
-    breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
-    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
-    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
-  ) |>
-  ungroup()
-
-fig_icd10_age_10_breakdowns <- plot_icd10_breakdowns(df_icd10_age_10_fig, "ICD-10 Code Usage: F900 Age Breakdowns", "Age group")
-
-fig_icd10_age_10_breakdowns
-```
+This code is very similar to the previous secondary care report but I aggregate 5-year age groups into 10-year age groups (except ages 0-4 and 5-9 which are kept separate) and plot each age group as one line instead of using facets. This allows easier interpretation and takes up less space.
 
 Note that the 10 colours are only distinguishable if I use the 'turbo' option in `viridis`, which is a more colour-friendly version of a rainbow scale. 
 
-The below is a version where I separate the 0-4 and 5-9 age bands. 
 ```{r}
 df_icd10_age_5_10_fig <- icd10_diag_breakdowns |> 
   filter(str_starts(breakdown, "age")) |>
@@ -474,14 +424,9 @@ I think the version with 0-4 and 5-9 as separate groups looks better and is more
 ### Sex breakdowns
 
 Male diagnoses exceeded female diagnoses until approximately 2024, when female diagnoses surpassed male.
-Gender unknown remains low throughout the period.
+Gender unknown remains low throughout the period. This is again essentially the same code as the previous reports we sent to Orla. 
 
 ```{r}
-#| label: fig-icd10-sex-breakdowns
-#| fig-cap: "ICD-10 F900 usage over time by sex (all diagnosis positions). Data source: NHS England [Hospital Admitted Patient Care Activity](https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity), April 2012 to March 2025."
-#| fig-width: 10
-#| fig-height: 4
-
 df_icd10_sex_breakdowns_fig <- icd10_diag_breakdowns |>
   filter(breakdown %in% c("male", "female", "gender_unknown")) |>
   group_by(breakdown) |>
@@ -501,7 +446,6 @@ fig_icd10_sex_breakdowns <- plot_icd10_breakdowns(
 fig_icd10_sex_breakdowns
 ```
 
-
 ### Combined figure for ICD-10 breakdowns
 
 ```{r}
@@ -513,5 +457,5 @@ fig_icd10_breakdowns <- fig_icd10_age_5_10_breakdowns / fig_icd10_sex_breakdowns
 		legend.title = element_blank()
   ) 
 
-ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 15, height = 11)
+ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 10, height = 11)
 ```
