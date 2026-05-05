@@ -154,11 +154,6 @@ ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height 
 
 ### SNOMED CT
 ```{r}
-#| label: fig-snomed-adhd-vs-all
-#| fig-cap: "SNOMED CT ADHD diagnosis code usage compared to all SNOMED CT codes. Data source: NHS England [SNOMED Code Usage in Primary Care](https://digital.nhs.uk/data-and-information/publications/statistical/mi-snomed-code-usage-in-primary-care), Aug 2012 to Jul 2025."
-#| fig-width: 10
-#| fig-height: 6
-
 # Get the top 5 SNOMED CT ADHD diagnosis codes in the codelist
 top5_snomed_diag_codes <- snomed_diag_usage |>
   group_by(snomed_code, description) |> 
@@ -182,7 +177,6 @@ snomed_adhd_usage <- bind_rows(
 )  
 
 # Plot as graph
-
 # None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
@@ -228,7 +222,7 @@ fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage +
 		legend.title = element_blank()
   )
 
-ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 15, height = 11)
+ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height = 11)
 ```
 
 

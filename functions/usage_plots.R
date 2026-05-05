@@ -66,8 +66,7 @@ plot_code_usage <- function(
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
       # Place legend inside plot
-      #legend.position = c(.3, .7),
-      legend.position = c(.05, .95),
+      legend.position = c(0.01, .99),
       legend.box.just = "left",
       legend.justification = c("left", "top"),
       legend.title = element_blank(),
