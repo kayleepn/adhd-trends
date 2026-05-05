@@ -1,7 +1,4 @@
 "coef","holm_pvals","est","lci","uci","dataset","bnf_chemical"
-"month_number",0,"1.76%","1.41%","2.11%","FOI","All chemicals"
-"U1.month_number",0.098,"18.3%","2.23%","36.89%","FOI","All chemicals"
-"U2.month_number",0.163,"-13.34%","-25.11%","0.28%","FOI","All chemicals"
 "month_number",0,"0.54%","0.48%","0.59%","GP","All chemicals"
 "month_factorFeb",0,"-7.92%","-9.5%","-6.32%","GP","All chemicals"
 "month_factorApr",0.049,"-3.22%","-5.35%","-1.04%","GP","All chemicals"
