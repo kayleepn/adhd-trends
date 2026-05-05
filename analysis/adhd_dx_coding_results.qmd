@@ -85,7 +85,7 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 
 ## Yearly usage for all codes (SNOMED CT vs ICD-10)
 
-Note that NONE of these figures are going to look good until the `ggsave()` step because of scaling issues.
+Similar code and logic to previous reports but plots are formatted differently. Note that NONE of these figures are going to look good until the `ggsave()` step because of scaling issues.
 
 ```{r}
 # Helper function for summarising yearly code usage of a codelist
@@ -148,6 +148,8 @@ ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height 
 ```
 
 ## Yearly ADHD code usage
+
+Similar code and logic to previous reports but plots are formatted differently. 
 
 ### SNOMED CT
 ```{r}
@@ -223,7 +225,7 @@ ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height
 
 ## Usage counts for top 5 codes in each codelist
 
-Aim: produce table with total usage (across all years) for all codes and ADHD codes for SNOMED CT (only the top 5 codes) and ICD-10 + proportion of coding activity contributed by each code.
+Aim: produce table with total usage (across all years) for all codes and ADHD codes for SNOMED CT (only the top 5 codes) and ICD-10 + proportion of coding activity contributed by each code. Very similar code and logic to previous code usage reports. 
 
 ADHD coding only takes up 0.0068% of all SNOMED CT coding so it makes more sense to calculate the proportion of coding each of the top 5 codes take up within ADHD codes.
 
