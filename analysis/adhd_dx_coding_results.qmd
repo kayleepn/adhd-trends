@@ -147,7 +147,7 @@ fig_all_codes_usage <- fig_snomed_all_usage / fig_icd10_all_usage +
 	)
 
 fig_all_codes_usage
-ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 15, height = 10)
+ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height = 10)
 ```
 
 ## Yearly ADHD code usage
