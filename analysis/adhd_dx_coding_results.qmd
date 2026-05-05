@@ -10,16 +10,13 @@ This descriptive analysis explores:
 1. SNOMED CT coding activity related to ADHD diagnosis in English primary care (2011-2025)
 2. ICD-10 coding activity related to ADHD diagnosis in English Hospital Admitted Patient Care. (2012-2025) 
 
-The aim is to understand which clinical codes are used to record ADHD diagnoses and related administrative activity, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic.
+The aim is to understand which clinical codes are used to record ADHD diagnoses, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic. Codelists are updated to the newest version. 
 
 # Methods
 
 ## Set up
 
 ```{r}
-#| label: setup
-#| output: false
-
 library(tidyverse)
 library(here)
 library(opencodecounts)
@@ -28,9 +25,6 @@ library(stringr)
 library(flextable)
 library(officer)
 library(ggtext)
-
-# Function for creating facet plots for age breakdowns
-#source(here("functions", "create_facet_plots.R"))
 
 # Functions for creating usage plots
 source(here("functions", "usage_plots.R"))
@@ -81,7 +75,7 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 
 ### ICD-10 Breakdown variables
 
-**Diagnostic codes**: Only the four-character ICD-10 code "Disturbance of activity and attention (F900)" was included.
+**Diagnostic codes**: Only the four-character ICD-10 code "Disturbance of activity and attention (F90.0)" was included.
 
 **Diagnostic position**: Usage counts represent FCEs with a specific code in any diagnostic position ("all diagnoses") or as the primary reason for admission ("main diagnosis").
 
@@ -90,6 +84,8 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 # Results
 
 ## Yearly usage for all codes (SNOMED CT vs ICD-10)
+
+Note that NONE of these figures are going to look good until the `ggsave()` step because of scaling issues.
 
 ```{r}
 # Helper function for summarising yearly code usage of a codelist
@@ -137,7 +133,8 @@ Produces a 1:2 figure of all SNOMED CT code vs all ICD-10 code usage. The x-axes
 
 ```{r}
 fig_all_codes_usage <- fig_snomed_all_usage / fig_icd10_all_usage + 
-	plot_layout(guides = "collect") +
+	# Legend communism :)
+  plot_layout(guides = "collect") +
 	plot_annotation(
 		tag_levels = "A",
 		theme = theme(
@@ -177,7 +174,6 @@ snomed_adhd_usage <- bind_rows(
 )  
 
 # Plot as graph
-# None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
   title = "ADHD diagnosis-related SNOMED CT code usage",
@@ -198,7 +194,6 @@ icd10_adhd_usage <- summarise_yearly(
 )
 
 # Plot figure
-# None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
   title = "ADHD diagnosis-related ICD-10 code usage",
@@ -383,6 +378,7 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
   mutate(
     breakdown = fct_collapse(
       breakdown,
+      # Aggregating 5-year age bands into 10-year age bands
       "age_0_4" = c("age_0", "age_1_4"),
       "age_5_9" = c("age_5_9"),
       "age_10_19" = c("age_10_14", "age_15", "age_16", "age_17", "age_18", "age_19"),
@@ -419,7 +415,7 @@ fig_icd10_age_5_10_breakdowns <- plot_icd10_breakdowns(
 fig_icd10_age_5_10_breakdowns
 ```
 
-I think the version with 0-4 and 5-9 as separate groups looks better and is more informative. 
+I think having ages 0-4 and 5-9 as separate groups looks better and is more informative. 
 
 ### Sex breakdowns
 

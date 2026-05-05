@@ -14,8 +14,8 @@ plot_code_usage <- function(
   # Define common x-axis limits, this helps years align
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31"))
 
-  # Get unique dates and pick 4 evenly spaced ones for x-axis labels
-  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R`
+  # Get unique dates and picks evenly spaced ones for x-axis labels
+  # Same as previous analyses and OpenCodeCounts
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
   scale_x_date_breaks <- all_dates[idx]
@@ -44,16 +44,16 @@ plot_code_usage <- function(
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    # Wrapping legend label text and removing unnecessary label
     scale_colour_viridis_d(end = .9, option = "H") +
-    # Have to manually specify shapes (and fill) for easier visualisation
-    scale_shape_manual(values = c(24, 25, 21, 22, 23, 3)) +
     scale_fill_viridis_d(end = .9, option = "H") +
+    # Have to manually specify shapes for easier visualisation
+    scale_shape_manual(values = c(24, 25, 21, 22, 23, 3)) +
     labs(x = x_label, y = y_label, title = title) +
     # Using black and white theme
     theme_bw(
       base_size = text_size
     ) +
+    # Stylistic things
     theme(
       text = element_text(family = "Times New Roman"),
       plot.title = element_text(size = 20, hjust = .5),
@@ -65,8 +65,8 @@ plot_code_usage <- function(
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
-      # Place legend inside plot
-      legend.position = c(0.01, .99),
+      # Place legend inside plot (top left corner)
+      legend.position = c(.01, .99),
       legend.box.just = "left",
       legend.justification = c("left", "top"),
       legend.title = element_blank(),
@@ -97,8 +97,9 @@ plot_code_usage <- function(
   plot
 }
 
-# This is very similar to the above function
 # Creates plots for ICD-10 breakdowns
+# This is very similar to the above function
+# Differences: no shapes in this and different legend formatting.
 plot_icd10_breakdowns <- function(
   data,
   title_label,
@@ -111,7 +112,6 @@ plot_icd10_breakdowns <- function(
   n_breaks = 14
 ) {
   # Get unique dates and picks evenly spaced ones for x-axis labels
-  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R` used for previous secondary care reports
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
   scale_x_date_breaks <- all_dates[idx]
