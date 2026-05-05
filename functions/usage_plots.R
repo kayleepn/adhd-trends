@@ -108,10 +108,10 @@ plot_icd10_breakdowns <- function(
   point_size = 2,
   x_label = "End date of yearly reporting period",
   y_label = "Usage count",
-  n_breaks = 4
+  n_breaks = 14
 ) {
-  # Get unique dates and pick 4 evenly spaced ones for x-axis labels
-  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R`
+  # Get unique dates and picks evenly spaced ones for x-axis labels
+  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R` used for previous secondary care reports
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
   scale_x_date_breaks <- all_dates[idx]
@@ -148,7 +148,7 @@ plot_icd10_breakdowns <- function(
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
       # Place legend inside plot
-      legend.position = c(.05, .95),
+      legend.position = c(.01, .99),
       legend.box.just = "left",
       legend.justification = c("left", "top"),
       # Enable markdown in legend labels
