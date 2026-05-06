@@ -133,7 +133,7 @@ df_yearly_foi_by_chemical <- calc_yearly_total(
 fig_yearly_foi_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_foi_by_chemical,  
   usage_measure = yearly_items, 
-  title_label = "FOI Prescribing (Yearly Items)",
+  title_label = "PCD Prescribing (Yearly Items)",
   n_breaks = 10
 )
 
@@ -155,7 +155,7 @@ df_yearly_scmd_by_chemical <- total_scmd_over_time |>
 fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_scmd_by_chemical, 
   usage_measure = yearly_ddd_quantity, 
-  title_label = "SCMD Issuing (Yearly DDD Quantity)",
+  title_label = "OPH Issuing (Yearly DDD Quantity)",
   n_breaks = 6
 )
 
@@ -219,7 +219,7 @@ df_yearly_summary <- bind_rows(gp_summary, foi_summary, scmd_summary) |>
   # Percentage change of last aggregation year vs first aggregation year
   mutate(pct_change = round((end_value - start_value) / start_value * 100, digits = 2))
 
-print(df_total_summary$total)
+print(df_yearly_summary$total)
 ```
 
 ### Percentage of FOI/GP prescribing for each chemical
@@ -297,8 +297,6 @@ fig_gp_icb_violins <- plot_yearly_violins(
 )
 
 fig_gp_icb_violins
-
-# ggsave(here("output", "figures", "fig_gp_icb_violins.png"), fig_gp_icb_violins, width = 15, height = 10)
 ```
 
 ## FOI ICB-level analysis
@@ -323,13 +321,11 @@ foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
 fig_foi_icb_violins <- plot_yearly_violins(
   data = foi_adhd_icb_yearly,
   usage_measure = yearly_items,
-  title_label = "Yearly FOI Prescribing by ICB (Items)",
+  title_label = "Yearly PCD Prescribing by ICB (Items)",
   n_breaks = 5
 )
 
 fig_foi_icb_violins
-
-# ggsave(here("output", "figures", "fig_foi_icb_violins.png"), fig_foi_icb_violins, width = 15, height = 10)
 ```
 
 ## SCMD ICB-level analysis
@@ -363,13 +359,11 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
 fig_scmd_icb_violins <- plot_yearly_violins(
   data = scmd_adhd_icb_yearly,
   usage_measure = yearly_ddd_quantity,
-  title_label = "Yearly SCMD Issuing by ICB (DDD Quantity)",
+  title_label = "Yearly OPH Issuing by ICB (DDD Quantity)",
   n_breaks = 6
 )
 
 fig_scmd_icb_violins
-
-# ggsave(here("output", "figures", "fig_scmd_icb_violins.png"), fig_scmd_icb_yearly, width = 15, height = 10)
 ```
 
 Attempting a combined figure
