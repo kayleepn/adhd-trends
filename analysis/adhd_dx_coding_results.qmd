@@ -105,7 +105,7 @@ snomed_all_codes_usage <- summarise_yearly(snomed_usage, "All SNOMED CT codes")
 # `plot_code_usage` is in `usage_plots.R`
 fig_snomed_all_usage <- plot_code_usage(
   data = snomed_all_codes_usage, 
-  title = "Yearly usage for all SNOMED CT codes", 
+  title = "Yearly usage of all primary care clinical codes", 
   show_legend = FALSE, 
   show_x = TRUE,
   # `n_breaks` = 14 as there are 14 years of data
@@ -119,7 +119,7 @@ icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
 # Plot figure
 fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
-  title = "Yearly usage for all ICD-10 codes", 
+  title = "Yearly usage of all hospital admitted patient care diagnosis codes", 
   show_legend = FALSE, 
   show_x = TRUE,
   n_breaks = 13
@@ -171,14 +171,14 @@ top5_snomed_usage <- snomed_diag_usage |>
 
 # Combining yearly usage for all ADHD codes combined and top 5 ADHD codes
 snomed_adhd_usage <- bind_rows(
-  summarise_yearly(snomed_diag_usage, "All ADHD diagnosis-related SNOMED CT codes"),
+  summarise_yearly(snomed_diag_usage, "All ADHD diagnosis-related primary care codes"),
   top5_snomed_usage
 )  
 
 # Plot as graph
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
-  title = "ADHD diagnosis-related SNOMED CT code usage",
+  title = "ADHD diagnosis-related code usage in primary care",
   show_legend = TRUE,
   show_x = TRUE,
   n_breaks = 14
@@ -198,7 +198,7 @@ icd10_adhd_usage <- summarise_yearly(
 # Plot figure
 fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
-  title = "ADHD diagnosis-related ICD-10 code usage",
+  title = "ADHD diagnosis code usage in hospital admitted patient care",
   show_legend = TRUE,
   show_x = TRUE,
   n_breaks = 14
@@ -251,15 +251,15 @@ calc_total_usage <- function(data_all, data_adhd, ref_desc, ref_ignore){
 df_snomed_total_usage <- calc_total_usage(
   snomed_all_codes_usage,
   snomed_adhd_usage,
-  ref_desc = "All ADHD diagnosis-related SNOMED CT codes",
-  ref_ignore = "All SNOMED CT codes"
+  ref_desc = "All ADHD diagnosis-related primary care codes",
+  ref_ignore = "All primary care codes"
 )
 
 df_icd10_total_usage <- calc_total_usage(
   icd10_all_codes_usage,
   icd10_adhd_usage,
   ref_desc = "F90.0 Disturbance of activity and attention",
-  ref_ignore = "All ICD-10 codes"
+  ref_ignore = "All hospital admitted care diagnosis codes"
 )
 
 # Calculate usage percentage change compared to start of analysis period
@@ -303,9 +303,9 @@ df_icd10_usage_table <- inner_join(
 
 # Bind SNOMED CT and ICD10 dfs
 df_usage_table <- bind_rows(
-  tibble(description = "SNOMED CT Codes (2011-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
+  tibble(description = "Codes used in primary care (2011-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
   df_snomed_usage_table, 
-  tibble(description = "ICD-10 Codes (2012-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
+  tibble(description = "Codes used in hospital admitted patient care (2012-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
   df_icd10_usage_table
 )
 
@@ -409,7 +409,7 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
 
 fig_icd10_age_5_10_breakdowns <- plot_icd10_breakdowns(
   data = df_icd10_age_5_10_fig, 
-  title = "ICD-10 F90.0 code usage: age breakdowns", 
+  title = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
   legend_title = "Age group",
   show_x = FALSE
 )
@@ -436,7 +436,7 @@ df_icd10_sex_breakdowns_fig <- icd10_diag_breakdowns |>
 
 fig_icd10_sex_breakdowns <- plot_icd10_breakdowns(
   data = df_icd10_sex_breakdowns_fig, 
-  title = "ICD-10 F90.0 code usage: sex breakdowns", 
+  title = "ADHD diagnosis code usage in hospital admitted patient care: sex breakdowns", 
   legend_title = "Sex",
   show_x = TRUE
 )
