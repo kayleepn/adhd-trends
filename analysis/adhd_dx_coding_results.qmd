@@ -407,11 +407,16 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
   ungroup() |> 
   mutate(breakdown = fct_reorder(breakdown, parse_number(breakdown)))
 
+# Get the number of breakdown factor levels for cycling through shapes
+nlevels(df_icd10_age_5_10_fig$breakdown)
+# [1] 11
+
 fig_icd10_age_5_10_breakdowns <- plot_icd10_breakdowns(
   data = df_icd10_age_5_10_fig, 
   title = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
   legend_title = "Age group",
-  show_x = FALSE
+  show_x = FALSE,
+  n_factors = 11
 )
 
 fig_icd10_age_5_10_breakdowns
@@ -432,13 +437,18 @@ df_icd10_sex_breakdowns_fig <- icd10_diag_breakdowns |>
     breakdown = str_replace(breakdown, "gender_unknown", "unknown"),
     breakdown = str_to_title(breakdown),
     breakdown = paste0(breakdown, " (n = ", scales::comma(sum(usage)), ")")
-  )
+  ) 
+
+# Get the number of breakdown levels for cycling through shapes
+length(unique(df_icd10_sex_breakdowns_fig$breakdown))
+# [1] 3
 
 fig_icd10_sex_breakdowns <- plot_icd10_breakdowns(
   data = df_icd10_sex_breakdowns_fig, 
   title = "ADHD diagnosis code usage in hospital admitted patient care: sex breakdowns", 
   legend_title = "Sex",
-  show_x = TRUE
+  show_x = TRUE,
+  n_factors = 3
 )
 
 fig_icd10_sex_breakdowns

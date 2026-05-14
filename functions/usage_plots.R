@@ -105,8 +105,9 @@ plot_icd10_breakdowns <- function(
   title_label,
   legend_title,
   show_x = TRUE,
+  n_factors, # Number of breakdown factor levels for cycling through shapes
   text_size = 16,
-  point_size = 2,
+  point_size = 3,
   x_label = "End date of yearly reporting period",
   y_label = "Usage count",
   n_breaks = 14
@@ -119,11 +120,33 @@ plot_icd10_breakdowns <- function(
   # Create plot
   plot <- ggplot(
     data,
-    aes(x = end_date, y = usage, colour = breakdown)
+    aes(
+      x = end_date,
+      y = usage,
+      colour = breakdown,
+      shape = breakdown,
+      fill = breakdown
+    )
   ) +
-    geom_line(linewidth = 2, alpha = .7) +
+    geom_line(linewidth = 1.5, alpha = .7) +
     geom_point(size = point_size, alpha = .7) +
-    scale_colour_viridis_d(alpha = 0.7, end = 0.9, option = "H") +
+    scale_colour_viridis_d(
+      alpha = 0.7,
+      end = 0.9,
+      option = "H",
+      name = legend_title
+    ) +
+    scale_fill_viridis_d(
+      alpha = 0.7,
+      end = 0.9,
+      option = "H",
+      name = legend_title
+    ) +
+    # Only need 3 shapes to alternate between to distinguish similar colours
+    scale_shape_manual(
+      values = rep(c(21, 22, 24), length.out = n_factors),
+      name = legend_title
+    ) +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
       breaks = scale_x_date_breaks,
