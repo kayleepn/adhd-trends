@@ -422,15 +422,11 @@ ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_vio
 # Prepare dfs for combination
 gp_icb_yearly_summary <- gp_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
-  rename(yearly_per_1000_pop = items_per_1000_pop) |> 
-  # Remove "Unidentified doctors"
-  filter_out(is.na(icb_name))
+  rename(yearly_per_1000_pop = items_per_1000_pop) 
 
 foi_icb_yearly_summary <- foi_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
-  rename(yearly_per_1000_pop = items_per_1000_pop) |>
-  # Remove "Unidentified doctors"
-  filter_out(is.na(icb_name))
+  rename(yearly_per_1000_pop = items_per_1000_pop)
 
 scmd_icb_yearly_summary <- scmd_adhd_icb_yearly |> 
   mutate(unit = "ddd_quantity") |> 
@@ -438,7 +434,9 @@ scmd_icb_yearly_summary <- scmd_adhd_icb_yearly |>
 
 # Summary df with all datasets, also useful later
 icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary) |> 
-  select(-c(yearly_items, yearly_ddd_quantity, population))
+  select(-c(yearly_items, yearly_ddd_quantity, population)) |> 
+  # Remove "Unidentified doctors"
+  filter_out(is.na(icb_name))
 
 df_icbs_ranked <- icb_yearly_summary |> 
   group_by(dataset, icb_name) |> 
@@ -492,16 +490,12 @@ save_as_docx(
 ### Percentage of GP and FOI prescribing by unidentified doctors (N/A for SCMD)
 
 ```{r}
-df_unidentified <- icb_yearly_summary |> 
-  # No unidentified issuing for SCMD so filtering out the dataset
-  filter_out(dataset == "SCMD") |> 
+df_unidentified <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary) |> 
   mutate(icb_name = if_else(is.na(icb_name), "unidentified", "identified")) |> 
   group_by(dataset, icb_name) |> 
-  summarise(total_value = sum(yearly_value), .groups = "drop") |> 
+  summarise(total_items = sum(yearly_items), .groups = "drop") |> 
   group_by(dataset) |> 
-  summarise(pct_unidentified = (total_value[icb_name == "unidentified"] / sum(total_value)) * 100, .groups = "drop")
-
-df_unidentified
+  summarise(pct_unidentified = (total_items[icb_name == "unidentified"] / sum(total_items)) * 100, .groups = "drop")
 ```
 
 Unidentified doctors contributed to 0.468% and 0.972% of total GP and FOI prescribing respectively. 
@@ -516,17 +510,17 @@ df_first_last_icb_quartiles <- icb_yearly_summary |>
   filter(end_date == min(end_date) | end_date == max(end_date)) |> 
   group_by(dataset, end_date) |> 
   mutate(
-    # Calculate total yearly value
-    total_yearly_value = sum(yearly_value),
+    # Calculate total yearly value per 1000 population
+    total_yearly = sum(yearly_per_1000_pop),
     # Calculate quartiles and IQR
-    q1 = quantile(yearly_value, probs = 0.25, na.rm = TRUE),
-    median = quantile(yearly_value, probs = 0.5, na.rm = TRUE),
-    q3 = quantile(yearly_value, probs = 0.75, na.rm = TRUE),
+    q1 = round(quantile(yearly_per_1000_pop, probs = 0.25, na.rm = TRUE), 2),
+    median = round(quantile(yearly_per_1000_pop, probs = 0.5, na.rm = TRUE), 2),
+    q3 = round(quantile(yearly_per_1000_pop, probs = 0.75, na.rm = TRUE), 2),
     iqr = q3 - q1
   ) |> 
   ungroup() |> 
-  select(-c(yearly_value, icb_name)) |> 
+  select(-c(yearly_per_1000_pop, icb_name)) |> 
   distinct()
 ```
 
-These quartiles include unidentified doctors for GP and FOI prescribing. 
+These quartiles exclude unidentified doctors for GP and FOI prescribing. 
