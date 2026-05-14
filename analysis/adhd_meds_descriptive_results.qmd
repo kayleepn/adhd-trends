@@ -31,6 +31,7 @@ library(ggnewscale)
 library(stringr)
 library(flextable)
 library(officer)
+library(readxl)
 
 options(scipen = 999) # Turn off scientific notation
 
@@ -253,6 +254,36 @@ df_foi_gp_pct <- bind_rows(df_yearly_gp_by_chemical, df_yearly_foi_by_chemical, 
 
 # Results: ICB-level analysis
 
+## Obtain mid-year ICB population estimates for 2024 
+
+ICB-level analysis should be adjusted for population. Mid-year (30 June) population estimates for ICBs can be obtained from the [ONS](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/clinicalcommissioninggroupmidyearpopulationestimates). Select the "Mid-2022 revised (Nov 2025) to mid-2024: Integrated Care Boards, 2024 geography edition of this dataset" edition and download the .xlsx file. The ONS named the file "sapeicb20222024.xlsx". I have placed it in output/icb_mapping. 
+
+```{r}
+# Rename Excel file
+file.rename(
+  from = here("output", "icb_mapping", "sapeicb20222024.xlsx"),
+  to = here("output", "icb_mapping", "icb_midyear_population_2024.xlsx")
+)
+# Read in Excel file
+raw_icb_2024_pop <- read_excel(
+  here("output", "icb_mapping", "icb_midyear_population_2024.xlsx"),
+  sheet = 7,
+  range = "D4:G110",
+  col_names = TRUE,
+  .name_repair = janitor::make_clean_names
+)
+
+unique(raw_icb_2024_pop$icb_2024_name)
+# 42 ICBs
+icb_2024_pop <- raw_icb_2024_pop |> 
+  rename(icb_name = icb_2024_name) |> 
+  select(-c(nhser_2024_code, nhser_2024_name)) |> 
+  group_by(icb_name) |> 
+  summarise(population = sum(total), .groups = "drop") |> 
+  mutate(icb_name = str_to_upper(icb_name))
+```
+
+
 ## GP ICB-level analysis
 
 We obtained GP data from 2015-08-01 to 2025-07-31 from BigQuery to match SNOMED CT code usage reporting years. Therefore, we will aggregate from Aug 1st to Jul 31st the next year. Also need to map ICB codes to ICB names for this one.
@@ -266,7 +297,7 @@ unique(gp_adhd_prescribing$stp)
 icb_yearly_total <- function(data, icb_col, monthly_col, dataset){
   data |> 
     mutate(
-      # calculate reporting year (Aug 1st - Jul 31st) from month 
+      # Calculate reporting year (Aug 1st - Jul 31st) from month 
       reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
       # Add end date of reporting year
       end_date = as.Date(paste0(reporting_year, "-07-31"))
@@ -278,23 +309,28 @@ icb_yearly_total <- function(data, icb_col, monthly_col, dataset){
     mutate(dataset = dataset) # This is useful for summary stats later
 }
 
-# Map ICB codes to ICB names
+# Map ICB codes to ICB names and calculate items / 1000 population
 gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemical, "GP") |>  
   rename(icb_code = stp) |>
   left_join(icb_code_name_map, by = "icb_code") |> 
-  select(-icb_code)
+  select(-icb_code) |> 
+  # Calculate prescribed items / 1000 population
+  left_join(icb_2024_pop, by = "icb_name") |> 
+  mutate(items_per_1000_pop = yearly_items / (population * 0.001))
 
 # Create violin plots
 # `plot_yearly_violins` is in `medication_plots.R`
 fig_gp_icb_violins <- plot_yearly_violins(
   data = gp_adhd_icb_yearly,
-  usage_measure = yearly_items,
-  title_label = "Yearly GP prescribing by ICB (items)",
+  usage_measure = items_per_1000_pop,
+  title_label = "Yearly GP prescribing by ICB (items per 1,000 population)",
   n_breaks = 10
 )
 
 fig_gp_icb_violins
 ```
+
+It's safe to ignore warnings since they are caused by unidentified doctors. 
 
 ## FOI ICB-level analysis
 
@@ -312,13 +348,15 @@ foi_adhd_20to25 <- foi_adhd_prescribing |>
 setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
 # ICB names match the mapping file but FOI data includes "Unidentified doctors")
 
-# Calculate yearly prescribing for each ICB
-foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
+# Calculate yearly prescribing for each ICB per 1000 population
+foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI") |> 
+  left_join(icb_2024_pop, by = "icb_name") |> 
+  mutate(items_per_1000_pop = yearly_items / (population * 0.001))
 
 fig_foi_icb_violins <- plot_yearly_violins(
   data = foi_adhd_icb_yearly,
-  usage_measure = yearly_items,
-  title_label = "Yearly private controlled drug prescribing by ICB (items)",
+  usage_measure = items_per_1000_pop,
+  title_label = "Yearly private controlled drug prescribing by ICB (items per 1,000 population)",
   n_breaks = 5
 )
 
@@ -330,13 +368,13 @@ fig_foi_icb_violins
 SCMD data is only available from 2019-01-01 to 2025-12-31. To match analysis time periods with ICD-10 code usage reporting years, I will only analyse SCMD hospital issuing from 2019-04-01 to 2025-03-31. 
 
 ```{r}
-# ICB names in SCMD essentially match the mapping file but are formatted differently
-scmd_adhd_issuing_caps <- scmd_adhd_issuing |> 
+# Reformatting ICB names in SCMD to match the mapping file
+scmd_adhd_issuing<- scmd_adhd_issuing |> 
   mutate(
     icb_name = paste0(icb_name, " Integrated Care Board") |> 
     str_to_upper() 
   )
-setequal(scmd_adhd_issuing_caps$icb_name, icb_code_name_map$icb_name)
+setequal(scmd_adhd_issuing$icb_name, icb_code_name_map$icb_name)
 # [1] TRUE
 
 # Calculate yearly DDD quantity issued for each ICB
@@ -351,19 +389,22 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
   group_by(icb_name, end_date) |> 
   summarise(yearly_ddd_quantity = sum(value, na.rm = TRUE), .groups = "drop") |> 
   # `end_date` needs to be a factor for the violin plot
-  mutate(dataset = "SCMD") # This is useful for summary stats later
+  mutate(dataset = "SCMD") |> # This is useful for summary stats later
+  # Calculate DDD quantity per 1000 population
+  left_join(icb_2024_pop, by = "icb_name") |> 
+  mutate(ddd_quantity_per_1000_pop = yearly_ddd_quantity / (population * 0.001))
 
 fig_scmd_icb_violins <- plot_yearly_violins(
   data = scmd_adhd_icb_yearly,
-  usage_measure = yearly_ddd_quantity,
-  title_label = "Yearly hospital issuing by ICB (DDD quantity)",
+  usage_measure = ddd_quantity_per_1000_pop,
+  title_label = "Yearly hospital issuing by ICB (DDD quantity per 1,000 population)",
   n_breaks = 6
 )
 
 fig_scmd_icb_violins
 ```
 
-Attempting a combined figure
+Combined figure
 
 ```{r}
 combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_icb_violins) + 
