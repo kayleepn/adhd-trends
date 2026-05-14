@@ -202,7 +202,7 @@ plot_changepoints <- function(
 ```{r}
 fig_gp_changepoints <- plot_changepoints(
 	source = "GP",
-	title = "GP Prescribing Data (Monthly Items)",
+	title = "GP prescribing (monthly items)",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$GP,
 	# Ensure breakpoint date labels don't overlap with data
@@ -213,7 +213,7 @@ fig_gp_changepoints
 
 fig_foi_changepoints <- plot_changepoints(
 	source = "FOI",
-	title = "PCD Prescribing Data (Monthly Items)",
+	title = "Private controlled drug prescribing (monthly items)",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$FOI,
 	label_y_pos = c(75000, 50000)
@@ -233,7 +233,7 @@ scmd_covid <- tibble(
 
 fig_scmd_changepoints <- plot_changepoints(
 	source = "SCMD",
-	title = "OPH Hospital Issuing (Monthly DDD Quantity)",
+	title = "Hospital issuing (monthly DDD quantity)",
 	show_x = TRUE,
 	show_legend = FALSE,
 	breakpoint_dates = breakpoints$SCMD,
@@ -371,8 +371,6 @@ Combine dfs and construct table
 df_changepoint_table <- left_join(df_slopes, df_coefs) |> 
 	# Remove COVID-19 level change columns
 	dplyr::select(-contains("covid"))	|> 
-	# Reordering rows
-	mutate(dataset = factor(dataset, levels = c("GP", "FOI", "SCMD"))) |> 
 	# Rename initial slope p-value columns - useful because initial slope for SCMD is not significantly different from 0
 	rename(p_slope0 = holm_pvals_month_number) |> 
 	# Rename other `est` columns (slope change compared to the previous segment)
@@ -400,6 +398,8 @@ df_changepoint_table <- left_join(df_slopes, df_coefs) |>
 		names_to = c(".value", "idx"),
 		names_pattern = "(.+?)(\\d+)"
 	) |> 
+	# Reordering rows
+	mutate(dataset = factor(dataset, levels = c("GP", "FOI", "SCMD"))) |> 
 	arrange(dataset, as.numeric(idx)) |> 
 	# Remove rows for breakpoints/changepoints that don't actually exist
 	filter_out(slope == "NA (NA to NA)") |> 
