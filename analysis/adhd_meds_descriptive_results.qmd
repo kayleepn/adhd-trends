@@ -22,9 +22,6 @@ I will produce the following figures for the thesis:
 
 # Methods
 ```{r}
-#| label: setup
-#| output: false
-
 library(tidyverse)
 library(here)
 library(arrow)
@@ -117,7 +114,7 @@ df_yearly_gp_by_chemical <- calc_yearly_total(
 fig_yearly_gp_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_gp_by_chemical, 
   usage_measure = yearly_items, 
-  title_label = "GP Prescribing (Yearly Items)",
+  title_label = "Yearly GP prescribing (items)",
   n_breaks = 10
 )
 
@@ -133,7 +130,7 @@ df_yearly_foi_by_chemical <- calc_yearly_total(
 fig_yearly_foi_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_foi_by_chemical,  
   usage_measure = yearly_items, 
-  title_label = "PCD Prescribing (Yearly Items)",
+  title_label = "Yearly private controlled drug prescribing (items)",
   n_breaks = 10
 )
 
@@ -155,7 +152,7 @@ df_yearly_scmd_by_chemical <- total_scmd_over_time |>
 fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_scmd_by_chemical, 
   usage_measure = yearly_ddd_quantity, 
-  title_label = "OPH Issuing (Yearly DDD Quantity)",
+  title_label = "Yearly hospital issuing (DDD quantity)",
   n_breaks = 6
 )
 
@@ -292,7 +289,7 @@ gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemic
 fig_gp_icb_violins <- plot_yearly_violins(
   data = gp_adhd_icb_yearly,
   usage_measure = yearly_items,
-  title_label = "Yearly GP Prescribing by ICB (Items)",
+  title_label = "Yearly GP prescribing by ICB (items)",
   n_breaks = 10
 )
 
@@ -321,7 +318,7 @@ foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI")
 fig_foi_icb_violins <- plot_yearly_violins(
   data = foi_adhd_icb_yearly,
   usage_measure = yearly_items,
-  title_label = "Yearly PCD Prescribing by ICB (Items)",
+  title_label = "Yearly private controlled drug prescribing by ICB (items)",
   n_breaks = 5
 )
 
@@ -359,7 +356,7 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
 fig_scmd_icb_violins <- plot_yearly_violins(
   data = scmd_adhd_icb_yearly,
   usage_measure = yearly_ddd_quantity,
-  title_label = "Yearly OPH Issuing by ICB (DDD Quantity)",
+  title_label = "Yearly hospital issuing by ICB (DDD quantity)",
   n_breaks = 6
 )
 
