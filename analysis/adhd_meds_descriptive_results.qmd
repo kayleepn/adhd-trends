@@ -416,61 +416,61 @@ combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_
 ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_violins, width = 10, height = 12)
 ```
 
-### Top total prescribing/issuing ICBs across all years
+### Top total prescribing/issuing ICBs per 1000 population across all years
 
 ```{r}
 # Prepare dfs for combination
 gp_icb_yearly_summary <- gp_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
-  rename(yearly_value = yearly_items)
+  rename(yearly_per_1000_pop = items_per_1000_pop) |> 
+  # Remove "Unidentified doctors"
+  filter_out(is.na(icb_name))
 
 foi_icb_yearly_summary <- foi_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
-  rename(yearly_value = yearly_items)
+  rename(yearly_per_1000_pop = items_per_1000_pop) |>
+  # Remove "Unidentified doctors"
+  filter_out(is.na(icb_name))
 
 scmd_icb_yearly_summary <- scmd_adhd_icb_yearly |> 
   mutate(unit = "ddd_quantity") |> 
-  rename(yearly_value = yearly_ddd_quantity)
+  rename(yearly_per_1000_pop = ddd_quantity_per_1000_pop)
 
 # Summary df with all datasets, also useful later
-icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary)
+icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary) |> 
+  select(-c(yearly_items, yearly_ddd_quantity, population))
 
 df_icbs_ranked <- icb_yearly_summary |> 
   group_by(dataset, icb_name) |> 
   # Total prescribing/issuing across entire analysis period for each dataset
-  mutate(total = sum(yearly_value)) |> 
+  mutate(total_per_1000_pop = sum(yearly_per_1000_pop)) |> 
   ungroup() |> 
-  select(-c(end_date, yearly_value)) |> 
+  select(-c(end_date, yearly_per_1000_pop)) |> 
   distinct() |> 
   group_by(dataset) |> 
   mutate(
     icb_name = coalesce(icb_name, "Unidentified doctors"),
     # Ranking ICBs by total prescribing/issuing
-    rank = min_rank(desc(total))
+    rank = min_rank(desc(total_per_1000_pop))
   ) |> 
   ungroup()
 
 df_icbs_summary <- df_icbs_ranked |> 
   group_by(dataset) |> 
   mutate(
-    all_icbs_total = sum(total),
     # Get top and bottom ICBs
     top_icb = icb_name[which.min(rank)], bottom_icb = icb_name[which.max(rank)],
     # Get top and bottom 5 ICBs
     top_5 = paste(icb_name[order(rank)][1:5], collapse = ", "),
     bottom_5 = paste(icb_name[order(rank, decreasing = T)][1:5], collapse = ", "),
-    # Look at rank for "Unidentified doctors" specifically
-    unidentified_rank = first(rank[icb_name == "Unidentified doctors"], default = NA_integer_),
     # Calculate quartiles and IQR
-    q1 = quantile(total, probs = 0.25, na.rm = TRUE),
-    median = quantile(total, probs = 0.5, na.rm = TRUE),
-    q3 = quantile(total, probs = 0.75, na.rm = TRUE),
+    q1 = round(quantile(total_per_1000_pop, probs = 0.25, na.rm = TRUE),2),
+    median = round(quantile(total_per_1000_pop, probs = 0.5, na.rm = TRUE), 2),
+    q3 = round(quantile(total_per_1000_pop, probs = 0.75, na.rm = TRUE), 2),
     iqr = q3 - q1
   ) |> 
-  select(-c(icb_name, total, rank)) |> 
+  select(-c(icb_name, total_per_1000_pop, rank)) |> 
   distinct()
-  
-df_icbs_summary
 ```
 
 Quick and dirty export into Word for easier viewing - unlikely to be a table in the thesis but useful for writing up.
