@@ -1,0 +1,589 @@
+estimate_year,source_workbook,icb_name,population
+2011,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",864801
+2011,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",872524
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1281139
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1141679
+2011,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",894582
+2011,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1615032
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,825239
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2409463
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,535984
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,863469
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1019631
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1135491
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,745338
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,709330
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,598289
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2685386
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1738499
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,750176
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1388443
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1661577
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1731351
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1649344
+2011,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1018387
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,714768
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1130376
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,974782
+2011,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1353385
+2011,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1787159
+2011,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2914294
+2011,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,1982762
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,693967
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1090695
+2011,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",473939
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,531581
+2011,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1668947
+2011,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1412154
+2011,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1343805
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1098265
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,926453
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,988858
+2011,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1609080
+2011,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2276745
+2012,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",871427
+2012,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",885366
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1292390
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1148302
+2012,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",903470
+2012,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1634779
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,835987
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2414998
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,539660
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,868417
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1024394
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1140828
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,749037
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,717611
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,601301
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2700093
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1748928
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,754327
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1404228
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1667952
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1746406
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1652566
+2012,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1026311
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,719807
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1137486
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,980122
+2012,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1368761
+2012,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1814804
+2012,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2916748
+2012,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2009683
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,703143
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1097047
+2012,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",475885
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,535842
+2012,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1693996
+2012,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1433523
+2012,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1348437
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1101004
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,931469
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,997339
+2012,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1621930
+2012,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2291008
+2013,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",879438
+2013,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",902144
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1303646
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1156021
+2013,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",913554
+2013,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1654611
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,846265
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2421641
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,542275
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,875324
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1027814
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1146900
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,753134
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,724276
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,605213
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2714958
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1756928
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,758618
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1420075
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1671207
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1761105
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1657125
+2013,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1035566
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,725901
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1145607
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,986261
+2013,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1389371
+2013,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1847122
+2013,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2920804
+2013,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2032328
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,711487
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1103800
+2013,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",477195
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,539465
+2013,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1717086
+2013,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1453080
+2013,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1352510
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1106141
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,935555
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1007865
+2013,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1633978
+2013,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2305292
+2014,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",888492
+2014,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",918528
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1314929
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1165425
+2014,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",922291
+2014,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1672779
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,857893
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2433554
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,545966
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,882520
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1031646
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1156431
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,758421
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,732327
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,611331
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2733895
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1768435
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,764255
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1437522
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1674914
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1780164
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1661888
+2014,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1046623
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,732981
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1158585
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,992235
+2014,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1405175
+2014,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1880804
+2014,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2928325
+2014,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2054435
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,721673
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1109706
+2014,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",480046
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,544312
+2014,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1738184
+2014,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1468594
+2014,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1356290
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1109707
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,945615
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1016738
+2014,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1647545
+2014,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2319140
+2015,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",898199
+2015,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",934640
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1326629
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1173921
+2015,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",934532
+2015,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1690868
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,870455
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2445540
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,549572
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,892583
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1034779
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1164950
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,763227
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,739475
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,617671
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2756962
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1781095
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,768243
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1451377
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1676973
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1793053
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1668205
+2015,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1059406
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,738351
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1165495
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,998295
+2015,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1420919
+2015,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1915093
+2015,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2929837
+2015,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2078436
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,733189
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1115915
+2015,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",483649
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,548792
+2015,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1763603
+2015,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1481494
+2015,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1359690
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1111262
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,953917
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1023269
+2015,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1660505
+2015,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2334610
+2016,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",908282
+2016,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",949976
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1344332
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1184454
+2016,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",948056
+2016,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1710406
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,881914
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2461826
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,553439
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,903689
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1039840
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1174412
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,769482
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,748219
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,624076
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2784566
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1795367
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,774187
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1466762
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1683228
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1808526
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1675676
+2016,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1073921
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,746141
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1175518
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,1006735
+2016,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1434126
+2016,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1943961
+2016,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2936401
+2016,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2088429
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,746666
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1125047
+2016,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",488188
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,554806
+2016,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1782617
+2016,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1494518
+2016,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1366070
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1117398
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,960582
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1029457
+2016,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1675053
+2016,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2352685
+2017,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",917464
+2017,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",956975
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1354223
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1195242
+2017,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",955193
+2017,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1722234
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,889555
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2475936
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,559091
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,912337
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1043986
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1185975
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,774049
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,751900
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,629712
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2804283
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1804547
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,778727
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1473872
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1688026
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1821359
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1683660
+2017,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1089182
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,753031
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1181834
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,1014834
+2017,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1432025
+2017,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1960058
+2017,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2941781
+2017,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2091406
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,759436
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1132711
+2017,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",492760
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,558895
+2017,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1791795
+2017,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1500945
+2017,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1368187
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1121763
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,968804
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1032558
+2017,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1683734
+2017,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2365463
+2018,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",924266
+2018,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",965638
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1360951
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1203361
+2018,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",963105
+2018,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1736001
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,896611
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2489958
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,562127
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,921200
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1047321
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1193623
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,775668
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,755629
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,634653
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2823878
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1809464
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,781503
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1480063
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1689526
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1831680
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1690299
+2018,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1102237
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,757281
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1187367
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,1019909
+2018,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1435182
+2018,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,1983158
+2018,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2947451
+2018,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2104696
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,769240
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1139072
+2018,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",496660
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,562159
+2018,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1803926
+2018,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1506373
+2018,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1372522
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1125653
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,973192
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1033950
+2018,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1692217
+2018,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2375758
+2019,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",931106
+2019,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",976433
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1366969
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1210407
+2019,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",970023
+2019,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1748767
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,901714
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2502280
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,565793
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,927870
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1051894
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1200337
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,777881
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,760288
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,638676
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2847959
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1812765
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,784623
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1488874
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1693839
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1842692
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1700827
+2019,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1110768
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,761263
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1194695
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,1023324
+2019,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1438587
+2019,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,2002361
+2019,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2954912
+2019,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2115848
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,777016
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1143060
+2019,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",501810
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,564987
+2019,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1814029
+2019,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1518918
+2019,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1374386
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1129298
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,977127
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1038338
+2019,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1696921
+2019,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2390391
+2020,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",937783
+2020,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",986038
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1365124
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1211650
+2020,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",974883
+2020,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1760509
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,905115
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2505804
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,567075
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,933955
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1052832
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1204321
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,777234
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,763426
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,640572
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2856110
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1816220
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,785705
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1495402
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1692548
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1848335
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1706454
+2020,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1115091
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,763610
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1196894
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,1026251
+2020,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1429515
+2020,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,2001328
+2020,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2955715
+2020,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2107491
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,778996
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1144940
+2020,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",504537
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,566310
+2020,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1808306
+2020,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1520368
+2020,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1373015
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1130953
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,978534
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1041708
+2020,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1698432
+2020,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2396872
+2021,ons_pop_estimates_2011-2022.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",945766
+2021,ons_pop_estimates_2011-2022.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",1001770
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Birmingham and Solihull Integrated Care Board,1359962
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Black Country Integrated Care Board,1214138
+2021,ons_pop_estimates_2011-2022.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",979556
+2021,ons_pop_estimates_2011-2022.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1781954
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,917491
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2521674
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,574219
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Coventry and Warwickshire Integrated Care Board,943266
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Derby and Derbyshire Integrated Care Board,1057970
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Devon Integrated Care Board,1218643
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Dorset Integrated Care Board,781400
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Frimley Integrated Care Board,766826
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Gloucestershire Integrated Care Board,646485
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Greater Manchester Integrated Care Board,2869531
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1826528
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,792424
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1500915
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1700188
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Kent and Medway Integrated Care Board,1858455
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1718731
+2021,ons_pop_estimates_2011-2022.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1120914
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Lincolnshire Integrated Care Board,769440
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Mid and South Essex Integrated Care Board,1201441
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Norfolk and Waveney Integrated Care Board,1034922
+2021,ons_pop_estimates_2011-2022.xlsx,NHS North Central London Integrated Care Board,1411166
+2021,ons_pop_estimates_2011-2022.xlsx,NHS North East London Integrated Care Board,2001819
+2021,ons_pop_estimates_2011-2022.xlsx,NHS North East and North Cumbria Integrated Care Board,2967777
+2021,ons_pop_estimates_2011-2022.xlsx,NHS North West London Integrated Care Board,2093775
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Northamptonshire Integrated Care Board,787125
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1146110
+2021,ons_pop_estimates_2011-2022.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",510526
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Somerset Integrated Care Board,573100
+2021,ons_pop_estimates_2011-2022.xlsx,NHS South East London Integrated Care Board,1790539
+2021,ons_pop_estimates_2011-2022.xlsx,NHS South West London Integrated Care Board,1507470
+2021,ons_pop_estimates_2011-2022.xlsx,NHS South Yorkshire Integrated Care Board,1374792
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1135910
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Suffolk and North East Essex Integrated Care Board,988472
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Surrey Heartlands Integrated Care Board,1051991
+2021,ons_pop_estimates_2011-2022.xlsx,NHS Sussex Integrated Care Board,1708363
+2021,ons_pop_estimates_2011-2022.xlsx,NHS West Yorkshire Integrated Care Board,2401347
+2022,ons_pop_estimates_2022-2024.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",954424
+2022,ons_pop_estimates_2022-2024.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",1016836
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Birmingham and Solihull Integrated Care Board,1371550
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Black Country Integrated Care Board,1227001
+2022,ons_pop_estimates_2022-2024.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",994094
+2022,ons_pop_estimates_2022-2024.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1806092
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,928696
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2550206
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,577931
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Coventry and Warwickshire Integrated Care Board,960146
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Derby and Derbyshire Integrated Care Board,1067999
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Devon Integrated Care Board,1232751
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Dorset Integrated Care Board,786293
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Frimley Integrated Care Board,775345
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Gloucestershire Integrated Care Board,652938
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Greater Manchester Integrated Care Board,2919285
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1843656
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,798072
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1507004
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1714496
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Kent and Medway Integrated Care Board,1877610
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1740587
+2022,ons_pop_estimates_2022-2024.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1137436
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Lincolnshire Integrated Care Board,776038
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Mid and South Essex Integrated Care Board,1209499
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Norfolk and Waveney Integrated Care Board,1042108
+2022,ons_pop_estimates_2022-2024.xlsx,NHS North Central London Integrated Care Board,1416437
+2022,ons_pop_estimates_2022-2024.xlsx,NHS North East London Integrated Care Board,2028291
+2022,ons_pop_estimates_2022-2024.xlsx,NHS North East and North Cumbria Integrated Care Board,3006982
+2022,ons_pop_estimates_2022-2024.xlsx,NHS North West London Integrated Care Board,2116467
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Northamptonshire Integrated Care Board,792856
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1161948
+2022,ons_pop_estimates_2022-2024.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",516352
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Somerset Integrated Care Board,577349
+2022,ons_pop_estimates_2022-2024.xlsx,NHS South East London Integrated Care Board,1796334
+2022,ons_pop_estimates_2022-2024.xlsx,NHS South West London Integrated Care Board,1513839
+2022,ons_pop_estimates_2022-2024.xlsx,NHS South Yorkshire Integrated Care Board,1392826
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1147132
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Suffolk and North East Essex Integrated Care Board,998208
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Surrey Heartlands Integrated Care Board,1061361
+2022,ons_pop_estimates_2022-2024.xlsx,NHS Sussex Integrated Care Board,1722343
+2022,ons_pop_estimates_2022-2024.xlsx,NHS West Yorkshire Integrated Care Board,2427577
+2023,ons_pop_estimates_2022-2024.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",965281
+2023,ons_pop_estimates_2022-2024.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",1041985
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Birmingham and Solihull Integrated Care Board,1389948
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Black Country Integrated Care Board,1245025
+2023,ons_pop_estimates_2022-2024.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",1008738
+2023,ons_pop_estimates_2022-2024.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1836111
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,942489
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2584603
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,581814
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Coventry and Warwickshire Integrated Care Board,979614
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Derby and Derbyshire Integrated Care Board,1083536
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Devon Integrated Care Board,1243876
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Dorset Integrated Care Board,792777
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Frimley Integrated Care Board,790603
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Gloucestershire Integrated Care Board,661724
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Greater Manchester Integrated Care Board,2965612
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1866042
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,805706
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1526556
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1731233
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Kent and Medway Integrated Care Board,1905588
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1765008
+2023,ons_pop_estimates_2022-2024.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1157739
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Lincolnshire Integrated Care Board,783984
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Mid and South Essex Integrated Care Board,1225206
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Norfolk and Waveney Integrated Care Board,1050895
+2023,ons_pop_estimates_2022-2024.xlsx,NHS North Central London Integrated Care Board,1429135
+2023,ons_pop_estimates_2022-2024.xlsx,NHS North East London Integrated Care Board,2068022
+2023,ons_pop_estimates_2022-2024.xlsx,NHS North East and North Cumbria Integrated Care Board,3050087
+2023,ons_pop_estimates_2022-2024.xlsx,NHS North West London Integrated Care Board,2156686
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Northamptonshire Integrated Care Board,805069
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1173914
+2023,ons_pop_estimates_2022-2024.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",521975
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Somerset Integrated Care Board,582962
+2023,ons_pop_estimates_2022-2024.xlsx,NHS South East London Integrated Care Board,1813474
+2023,ons_pop_estimates_2022-2024.xlsx,NHS South West London Integrated Care Board,1532388
+2023,ons_pop_estimates_2022-2024.xlsx,NHS South Yorkshire Integrated Care Board,1412806
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1163688
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Suffolk and North East Essex Integrated Care Board,1013605
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Surrey Heartlands Integrated Care Board,1074888
+2023,ons_pop_estimates_2022-2024.xlsx,NHS Sussex Integrated Care Board,1741806
+2023,ons_pop_estimates_2022-2024.xlsx,NHS West Yorkshire Integrated Care Board,2460272
+2024,ons_pop_estimates_2022-2024.xlsx,"NHS Bath and North East Somerset, Swindon and Wiltshire Integrated Care Board",974918
+2024,ons_pop_estimates_2022-2024.xlsx,"NHS Bedfordshire, Luton and Milton Keynes Integrated Care Board",1063247
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Birmingham and Solihull Integrated Care Board,1404860
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Black Country Integrated Care Board,1262719
+2024,ons_pop_estimates_2022-2024.xlsx,"NHS Bristol, North Somerset and South Gloucestershire Integrated Care Board",1025309
+2024,ons_pop_estimates_2022-2024.xlsx,"NHS Buckinghamshire, Oxfordshire and Berkshire West Integrated Care Board",1862474
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Cambridgeshire and Peterborough Integrated Care Board,955401
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Cheshire and Merseyside Integrated Care Board,2615425
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Cornwall and the Isles of Scilly Integrated Care Board,585655
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Coventry and Warwickshire Integrated Care Board,1001233
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Derby and Derbyshire Integrated Care Board,1096526
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Devon Integrated Care Board,1254506
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Dorset Integrated Care Board,798914
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Frimley Integrated Care Board,803615
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Gloucestershire Integrated Care Board,669380
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Greater Manchester Integrated Care Board,3009664
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Hampshire and Isle of Wight Integrated Care Board,1879207
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Herefordshire and Worcestershire Integrated Care Board,812407
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Hertfordshire and West Essex Integrated Care Board,1545554
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Humber and North Yorkshire Integrated Care Board,1748885
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Kent and Medway Integrated Care Board,1931684
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Lancashire and South Cumbria Integrated Care Board,1790318
+2024,ons_pop_estimates_2022-2024.xlsx,"NHS Leicester, Leicestershire and Rutland Integrated Care Board",1175364
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Lincolnshire Integrated Care Board,789502
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Mid and South Essex Integrated Care Board,1241837
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Norfolk and Waveney Integrated Care Board,1058014
+2024,ons_pop_estimates_2022-2024.xlsx,NHS North Central London Integrated Care Board,1436301
+2024,ons_pop_estimates_2022-2024.xlsx,NHS North East London Integrated Care Board,2098267
+2024,ons_pop_estimates_2022-2024.xlsx,NHS North East and North Cumbria Integrated Care Board,3088985
+2024,ons_pop_estimates_2022-2024.xlsx,NHS North West London Integrated Care Board,2181495
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Northamptonshire Integrated Care Board,813682
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Nottingham and Nottinghamshire Integrated Care Board,1188090
+2024,ons_pop_estimates_2022-2024.xlsx,"NHS Shropshire, Telford and Wrekin Integrated Care Board",528407
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Somerset Integrated Care Board,588328
+2024,ons_pop_estimates_2022-2024.xlsx,NHS South East London Integrated Care Board,1824242
+2024,ons_pop_estimates_2022-2024.xlsx,NHS South West London Integrated Care Board,1549431
+2024,ons_pop_estimates_2022-2024.xlsx,NHS South Yorkshire Integrated Care Board,1430623
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Staffordshire and Stoke-on-Trent Integrated Care Board,1177578
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Suffolk and North East Essex Integrated Care Board,1025557
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Surrey Heartlands Integrated Care Board,1085554
+2024,ons_pop_estimates_2022-2024.xlsx,NHS Sussex Integrated Care Board,1759789
+2024,ons_pop_estimates_2022-2024.xlsx,NHS West Yorkshire Integrated Care Board,2487154
