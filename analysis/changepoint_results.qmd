@@ -99,6 +99,7 @@ plot_changepoints <- function(
 	show_x = TRUE,
 	show_legend = TRUE,
 	breakpoint_dates,
+	breakpoint_labels,
 	label_y_pos
 ) {
 	# Define common x axis scale
@@ -156,7 +157,7 @@ plot_changepoints <- function(
 			axis.text.x = element_text(size = 16),
 			axis.text.y = element_text(size = 16),
 			axis.title.y = element_blank(),
-			legend.text = element_text(size = 14),
+			legend.text = element_text(size = 16),
 			legend.title = element_blank(),
 			legend.background = element_rect(
 				fill = "white",
@@ -172,9 +173,9 @@ plot_changepoints <- function(
 		annotate(
 			x = breakpoint_dates, 
 			y = label_y_pos, 
-			label = breakpoint_dates, 
+			label = breakpoint_labels, 
 			geom = "label",
-			size = 5,
+			size = 6,
 			family = "Times New Roman"
 		) 
 
@@ -205,6 +206,7 @@ fig_gp_changepoints <- plot_changepoints(
 	title = "GP prescribing (monthly items)",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$GP,
+	breakpoint_labels = c("Apr 2018", "Feb 2021"),
 	# Ensure breakpoint date labels don't overlap with data
 	label_y_pos = c(225000, 225000) 
 )
@@ -216,6 +218,7 @@ fig_foi_changepoints <- plot_changepoints(
 	title = "Private controlled drug prescribing (monthly items)",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$FOI,
+	breakpoint_labels = c("Aug 2020", "Dec 2020"),
 	label_y_pos = c(75000, 50000)
 )
 
@@ -237,6 +240,7 @@ fig_scmd_changepoints <- plot_changepoints(
 	show_x = TRUE,
 	show_legend = FALSE,
 	breakpoint_dates = breakpoints$SCMD,
+	breakpoint_labels = "Oct 2021",
 	label_y_pos = 210000
 ) +
 	# Add shading for COVID-19 disruption periods
@@ -266,6 +270,7 @@ p1 <- fig_gp_changepoints / fig_foi_changepoints +
 	theme(
 		plot.title = element_text(size = 20),
 		legend.position = "bottom",
+		legend.text = element_text(size = 16),
 		legend.title = element_blank(),
 		legend.box = "horizontal"
 	)
@@ -277,7 +282,7 @@ p2 <- fig_scmd_changepoints +
 	plot_layout(guides = "keep") +
 	guides(colour = "none") +
 	theme(
-		legend.position = c(0.05, 0.9),
+		legend.position = c(0.01, 0.95),
 		legend.justification = c("left", "top")
 	)
 	
