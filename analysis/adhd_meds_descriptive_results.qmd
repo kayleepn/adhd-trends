@@ -429,7 +429,7 @@ combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_
 ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_violins, width = 10, height = 12)
 ```
 
-### Top total prescribing/issuing ICBs per 1000 population across all years
+### Identifying ICBs with the highest/lowest medication coding rate over the whols study period
 
 ```{r}
 # Prepare dfs for combination
@@ -453,52 +453,35 @@ icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, s
 
 df_icbs_ranked <- icb_yearly_summary |> 
   group_by(dataset, icb_name) |> 
-  # Total prescribing/issuing across entire analysis period for each dataset
-  mutate(total_per_1000_pop = sum(yearly_per_1000_pop)) |> 
-  ungroup() |> 
-  select(-c(end_date, yearly_per_1000_pop)) |> 
-  distinct() |> 
+  # Total mean prescribing/issuing rate across entire analysis period for each dataset
+  summarise(
+    mean_per_1000_pop = round(mean(yearly_per_1000_pop, na.rm = T), 2),
+    .groups = "drop"
+  ) |> 
   group_by(dataset) |> 
   mutate(
-    icb_name = coalesce(icb_name, "Unidentified doctors"),
-    # Ranking ICBs by total prescribing/issuing
-    rank = min_rank(desc(total_per_1000_pop))
+    # Ranking ICBs by mean prescribing/issuing rates per 1000 population
+    rank = min_rank(desc(mean_per_1000_pop))
   ) |> 
   ungroup()
 
-df_icbs_summary <- df_icbs_ranked |> 
-  group_by(dataset) |> 
-  mutate(
-    # Get top and bottom ICBs
-    top_icb = icb_name[which.min(rank)], bottom_icb = icb_name[which.max(rank)],
-    # Get top and bottom 5 ICBs
-    top_5 = paste(icb_name[order(rank)][1:5], collapse = ", "),
-    bottom_5 = paste(icb_name[order(rank, decreasing = T)][1:5], collapse = ", "),
-    # Calculate quartiles and IQR
-    q1 = round(quantile(total_per_1000_pop, probs = 0.25, na.rm = TRUE),2),
-    median = round(quantile(total_per_1000_pop, probs = 0.5, na.rm = TRUE), 2),
-    q3 = round(quantile(total_per_1000_pop, probs = 0.75, na.rm = TRUE), 2),
-    iqr = q3 - q1
-  ) |> 
-  select(-c(icb_name, total_per_1000_pop, rank)) |> 
-  distinct()
+# Create summary dataframe of ICBs ranked 1st and 42th according to mean prescribing/issuing rates per 1000 population across entire study period
+df_overall_top_bottom <- df_icbs_ranked |> 
+  filter(rank %in% c(1,42)) |> 
+  mutate(dataset = factor(dataset, levels = c("GP", "FOI", "SCMD"))) |> 
+  arrange(dataset, rank)
 ```
 
-### Trying to rank ICBs each year and get the top/bottom 5 for each year
+### Rank ICBs each year and get the top/bottom 5 for each year
 
-Not very concise but works for now. Need to update after using rolling yearly population estimates. 
+Not very concise but works for now.
 
 ```{r}
+# Helper function to rank ICBs by yearly prescribing/issuing rate per 1000 population
 df_icb_ranked_yearly <- icb_yearly_summary |> 
   group_by(end_date, dataset) |>
-  mutate(
-    # Ranking ICBs by yearly prescribing/issuing each year
-    year_rank = min_rank(desc(yearly_per_1000_pop)),
-    max_rank = max(year_rank, na.rm = T),
-    # Create columns to highlight top/bottom 5 ICBs in the fig
-    year_top5 = year_rank <= 5,
-    year_bottom5 = year_rank > max_rank - 5
-  ) |> 
+   # Ranking ICBs by yearly prescribing/issuing each year
+  mutate(year_rank = min_rank(desc(yearly_per_1000_pop))) |> 
   ungroup() |> 
   # Turn ICB names into title case and remove "NHS" prefix
   mutate(icb_name = icb_name |> 
@@ -507,6 +490,7 @@ df_icb_ranked_yearly <- icb_yearly_summary |>
     str_to_title()
   ) 
 
+# Helper function for collapsing years e.g. "2020, 2021, 2022" to "2020-2022"
 collapse_years <- function(years){
   years <- sort(unique(as.integer(years)))
 
@@ -523,9 +507,10 @@ collapse_years <- function(years){
   }) |> paste(collapse = ", ")
 }
 
-top_5 <- df_icb_ranked_yearly |> 
-  filter(year_top5 == T) |> 
-  mutate(year = format(as.Date(end_date), "%Y")) |> 
+# Create dataframe with ICBs that have been in the top 5 at least once with years in brackets
+df_top_5 <- df_icb_ranked_yearly |> 
+  filter(year_rank <= 5) |> 
+  mutate(year = as.integer(year(end_date))) |> 
   distinct(icb_name, year, dataset) |> 
   group_by(icb_name, dataset) |> 
   summarise(
@@ -534,11 +519,16 @@ top_5 <- df_icb_ranked_yearly |>
   ) |> 
   mutate(icb_name = paste0(icb_name, "(", years, ")")) |> 
   select(-years) |> 
-  arrange(dataset)
+  group_by(dataset) |> 
+  mutate(row = row_number()) |> 
+  ungroup() |> 
+  pivot_wider(id_cols = row, names_from = dataset, values_from = icb_name) |> 
+  select(-row) |> 
+  relocate(GP, .before = FOI)
 
-bottom_5 <- df_icb_ranked_yearly |> 
-  filter(year_bottom5 == T) |> 
-  mutate(year = format(as.Date(end_date), "%Y")) |> 
+df_bottom_5 <- df_icb_ranked_yearly |> 
+  filter(year_rank > 42-5) |> 
+  mutate(year = as.integer(year(end_date)))|> 
   distinct(icb_name, year, dataset) |> 
   group_by(icb_name, dataset) |> 
   summarise(
@@ -547,28 +537,17 @@ bottom_5 <- df_icb_ranked_yearly |>
   ) |> 
   mutate(icb_name = paste0(icb_name, "(", years, ")")) |> 
   select(-years) |> 
-  arrange(dataset)
-
-top_bottom_5 <- bind_rows(top_5, bottom_5)
-```
-
-Quick and dirty export into Word for easier viewing - unlikely to be a table in the thesis but useful for writing up.
-
-```{r}
-icb_summary_table <- flextable(df_icbs_summary) |> 
-  theme_booktabs() |> 
-  set_caption("Total prescribing/issuing summary for ICBs") 
-
-icb_summary_table
-
-# Save as Word document
-save_as_docx(
-  "ICB Medication Summary Table" = icb_summary_table,
-  path = "output/tables/icb_meds_summary_table.docx"
-)
+  group_by(dataset) |> 
+  mutate(row = row_number()) |> 
+  ungroup() |> 
+  pivot_wider(id_cols = row, names_from = dataset, values_from = icb_name) |> 
+  select(-row) |> 
+  relocate(FOI, .before = SCMD)
 ```
 
 ### Percentage of GP and FOI prescribing by unidentified doctors (N/A for SCMD)
+
+Note this is not per 1,000 population as an appropriate denominator for unidentified doctor prescribing cannot be found. 
 
 ```{r}
 df_unidentified <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary) |> 
@@ -577,27 +556,24 @@ df_unidentified <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary) |>
   summarise(total_items = sum(yearly_items), .groups = "drop") |> 
   group_by(dataset) |> 
   summarise(pct_unidentified = (total_items[icb_name == "unidentified"] / sum(total_items)) * 100, .groups = "drop")
+df_unidentified
 ```
 
 Unidentified doctors contributed to 0.468% and 0.972% of total GP and FOI prescribing respectively. 
 Note: no GP prescribing from unidentified doctors after 2020-07-31.
 
-### ICB quartiles for the first and last year (GP, FOI, SCMD)
+### Median prescribing rate with IQR for the first and last years (GP, FOI, SCMD)
 
 ```{r}
-df_first_last_icb_quartiles <- icb_yearly_summary |>  
+df_first_last_summary <- icb_yearly_summary |>  
   group_by(dataset) |> 
   # Only keep rows for the first and last year of each dataset
   filter(end_date == min(end_date) | end_date == max(end_date)) |> 
   group_by(dataset, end_date) |> 
   mutate(
-    # Calculate total yearly value per 1000 population
-    total_yearly = sum(yearly_per_1000_pop),
-    # Calculate quartiles and IQR
-    q1 = round(quantile(yearly_per_1000_pop, probs = 0.25, na.rm = TRUE), 2),
+    # Calculate median and IQR
     median = round(quantile(yearly_per_1000_pop, probs = 0.5, na.rm = TRUE), 2),
-    q3 = round(quantile(yearly_per_1000_pop, probs = 0.75, na.rm = TRUE), 2),
-    iqr = q3 - q1
+    iqr = round(IQR(yearly_per_1000_pop), 2)
   ) |> 
   ungroup() |> 
   select(-c(yearly_per_1000_pop, icb_name)) |> 
@@ -605,3 +581,58 @@ df_first_last_icb_quartiles <- icb_yearly_summary |>
 ```
 
 These quartiles exclude unidentified doctors for GP and FOI prescribing. 
+
+### Export useful tables to Word
+
+Quick and dirty export of useful summary stats into Word for easier viewing. These will not be presented as tables in the thesis but they're useful for writing.
+
+```{r}
+# Set flextable defaults
+set_flextable_defaults(
+  font.family = "Times New Roman",
+  font.size = 12,
+  font.colour = "black",
+  border.colour = "black",
+  layout = "autofit",
+  width = 1
+)
+
+# Table with overall top and bottom ICBs
+table_overall_top_bottom <- df_overall_top_bottom |> 
+  mutate(icb_name = icb_name |> 
+    str_remove("^NHS\\s*") |>
+    str_remove("\\s*INTEGRATED CARE BOARD$") |> 
+    str_to_title()
+  ) |> 
+  flextable() |> 
+  theme_booktabs() |> 
+  set_caption("Top and bottom ICBs according to mean prescribing/issuing rates per 1000 population across entire study period") 
+table_overall_top_bottom
+
+# Table with top 5 ICBs (years)
+table_years_top_5 <- flextable(df_top_5) |> 
+  theme_booktabs() |> 
+  set_caption("ICBs that were in the top 5 according to mean prescribing/issuing rates per 1000 population at least once, with relevant years in brackets") 
+table_years_top_5
+
+# Table with bottom 5 ICBs (years)
+table_years_bottom_5 <- flextable(df_bottom_5) |> 
+  theme_booktabs() |> 
+  set_caption("ICBs that were in the bottom 5 according to mean prescribing/issuing rates per 1000 population at least once, with relevant years in brackets") 
+table_years_bottom_5
+
+# Table with summary stats for the first and last years
+table_first_last_summary <- flextable(df_first_last_summary) |> 
+  theme_booktabs() |> 
+  set_caption("Median prescribing rate with IQR for the first and last years") 
+table_first_last_summary
+
+# Save as Word document
+save_as_docx(
+  "Overall top and bottom ICBs" = table_overall_top_bottom,
+  "Top 5 ICBs (years)" = table_years_top_5,
+  "Bottom 5 ICBs (years)" = table_years_bottom_5,
+  "Summary stats for first and last years" = table_first_last_summary,
+  path = "output/tables/icb_meds_summary_table.docx"
+)
+```
