@@ -1,0 +1,134 @@
+---
+title: "Get ONS yearly population estimates for each ICB"
+format: html
+---
+Code for getting yearly population estimates for each ICB. Heavily inspired by `analysis/build_ons_nhs_england_region_population.R` in the `bennettoxford/lithium_project25` GitHub repository. I extract ICB names instead of NHS region names and codes.
+
+Set up:
+
+```{r}
+library(here)
+library(tidyverse)
+library(readxl)
+```
+
+ICB-level analysis should be adjusted for population. Mid-year (30 June) population estimates for ICBs can be obtained from the [ONS](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/clinicalcommissioninggroupmidyearpopulationestimates). Select the "Mid-2022 revised (Nov 2025) to mid-2024: Integrated Care Boards, 2024 geography edition of this dataset"  and "Mid-2011 to mid-2022: Integrated Care Boards, 2024 geography edition of this dataset" editions and download the .xlsx files. The ONS named the files "sapeicb20222024.xlsx" and "sapeicb202420112022.xlsx" respectively. I have placed them in output/icb_mapping. 
+
+```{r}
+# Rename Excel files
+file.rename(
+  from = c(
+    here("output", "icb_mapping", "sapeicb20222024.xlsx"),
+    here("output", "icb_mapping", "sapeicb202420112022.xlsx")
+	),
+  to = c(
+		here("output", "icb_mapping", "ons_pop_estimates_2022-2024.xlsx"),
+		here("output", "icb_mapping", "ons_pop_estimates_2011-2022.xlsx")
+	)
+)
+
+# Set paths for reading Excel files
+paths <- tibble(
+  workbook_label = c(
+    "ons_pop_estimates_2011-2022.xlsx",
+    "ons_pop_estimates_2022-2024.xlsx"
+  ),
+  path = here("output", "icb_mapping", workbook_label)
+)
+
+stopifnot(all(file.exists(paths$path)))
+
+# Select sheets to read using name of sheet
+sheet_config <- bind_rows(
+  tibble(
+    workbook_label = "ons_pop_estimates_2011-2022.xlsx",
+    estimate_year = 2011:2021
+  ),
+  tibble(
+    workbook_label = "ons_pop_estimates_2022-2024.xlsx",
+    estimate_year = 2022:2024
+  )
+) |> 
+  mutate(sheet = paste0("Mid-", estimate_year, " ICB 2024"))
+
+# Select ICB name and total populations columns to read in
+column_config <- tibble(
+  workbook_label = c(
+    "ons_pop_estimates_2011-2022.xlsx",
+    "ons_pop_estimates_2022-2024.xlsx"
+  ),
+  name_col = c("ICB 2024 Name", "ICB 2024 Name"),
+  total_col = c("Total", "Total")
+)
+```
+
+Helper functions for reading Excel files:
+
+```{r}
+read_icb_year_sheet <- function(path, sheet, workbook_label, estimate_year, name_col, total_col) {
+  df <- read_xlsx(path, sheet = sheet, skip = 3)
+
+  required_cols <- c(name_col, total_col)
+  missing_cols <- setdiff(required_cols, names(df))
+  if (length(missing_cols) > 0L) {
+    stop(
+      "Missing expected columns in sheet ", sheet, " of ", workbook_label, ": ",
+      paste(missing_cols, collapse = ", ")
+    )
+  }
+
+  df |> 
+    transmute(
+      icb_name = str_squish(as.character(.data[[name_col]])),
+      population = as.numeric(.data[[total_col]])
+    ) |> 
+    filter(!is.na(icb_name), icb_name != "", !is.na(population)) |> 
+    mutate(
+      estimate_year = estimate_year,
+      source_workbook = workbook_label,
+      .before = 1
+    )
+}
+
+summarise_regions <- function(path, workbook_label) {
+  sheet_rows <- sheet_config |> filter(workbook_label == .env$workbook_label)
+  col_row <- column_config |> filter(workbook_label == .env$workbook_label)
+
+  map_dfr(seq_len(nrow(sheet_rows)), function(i) {
+    read_icb_year_sheet(
+      path = path,
+      sheet = sheet_rows$sheet[[i]],
+      workbook_label = workbook_label,
+      estimate_year = sheet_rows$estimate_year[[i]],
+      name_col = col_row$name_col[[1]],
+      total_col = col_row$total_col[[1]]
+    ) |> 
+      group_by(estimate_year, source_workbook, icb_name) |> 
+      summarise(population = sum(population, na.rm = TRUE), .groups = "drop")
+  })
+}
+```
+
+Check data and write csv
+
+```{r}
+# `pmap` maps parallel inputs, `_dfr` combines all returned outputs into one df by rows
+pop_raw <- pmap_dfr(list(paths$path, paths$workbook_label), summarise_regions)
+
+pop_long <- pop_raw
+
+if (nrow(pop_long) == 0L) {
+  stop("No NHS England ICB rows were extracted")
+}
+
+expected_regions <- sort(unique(pop_long$icb_name))
+if (length(expected_regions) != 42L) {
+  warning(
+    "Expected 42 NHS England regions; found ", length(expected_regions), ": ",
+    paste(expected_regions, collapse = ", ")
+  )
+}
+
+# Write csv
+write_csv(pop_long, here("output", "icb_mapping", "ons_icb_population_estimates.csv"))
+```

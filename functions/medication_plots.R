@@ -178,22 +178,33 @@ plot_yearly_violins <- function(
       shape = 16,
       position = position_jitter(width = 50, height = 0)
     ) +
+    # Add blue triangles for yearly medians
+    stat_summary(
+      fun = median,
+      geom = "point",
+      colour = "blue",
+      alpha = .8,
+      shape = 17,
+      size = 4
+    ) +
     scale_x_date(
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    # Stop x-axis limits from cutting off jittered data points
-    coord_cartesian(xlim = common_x_limits) +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     labs(x = x_label, title = title_label) +
     theme_bw() +
     theme(
       text = element_text(family = "Times New Roman"),
-      plot.title = element_text(size = 16, hjust = .5),
+      plot.title = element_text(size = 20, hjust = .5),
       axis.title.x = element_text(size = 16),
       axis.text.x = element_text(size = 16),
       axis.title.y = element_blank(),
-      axis.text.y = element_text(size = 16, angle = 45),
+      axis.text.y = element_text(size = 16),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank()
     )
 }
