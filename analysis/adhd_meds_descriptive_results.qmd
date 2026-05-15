@@ -471,6 +471,74 @@ df_icbs_summary <- df_icbs_ranked |>
   distinct()
 ```
 
+### Trying to rank ICBs each year and get the top/bottom 5 for each year
+
+Not very concise but works for now. Need to update after using rolling yearly population estimates. 
+
+```{r}
+df_icb_ranked_yearly <- icb_yearly_summary |> 
+  group_by(end_date, dataset) |>
+  mutate(
+    # Ranking ICBs by yearly prescribing/issuing each year
+    year_rank = min_rank(desc(yearly_per_1000_pop)),
+    max_rank = max(year_rank, na.rm = T),
+    # Create columns to highlight top/bottom 5 ICBs in the fig
+    year_top5 = year_rank <= 5,
+    year_bottom5 = year_rank > max_rank - 5
+  ) |> 
+  ungroup() |> 
+  # Turn ICB names into title case and remove "NHS" prefix
+  mutate(icb_name = icb_name |> 
+    str_remove("^NHS\\s*") |>
+    str_remove("\\s*INTEGRATED CARE BOARD$") |> 
+    str_to_title()
+  ) 
+
+collapse_years <- function(years){
+  years <- sort(unique(as.integer(years)))
+
+  # Identify breaks between non-consecutive years
+  groups <- cumsum(c(1, diff(years) != 1))
+  ranges <- split(years, groups)
+
+  sapply(ranges, function(x){
+    if (length(x) == 1) {
+      as.character(x)
+    } else {
+      paste0(min(x), "-", max(x))
+    }
+  }) |> paste(collapse = ", ")
+}
+
+top_5 <- df_icb_ranked_yearly |> 
+  filter(year_top5 == T) |> 
+  mutate(year = format(as.Date(end_date), "%Y")) |> 
+  distinct(icb_name, year, dataset) |> 
+  group_by(icb_name, dataset) |> 
+  summarise(
+    years = collapse_years(year),
+    .groups = "drop"
+  ) |> 
+  mutate(icb_name = paste0(icb_name, "(", years, ")")) |> 
+  select(-years) |> 
+  arrange(dataset)
+
+bottom_5 <- df_icb_ranked_yearly |> 
+  filter(year_bottom5 == T) |> 
+  mutate(year = format(as.Date(end_date), "%Y")) |> 
+  distinct(icb_name, year, dataset) |> 
+  group_by(icb_name, dataset) |> 
+  summarise(
+    years = collapse_years(year),
+    .groups = "drop"
+  ) |> 
+  mutate(icb_name = paste0(icb_name, "(", years, ")")) |> 
+  select(-years) |> 
+  arrange(dataset)
+
+top_bottom_5 <- bind_rows(top_5, bottom_5)
+```
+
 Quick and dirty export into Word for easier viewing - unlikely to be a table in the thesis but useful for writing up.
 
 ```{r}
