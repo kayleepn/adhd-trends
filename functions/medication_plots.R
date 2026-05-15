@@ -178,6 +178,15 @@ plot_yearly_violins <- function(
       shape = 16,
       position = position_jitter(width = 50, height = 0)
     ) +
+    # Add blue triangles for yearly medians
+    stat_summary(
+      fun = median,
+      geom = "point",
+      colour = "blue",
+      alpha = .8,
+      shape = 17,
+      size = 4
+    ) +
     scale_x_date(
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
