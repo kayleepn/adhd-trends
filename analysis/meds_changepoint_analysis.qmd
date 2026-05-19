@@ -115,7 +115,7 @@ n_distinct(total_scmd_over_time$month)
 Final model choice for each dataset:
 
 - FOI data: fit linear segmented model (2 breakpoints) with log-transformed y-axis (monthly items)
-- GP data: fit linear segmented model (1 breakpoint) with log-transformed y-axis (monthly items) and monthly dummy factors
+- GP data: fit linear segmented model (1 breakpoint) with log-transformed y-axis (monthly items)
 - OPH SCMD data: fit linear segmented model (1 breakpoints) with UNTRANSFORMED y-axis and dummy factors for COVID-19 disruption (monthly DDD quantity)
 
 I am currently only analysing all chemicals combined,  but the code is written in a way that should allow for change point analysis of individual chemicals for each dataset.
@@ -149,6 +149,7 @@ gp_all_log_model <- log_mod_select(total_gp_over_time, "All chemicals", "monthly
 # 1 breakpoints has lowest AIC (-399.4453)
 
 summary(gp_all_log_model)
+# Estimated break point: 60 (SE = 3.058)
 # SE for breakpoints might be optimistic due to autocorrelation but Newey-West can't adjust for breakpoint SEs
 # SE and p values for other coefficients not accurate at this point due to autocorrelation 
 # Will use Newey-West adjustment later
