@@ -102,15 +102,18 @@ summarise_yearly <- function(data, desc) {
 # Get total yearly usage for all SNOMED CT codes
 snomed_all_codes_usage <- summarise_yearly(snomed_usage, "All SNOMED CT codes")
 
-# Plot figure
-# `plot_code_usage` is in `usage_plots.R`
+adhd_plot_colours = viridis(8, end = 0.8, option = "B")
+
+# Plot figure; `plot_code_usage` is in `usage_plots.R`
 fig_snomed_all_usage <- plot_code_usage(
   data = snomed_all_codes_usage, 
-  title = "Yearly usage of all primary care clinical codes", 
+  title_label = "Yearly usage of all primary care clinical codes", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
-  n_groups = 1,
-  colour_ids = 1,
+  plot_colours = adhd_plot_colours[1],
+  plot_shapes = 16,
+  legend_ncol = 1,
   # `n_breaks` = 14 as there are 14 years of data
   n_breaks = 14
 )
@@ -122,11 +125,14 @@ icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
 # Plot figure
 fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
-  title = "Yearly usage of all hospital admitted patient care diagnosis codes", 
+  title_label = "Yearly usage of all hospital admitted patient care diagnosis codes", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
-  n_groups = 1,
-  colour_ids = 1,
   show_x = TRUE,
+  plot_colours = adhd_plot_colours[1],
+  plot_shapes = 16,
+  legend_ncol = 1,
+  # `n_breaks` = 13 as there are 13 years of data
   n_breaks = 13
 )
 fig_icd10_all_usage
@@ -175,17 +181,18 @@ snomed_adhd_usage <- bind_rows(
   top5_snomed_usage
 )  
 
-# Plot as graph
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
-  title = "ADHD diagnosis-related code usage in primary care",
-  show_legend = TRUE,
+  breakdown_col = description,
+  title_label = "ADHD diagnosis-related code usage in primary care", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
-  n_groups = 6,
-  colour_ids = 2:7,
+  show_legend = TRUE,
+  plot_colours = adhd_plot_colours[2:7],
+  plot_shapes = rep(c(16, 23, 25), length.out = 6),
+  legend_ncol = 1,
   n_breaks = 14
-) 
-
+)
 fig_snomed_adhd_usage
 ```
 
@@ -200,14 +207,16 @@ icd10_adhd_usage <- summarise_yearly(
 # Plot figure
 fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
-  title = "ADHD diagnosis code usage in hospital admitted patient care",
-  show_legend = TRUE,
+  breakdown_col = description,
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
-  n_groups = 1,
-  colour_ids = 8,
+  show_legend = TRUE,
+  plot_colours = adhd_plot_colours[8],
+  plot_shapes = 16,
+  legend_ncol = 1,
   n_breaks = 13
-) 
-
+)
 fig_icd10_adhd_usage
 ```
 
@@ -228,6 +237,7 @@ fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage +
 ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height = 11)
 ```
 
+Skip to the "ICD-10 breakdowns" section for the next figure.
 
 ## Usage counts for top 5 codes in each codelist
 
@@ -404,11 +414,10 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
   summarise(usage = sum(usage), .groups = "drop") |>
   ungroup() |>
   group_by(breakdown) |>
-    # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
+    # Change age group labels from "age_x_y" to "Age x - y"
   mutate(
     breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
-    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
-    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
+    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+")
   ) |>
   ungroup() |> 
   mutate(breakdown = fct_reorder(breakdown, parse_number(breakdown)))
@@ -417,14 +426,18 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
 nlevels(df_icd10_age_5_10_fig$breakdown)
 # [1] 11
 
-fig_icd10_age_5_10_breakdowns <- plot_icd10_breakdowns(
+fig_icd10_age_5_10_breakdowns <- plot_code_usage(
   data = df_icd10_age_5_10_fig, 
-  title = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
-  legend_title = "Age group",
+  breakdown_col = breakdown,
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
+  common_x_limits = as.Date(c("2013-03-31", "2025-03-31")),
   show_x = FALSE,
-  n_factors = 11
+  show_legend = TRUE,
+  plot_colours = viridis(11, end = 0.9, option = "H"),
+  plot_shapes = rep(c(21, 22, 24), length.out = 11),
+  legend_ncol = 6,
+  n_breaks = 13
 )
-
 fig_icd10_age_5_10_breakdowns
 ```
 
@@ -441,22 +454,25 @@ df_icd10_sex_breakdowns_fig <- icd10_diag_breakdowns |>
   group_by(breakdown) |>
   mutate(
     breakdown = str_replace(breakdown, "gender_unknown", "unknown"),
-    breakdown = str_to_title(breakdown),
-    breakdown = paste0(breakdown, " (n = ", scales::comma(sum(usage)), ")")
+    breakdown = str_to_title(breakdown)
   ) 
 
 # Get the number of breakdown levels for cycling through shapes
 length(unique(df_icd10_sex_breakdowns_fig$breakdown))
 # [1] 3
 
-fig_icd10_sex_breakdowns <- plot_icd10_breakdowns(
+fig_icd10_sex_breakdowns <- plot_code_usage(
   data = df_icd10_sex_breakdowns_fig, 
-  title = "ADHD diagnosis code usage in hospital admitted patient care: sex breakdowns", 
-  legend_title = "Sex",
+  breakdown_col = breakdown,
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care: sex breakdowns", 
+  common_x_limits = as.Date(c("2013-03-31", "2025-03-31")),
   show_x = TRUE,
-  n_factors = 3
+  show_legend = TRUE,
+  plot_colours = viridis(3, end = 0.6, option = "E"),
+  plot_shapes = rep(c(8), length.out = 3),
+  legend_ncol = 3,
+  n_breaks = 13
 )
-
 fig_icd10_sex_breakdowns
 ```
 
@@ -464,11 +480,13 @@ fig_icd10_sex_breakdowns
 
 ```{r}
 fig_icd10_breakdowns <- fig_icd10_age_5_10_breakdowns / fig_icd10_sex_breakdowns + 
-  plot_layout(heights = c(1.5, 1)) +
+  plot_layout(guides = "collect", heights = c(1, 1)) +
 	plot_annotation(tag_levels = "A") &
 	theme(
 		plot.title = element_text(size = 20),
-		legend.title = element_blank()
+		legend.title = element_blank(),
+    legend.position = "bottom",
+    legend.box = "vertical"
   ) 
 
 ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 10, height = 11)
