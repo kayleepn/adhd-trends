@@ -205,7 +205,7 @@ fig_icd10_adhd_usage <- plot_code_usage(
   show_x = TRUE,
   n_groups = 1,
   colour_ids = 8,
-  n_breaks = 14
+  n_breaks = 13
 ) 
 
 fig_icd10_adhd_usage

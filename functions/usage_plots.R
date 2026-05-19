@@ -37,7 +37,7 @@ plot_code_usage <- function(
     )
   ) +
     geom_line(alpha = .7, linewidth = 2) +
-    geom_point(size = 5) +
+    geom_point(size = 3) +
     scale_y_continuous(
       limits = c(0, NA),
       labels = scales::comma,
