@@ -210,7 +210,7 @@ These will _not_ look good until the `ggsave()` step because of scaling issues.
 # Figure for GP model
 fig_gp_changepoints <- plot_changepoints(
 	source = "GP",
-	title = "GP prescribing",
+	title = "Monthly GP prescribing",
 	y_label = "Monthly items",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$GP,
@@ -224,7 +224,7 @@ fig_gp_changepoints
 # Figure for FOI model
 fig_foi_changepoints <- plot_changepoints(
 	source = "FOI",
-	title = "Private controlled drug prescribing",
+	title = "Monthly private controlled drug prescribing",
 	y_label = "Monthly items",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$FOI,
@@ -247,7 +247,7 @@ scmd_covid <- tibble(
 # Plot figure
 fig_scmd_changepoints <- plot_changepoints(
 	source = "SCMD",
-	title = "Hospital issuing",
+	title = "Monthly hospital issuing",
 	y_label = "Monthly DDD quantity",
 	show_x = TRUE,
 	show_legend = FALSE,
