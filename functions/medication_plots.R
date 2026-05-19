@@ -72,9 +72,10 @@ plot_med_usage_shapes <- function(
   data,
   usage_measure, # either items or ddd_quantity
   title_label,
+  y_label,
   x_label = "End date of yearly aggregation period",
-  text_size = 14,
-  point_size = 4,
+  text_size = 16,
+  point_size = 3,
   n_breaks
 ) {
   # Define common x-axis limits, this helps years align
@@ -97,7 +98,7 @@ plot_med_usage_shapes <- function(
     )
   ) +
     geom_line(alpha = .7, linewidth = 2) +
-    geom_point(size = point_size, alpha = .5) +
+    geom_point(size = point_size) +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
       limits = common_x_limits,
@@ -106,9 +107,10 @@ plot_med_usage_shapes <- function(
       labels = scales::label_date("%b\n%Y"),
       expand = expansion(mult = c(0.02, 0.02))
     ) +
-    scale_colour_viridis_d(end = .9, option = "H") +
+    scale_colour_viridis_d(end = .9, option = "G") +
     labs(
       x = x_label,
+      y = y_label,
       title = title_label,
       colour = "Chemical",
       shape = "Chemical"
@@ -119,31 +121,26 @@ plot_med_usage_shapes <- function(
     ) +
     theme(
       text = element_text(family = "Times New Roman"),
-      plot.title = element_text(size = 16, hjust = .5),
+      plot.title = element_text(size = 20, hjust = .5),
       axis.title.x = element_text(size = 16),
-      axis.text.x = element_text(size = 14),
-      axis.title.y = element_blank(),
-      axis.text.y = element_text(size = 14, angle = 45),
-      # panel.grid.major.x = element_blank(),
+      axis.text.x = element_text(size = 16),
+      axis.title.y = element_text(size = 16),
+      axis.text.y = element_text(size = 16),
+      panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
-      # Place legend inside graphs
-      legend.position = c(.05, .95),
-      legend.box.just = "left",
-      legend.justification = c("left", "top"),
       # Enable markdown in legend labels
-      legend.text = element_markdown(size = 14),
-      legend.title = element_text(family = "Times New Roman", size = 16),
+      legend.text = element_markdown(size = 16),
       legend.key.spacing.y = unit(5, "pt"),
       legend.background = element_rect(
         fill = "white",
         linetype = "solid",
         colour = "black",
         linewidth = 0.5
-      ),
-      plot.margin = margin(t = 5, r = 5, b = 5, l = 5)
-    )
+      )
+    ) +
+    guides(colour = guide_legend(override.aes = list(linetype = 0)))
 }
 
 # Function for yearly violin plots
