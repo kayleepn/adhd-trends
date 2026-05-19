@@ -6,9 +6,11 @@ plot_code_usage <- function(
   title,
   show_legend = TRUE,
   show_x = TRUE,
+  n_groups, # Number of groups/codes for cycling through shapes
+  colour_ids,
   text_size = 16,
   x_label = "End date of yearly reporting period",
-  y_label = "Usage count",
+  y_label = "Yearly usage",
   n_breaks
 ) {
   # Define common x-axis limits, this helps years align
@@ -19,6 +21,9 @@ plot_code_usage <- function(
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
   scale_x_date_breaks <- all_dates[idx]
+
+  # Generate shared colour palette
+  plot_colours = viridis(8, end = 0.8, option = "B")
 
   # Create plot
   plot <- ggplot(
@@ -32,7 +37,7 @@ plot_code_usage <- function(
     )
   ) +
     geom_line(alpha = .5, linewidth = 2) +
-    geom_point(alpha = .7, size = 5) +
+    geom_point(size = 5) +
     scale_y_continuous(
       limits = c(0, NA),
       labels = scales::comma,
@@ -44,10 +49,10 @@ plot_code_usage <- function(
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    scale_colour_viridis_d(end = .9, option = "H") +
-    scale_fill_viridis_d(end = .9, option = "H") +
-    # Have to manually specify shapes for easier visualisation
-    scale_shape_manual(values = c(24, 25, 21, 22, 23, 3)) +
+    scale_colour_manual(values = plot_colours[colour_ids]) +
+    scale_fill_manual(values = plot_colours[colour_ids]) +
+    # Only need 3 shapes to alternate between to distinguish similar colours
+    scale_shape_manual(values = rep(c(16, 23, 25), length.out = n_groups)) +
     labs(x = x_label, y = y_label, title = title) +
     # Using black and white theme
     theme_bw(
@@ -60,15 +65,11 @@ plot_code_usage <- function(
       axis.title.x = element_text(size = 20),
       axis.text.x = element_text(size = 16),
       axis.title.y = element_text(size = 20),
-      axis.text.y = element_text(size = 16, angle = 45),
-      # panel.grid.major.x = element_blank(),
+      axis.text.y = element_text(size = 16),
+      panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
-      # Place legend inside plot (top left corner)
-      legend.position = c(.01, .99),
-      legend.box.just = "left",
-      legend.justification = c("left", "top"),
       legend.title = element_blank(),
       legend.text = element_text(size = 16),
       legend.background = element_rect(
@@ -77,7 +78,7 @@ plot_code_usage <- function(
         colour = "black"
       )
     ) +
-    guides(colour = guide_legend(ncol = 1))
+    guides(colour = guide_legend(override.aes = list(linetype = 0), ncol = 1))
 
   # Common x-axis
   if (show_x == FALSE) {

@@ -25,6 +25,7 @@ library(stringr)
 library(flextable)
 library(officer)
 library(ggtext)
+library(viridis)
 
 # Functions for creating usage plots
 source(here("functions", "usage_plots.R"))
@@ -108,6 +109,8 @@ fig_snomed_all_usage <- plot_code_usage(
   title = "Yearly usage of all primary care clinical codes", 
   show_legend = FALSE, 
   show_x = TRUE,
+  n_groups = 1,
+  colour_ids = 1,
   # `n_breaks` = 14 as there are 14 years of data
   n_breaks = 14
 )
@@ -121,6 +124,8 @@ fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
   title = "Yearly usage of all hospital admitted patient care diagnosis codes", 
   show_legend = FALSE, 
+  n_groups = 1,
+  colour_ids = 1,
   show_x = TRUE,
   n_breaks = 13
 )
@@ -133,18 +138,13 @@ Produces a 1:2 figure of all SNOMED CT code vs all ICD-10 code usage. The x-axes
 
 ```{r}
 fig_all_codes_usage <- fig_snomed_all_usage / fig_icd10_all_usage + 
-	# Legend communism :)
-  plot_layout(guides = "collect") +
 	plot_annotation(
 		tag_levels = "A",
-		theme = theme(
-			plot.title = element_text(size = 16), 
-			legend.position = "bottom",
-			legend.title = element_blank())
-	)
+		theme = theme(plot.title = element_text(size = 16))
+  )
 
 fig_all_codes_usage
-ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height = 10)
+ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height = 8)
 ```
 
 ## Yearly ADHD code usage
@@ -181,6 +181,8 @@ fig_snomed_adhd_usage <- plot_code_usage(
   title = "ADHD diagnosis-related code usage in primary care",
   show_legend = TRUE,
   show_x = TRUE,
+  n_groups = 6,
+  colour_ids = 2:7,
   n_breaks = 14
 ) 
 
@@ -201,6 +203,8 @@ fig_icd10_adhd_usage <- plot_code_usage(
   title = "ADHD diagnosis code usage in hospital admitted patient care",
   show_legend = TRUE,
   show_x = TRUE,
+  n_groups = 1,
+  colour_ids = 8,
   n_breaks = 14
 ) 
 
@@ -212,11 +216,13 @@ fig_icd10_adhd_usage
 ```{r}
 # Combined figure for SNOMED CT and ICD-10 ADHD code usage
 fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage + 
-  plot_layout(heights = c(1.5, 1)) +
+  plot_layout(guides = "collect", heights = c(1.3, 1)) +
 	plot_annotation(tag_levels = "A") &
 	theme(
 		plot.title = element_text(size = 20),
-		legend.title = element_blank()
+		legend.title = element_blank(),
+    legend.position = "bottom",
+    legend.box = "vertical"
   )
 
 ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height = 11)
