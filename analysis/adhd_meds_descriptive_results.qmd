@@ -27,12 +27,13 @@ library(here)
 library(arrow)
 library(patchwork)
 library(ggtext)
-library(ggnewscale)
 library(stringr)
 library(flextable)
 library(officer)
 library(readxl)
 library(lubridate)
+library(viridis)
+library(scales)
 
 options(scipen = 999) # Turn off scientific notation
 
@@ -326,24 +327,24 @@ gp_adhd_icb_yearly <- icb_yearly_total(gp_adhd_prescribing, stp, items_by_chemic
   rename(icb_code = stp) |>
   left_join(icb_code_name_map, by = "icb_code") |> 
   select(-icb_code) |> 
+  # Remove "unidentified doctors" rows
+  filter_out(is.na(icb_name)) |> 
   # Add ICB population by year
   add_population_by_year() |>
   # Calculate prescribed items / 1000 population 
-  mutate(items_per_1000_pop = round(yearly_items / population * 1000, 2))
+  mutate(items_per_1000_pop = round(yearly_items / population * 1000, 2)) |>
+  # Find yearly outliers using the 1.5 * IQR method
+  group_by(end_date) |> 
+  mutate(
+    outlier = items_per_1000_pop %in%
+      boxplot.stats(items_per_1000_pop)$out
+  ) |> 
+  ungroup() 
 
-# Create violin plots
-# `plot_yearly_violins` is in `medication_plots.R`
-fig_gp_icb_violins <- plot_yearly_violins(
-  data = gp_adhd_icb_yearly,
-  usage_measure = items_per_1000_pop,
-  title_label = "Yearly GP prescribing by ICB (items per 1,000 population)",
-  n_breaks = 10
-)
-
-fig_gp_icb_violins
-```
-
-It's safe to ignore warnings since they are caused by unidentified doctors. 
+# Dataframe with outlier ICBs
+gp_outliers <- gp_adhd_icb_yearly |> 
+  filter(outlier == TRUE)
+``` 
 
 ## FOI ICB-level analysis
 
@@ -363,19 +364,23 @@ setequal(na.omit(foi_adhd_20to25$icb_name), icb_code_name_map$icb_name)
 
 # Calculate yearly prescribing for each ICB per 1000 population
 foi_adhd_icb_yearly <- icb_yearly_total(foi_adhd_20to25, icb_name, items, "FOI") |> 
+  # Remove "unidentified doctors" rows
+  filter_out(is.na(icb_name)) |>  
   # Add ICB population by year
   add_population_by_year() |>
   # Calculate prescribed items / 1000 population 
-  mutate(items_per_1000_pop = round(yearly_items / population * 1000, 2))
+  mutate(items_per_1000_pop = round(yearly_items / population * 1000, 2)) |> 
+  # Find yearly outliers using the 1.5 * IQR method
+  group_by(end_date) |> 
+  mutate(
+    outlier = items_per_1000_pop %in%
+      boxplot.stats(items_per_1000_pop)$out
+  ) |> 
+  ungroup() 
 
-fig_foi_icb_violins <- plot_yearly_violins(
-  data = foi_adhd_icb_yearly,
-  usage_measure = items_per_1000_pop,
-  title_label = "Yearly private controlled drug prescribing by ICB (items per 1,000 population)",
-  n_breaks = 5
-)
-
-fig_foi_icb_violins
+# Dataframe with outlier ICBs
+foi_outliers <- foi_adhd_icb_yearly |> 
+  filter(outlier == TRUE)
 ```
 
 ## SCMD ICB-level analysis
@@ -408,15 +413,72 @@ scmd_adhd_icb_yearly <- scmd_adhd_issuing |>
   # Add ICB population by year
   add_population_by_year() |>
   # Calculate issued DDD quantity / 1000 population 
-  mutate(ddd_quantity_per_1000_pop = round(yearly_ddd_quantity / population * 1000, 2))
+  mutate(ddd_quantity_per_1000_pop = round(yearly_ddd_quantity / population * 1000, 2)) |> 
+  # Find yearly outliers using the 1.5 * IQR method
+  group_by(end_date) |> 
+  mutate(
+    outlier = ddd_quantity_per_1000_pop %in%
+      boxplot.stats(ddd_quantity_per_1000_pop)$out
+  ) |> 
+  ungroup() 
 
+# Dataframe with outlier ICBs
+scmd_outliers <- scmd_adhd_icb_yearly |> 
+  filter(outlier == TRUE)
+```
+
+## Create violin plots
+
+```{r}
+# Create fill and shape mapping and legend labels for all outlier ICBs
+icb_outliers_map <- bind_rows(gp_outliers, foi_outliers, scmd_outliers, .id = NULL) |> 
+  select(icb_name) |> 
+  distinct() |> 
+  # More concise legend labels for ICBs 
+  mutate(label = icb_name |> 
+    str_remove("^NHS\\s*") |>
+    str_remove("\\s*INTEGRATED CARE BOARD$") |> 
+    str_to_title() |> 
+    str_replace_all("\\bAnd\\b", "and")
+  ) |> 
+  # Map colour-blind friendly colours and loop over shapes
+  mutate(
+    colour = viridis(length(icb_name), end = 0.8, option = "C"),
+    shape = as.integer(rep(c(21, 22, 24, 25), length.out = length(icb_name)))
+  )
+
+# `plot_yearly_violins` is in `medication_plots.R`
+# Create plot for GP prescribing by ICB
+fig_gp_icb_violins <- plot_yearly_violins(
+  data = gp_adhd_icb_yearly,
+  usage_measure = items_per_1000_pop,
+  title_label = "Yearly GP prescribing by ICB",
+  y_label = "Items per 1000 population",
+  outlier_map = icb_outliers_map,
+  n_breaks = 10
+)
+fig_gp_icb_violins
+
+# Create plot for FOI prescribing by ICB
+fig_foi_icb_violins <- plot_yearly_violins(
+  data = foi_adhd_icb_yearly,
+  usage_measure = items_per_1000_pop,
+  title_label = "Yearly private controlled drug prescribing by ICB",
+  y_label = "Items per 1000 population",
+  outlier_map = icb_outliers_map,
+  n_breaks = 5
+)
+fig_foi_icb_violins
+
+# Create plot for SCMD issuing by ICB
 fig_scmd_icb_violins <- plot_yearly_violins(
   data = scmd_adhd_icb_yearly,
   usage_measure = ddd_quantity_per_1000_pop,
-  title_label = "Yearly hospital issuing by ICB (DDD quantity per 1,000 population)",
+  title_label = "Yearly hospital issuing by ICB",
+  y_label = "DDD quantity per 1000 population",
+  outlier_map = icb_outliers_map,
   n_breaks = 6
 )
-
 fig_scmd_icb_violins
 ```
 
