@@ -89,6 +89,7 @@ plot_yearly_violins <- function(
   y_label,
   outlier_map,
   n_breaks,
+  log_y = FALSE,
   text_size = 16,
   point_size = 3
 ) {
@@ -156,7 +157,11 @@ plot_yearly_violins <- function(
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    (if (log_y == TRUE) {
+      scale_y_log10(labels = scales::comma)
+    } else {
+      scale_y_continuous(limits = c(0, NA), labels = scales::comma)
+    }) +
     labs(x = x_label, y = y_label, title = title_label) +
     theme_bw() +
     theme(

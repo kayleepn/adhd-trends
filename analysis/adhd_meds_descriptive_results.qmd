@@ -459,14 +459,15 @@ fig_gp_icb_violins <- plot_yearly_violins(
 )
 fig_gp_icb_violins
 
-# Create plot for FOI prescribing by ICB
+# Create log-transformed plot for FOI prescribing by ICB to 'unsquish' bottom-heavy violins
 fig_foi_icb_violins <- plot_yearly_violins(
   data = foi_adhd_icb_yearly,
   usage_measure = items_per_1000_pop,
   title_label = "Yearly private controlled drug prescribing by ICB",
-  y_label = "Items per 1000 population",
+  y_label = "Items per 1000 population (log10 scale)",
   outlier_map = icb_outliers_map,
-  n_breaks = 5
+  n_breaks = 5,
+  log_y = TRUE
 )
 fig_foi_icb_violins
 
