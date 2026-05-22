@@ -452,7 +452,7 @@ icb_outliers_map <- bind_rows(gp_outliers, foi_outliers, scmd_outliers, .id = NU
 fig_gp_icb_violins <- plot_yearly_violins(
   data = gp_adhd_icb_yearly,
   usage_measure = items_per_1000_pop,
-  title_label = "Yearly GP prescribing by ICB",
+  title_label = "GP prescribing by ICB",
   y_label = "Items per 1000 population",
   outlier_map = icb_outliers_map,
   n_breaks = 10
@@ -463,7 +463,7 @@ fig_gp_icb_violins
 fig_foi_icb_violins <- plot_yearly_violins(
   data = foi_adhd_icb_yearly,
   usage_measure = items_per_1000_pop,
-  title_label = "Yearly private controlled drug prescribing by ICB",
+  title_label = "Private controlled drug prescribing by ICB",
   y_label = "Items per 1000 population (log10 scale)",
   outlier_map = icb_outliers_map,
   n_breaks = 5,
@@ -475,7 +475,7 @@ fig_foi_icb_violins
 fig_scmd_icb_violins <- plot_yearly_violins(
   data = scmd_adhd_icb_yearly,
   usage_measure = ddd_quantity_per_1000_pop,
-  title_label = "Yearly hospital issuing by ICB",
+  title_label = "Hospital issuing by ICB",
   y_label = "DDD quantity per 1000 population",
   outlier_map = icb_outliers_map,
   n_breaks = 6
