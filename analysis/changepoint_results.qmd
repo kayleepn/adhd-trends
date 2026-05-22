@@ -122,8 +122,7 @@ plot_changepoints <- function(
 		# Plot observed values
 		geom_point(
 			aes(y = observed, colour = "Observed value"), 
-			size = 2, 
-			alpha = 0.7
+			size = 2
 		) +
 		# Plot 95% CI
 		geom_ribbon(
@@ -133,8 +132,7 @@ plot_changepoints <- function(
 		# Plot line for predicted values
 		geom_line(
 			aes(y = pred, colour = "Fitted values with 95% CI (shaded area)"), 
-			linewidth = 1, 
-			alpha = 0.7
+			linewidth = 1
 		) +
 		# Plot breakpoint locations with vertical dashed line
 		geom_vline(
@@ -210,7 +208,7 @@ These will _not_ look good until the `ggsave()` step because of scaling issues.
 # Figure for GP model
 fig_gp_changepoints <- plot_changepoints(
 	source = "GP",
-	title = "Monthly GP prescribing",
+	title = "GP prescribing",
 	y_label = "Monthly items",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$GP,
@@ -224,7 +222,7 @@ fig_gp_changepoints
 # Figure for FOI model
 fig_foi_changepoints <- plot_changepoints(
 	source = "FOI",
-	title = "Monthly private controlled drug prescribing",
+	title = "Private controlled drug prescribing",
 	y_label = "Monthly items",
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$FOI,
@@ -247,7 +245,7 @@ scmd_covid <- tibble(
 # Plot figure
 fig_scmd_changepoints <- plot_changepoints(
 	source = "SCMD",
-	title = "Monthly hospital issuing",
+	title = "Hospital issuing",
 	y_label = "Monthly DDD quantity",
 	show_x = TRUE,
 	show_legend = FALSE,
