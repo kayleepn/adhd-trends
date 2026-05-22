@@ -86,13 +86,13 @@ plot_yearly_violins <- function(
   usage_measure, # either items or ddd_quantity
   title_label,
   x_label = "End date of yearly aggregation period",
+  y_label,
+  outlier_map,
+  n_breaks,
+  log_y = FALSE,
   text_size = 16,
-  point_size = 4,
-  n_breaks
+  point_size = 3
 ) {
-  # Define common x-axis limits, this helps years align
-  common_x_limits = as.Date(c("2016-07-31", "2025-07-31"))
-
   # Get unique dates and create yearly x-axis ticks for as many years there are
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
@@ -103,42 +103,86 @@ plot_yearly_violins <- function(
     data,
     aes(x = end_date, y = {{ usage_measure }})
   ) +
-    geom_violin(aes(group = end_date), fill = "#8df567", colour = NA) +
+    geom_violin(aes(group = end_date), fill = "grey80", colour = NA) +
+    # Dot plot layer with non-outlier ICBs
     geom_jitter(
+      data = data |> filter(outlier == FALSE),
       aes(group = end_date),
-      colour = "black",
-      alpha = .7,
-      size = 2,
+      colour = "grey40",
+      size = point_size,
       shape = 16,
       position = position_jitter(width = 50, height = 0)
     ) +
-    # Add blue triangles for yearly medians
+    # Dot plot layer with outlier ICBs
+    geom_jitter(
+      data = data |> filter(outlier == TRUE),
+      aes(
+        group = end_date,
+        fill = icb_name,
+        shape = icb_name
+      ),
+      size = point_size,
+      position = position_jitter(width = 50, height = 0)
+    ) +
+    # Add crossbar for yearly medians
     stat_summary(
-      fun = median,
-      geom = "point",
-      colour = "blue",
-      alpha = .8,
-      shape = 17,
-      size = 4
+      aes(group = end_date),
+      fun.data = function(x) {
+        m <- median(x, na.rm = TRUE)
+        data.frame(y = m, ymin = m, ymax = m)
+      },
+      geom = "crossbar",
+      width = 250,
+      linewidth = 1,
+      fatten = 0,
+      colour = "black"
+    ) +
+    # Colours and shapes for outlier ICBs
+    scale_fill_manual(
+      name = "**Outlier ICBs**",
+      values = setNames(outlier_map$colour, outlier_map$icb_name),
+      breaks = outlier_map$icb_name,
+      labels = label_wrap(20)(outlier_map$label),
+      drop = FALSE
+    ) +
+    scale_shape_manual(
+      name = "**Outlier ICBs**",
+      values = setNames(outlier_map$shape, outlier_map$icb_name),
+      breaks = outlier_map$icb_name,
+      labels = label_wrap(20)(outlier_map$label),
+      drop = FALSE
     ) +
     scale_x_date(
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
-    labs(x = x_label, title = title_label) +
+    (if (log_y == TRUE) {
+      scale_y_log10(labels = scales::comma)
+    } else {
+      scale_y_continuous(limits = c(0, NA), labels = scales::comma)
+    }) +
+    labs(x = x_label, y = y_label, title = title_label) +
     theme_bw() +
     theme(
       text = element_text(family = "Times New Roman"),
       plot.title = element_text(size = 20, hjust = .5),
       axis.title.x = element_text(size = 16),
       axis.text.x = element_text(size = 16),
-      axis.title.y = element_blank(),
+      axis.title.y = element_text(size = 16),
       axis.text.y = element_text(size = 16),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
-      panel.grid.minor.y = element_blank()
+      panel.grid.minor.y = element_blank(),
+      legend.box.background = element_rect(
+        fill = "white",
+        linetype = "solid",
+        colour = "black"
+      ),
+      legend.title = element_markdown(size = 16, hjust = 0.5),
+      legend.text = element_text(size = 16),
+      legend.justification.right = "left",
+      legend.key.spacing.y = unit(5, "pt")
     )
 }
