@@ -6,7 +6,7 @@ plot_med_usage_shapes <- function(
   y_label,
   x_label = "End date of yearly aggregation period",
   text_size = 16,
-  point_size = 3,
+  point_size = 4,
   n_breaks
 ) {
   # Define common x-axis limits, this helps years align
@@ -25,10 +25,11 @@ plot_med_usage_shapes <- function(
       x = end_date,
       y = {{ usage_measure }},
       colour = bnf_chemical_name,
+      fill = bnf_chemical_name,
       shape = bnf_chemical_name
     )
   ) +
-    geom_line(alpha = .7, linewidth = 2) +
+    geom_line(alpha = .2, linewidth = 1) +
     geom_point(size = point_size) +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_x_date(
@@ -39,12 +40,17 @@ plot_med_usage_shapes <- function(
       expand = expansion(mult = c(0.02, 0.02))
     ) +
     scale_colour_viridis_d(end = .9, option = "G") +
+    scale_fill_viridis_d(end = .9, option = "G") +
+    scale_shape_manual(
+      values = c(21, 22, 23, 21, 22, 23)
+    ) +
     labs(
       x = x_label,
       y = y_label,
       title = title_label,
       colour = "Chemical",
-      shape = "Chemical"
+      shape = "Chemical",
+      fill = "Chemical"
     ) +
     # Using black and white theme
     theme_bw(

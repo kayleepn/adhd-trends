@@ -129,8 +129,8 @@ df_yearly_gp_by_chemical <- calc_yearly_total(
 fig_yearly_gp_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_gp_by_chemical, 
   usage_measure = yearly_items, 
-  y_label = "Yearly items",
-  title_label = "Yearly GP prescribing",
+  y_label = "Items",
+  title_label = "GP prescribing by chemical",
   n_breaks = 10
 )
 
@@ -146,8 +146,8 @@ df_yearly_foi_by_chemical <- calc_yearly_total(
 fig_yearly_foi_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_foi_by_chemical,  
   usage_measure = yearly_items, 
-  y_label = "Yearly items",
-  title_label = "Yearly private controlled drug prescribing",
+  y_label = "Items",
+  title_label = "Private controlled drug prescribing by chemical",
   n_breaks = 10
 )
 
@@ -169,8 +169,8 @@ df_yearly_scmd_by_chemical <- total_scmd_over_time |>
 fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_scmd_by_chemical, 
   usage_measure = yearly_ddd_quantity, 
-  y_label = "Yearly DDD quantity",
-  title_label = "Yearly hospital issuing",
+  y_label = "DDD quantity",
+  title_label = "Hospital issuing by chemical",
   n_breaks = 6
 )
 
