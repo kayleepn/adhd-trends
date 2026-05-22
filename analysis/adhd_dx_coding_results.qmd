@@ -10,16 +10,13 @@ This descriptive analysis explores:
 1. SNOMED CT coding activity related to ADHD diagnosis in English primary care (2011-2025)
 2. ICD-10 coding activity related to ADHD diagnosis in English Hospital Admitted Patient Care. (2012-2025) 
 
-The aim is to understand which clinical codes are used to record ADHD diagnoses and related administrative activity, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic.
+The aim is to understand which clinical codes are used to record ADHD diagnoses, identify usage patterns over time, and inform the development of codelists for future electronic health record research on this topic. Codelists are updated to the newest version. 
 
 # Methods
 
 ## Set up
 
 ```{r}
-#| label: setup
-#| output: false
-
 library(tidyverse)
 library(here)
 library(opencodecounts)
@@ -28,9 +25,7 @@ library(stringr)
 library(flextable)
 library(officer)
 library(ggtext)
-
-# Function for creating facet plots for age breakdowns
-#source(here("functions", "create_facet_plots.R"))
+library(viridis)
 
 # Functions for creating usage plots
 source(here("functions", "usage_plots.R"))
@@ -81,7 +76,7 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 
 ### ICD-10 Breakdown variables
 
-**Diagnostic codes**: Only the four-character ICD-10 code "Disturbance of activity and attention (F900)" was included.
+**Diagnostic codes**: Only the four-character ICD-10 code "Disturbance of activity and attention (F90.0)" was included.
 
 **Diagnostic position**: Usage counts represent FCEs with a specific code in any diagnostic position ("all diagnoses") or as the primary reason for admission ("main diagnosis").
 
@@ -90,6 +85,8 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 # Results
 
 ## Yearly usage for all codes (SNOMED CT vs ICD-10)
+
+Similar code and logic to previous reports but plots are formatted differently. Note that NONE of these figures are going to look good until the `ggsave()` step because of scaling issues.
 
 ```{r}
 # Helper function for summarising yearly code usage of a codelist
@@ -105,15 +102,21 @@ summarise_yearly <- function(data, desc) {
 # Get total yearly usage for all SNOMED CT codes
 snomed_all_codes_usage <- summarise_yearly(snomed_usage, "All SNOMED CT codes")
 
-# Plot figure
-# `plot_code_usage` is in `usage_plots.R`
+adhd_plot_colours = viridis(8, end = 0.8, option = "B")
+
+# Plot figure; `plot_code_usage` is in `usage_plots.R`
 fig_snomed_all_usage <- plot_code_usage(
   data = snomed_all_codes_usage, 
-  title = "Yearly usage for all SNOMED CT codes", 
+  title_label = "Usage of all primary care clinical codes", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
+  plot_colours = adhd_plot_colours[1],
+  plot_shapes = 16,
+  legend_ncol = 1,
   # `n_breaks` = 14 as there are 14 years of data
-  n_breaks = 14
+  n_breaks = 14,
+  y_millions = TRUE
 )
 fig_snomed_all_usage
 
@@ -123,10 +126,16 @@ icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
 # Plot figure
 fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
-  title = "Yearly usage for all ICD-10 codes", 
+  title_label = "Usage of all hospital admitted patient care diagnosis codes", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
-  n_breaks = 13
+  plot_colours = adhd_plot_colours[1],
+  plot_shapes = 16,
+  legend_ncol = 1,
+  # `n_breaks` = 13 as there are 13 years of data
+  n_breaks = 13,
+  y_millions = TRUE
 )
 fig_icd10_all_usage
 ```
@@ -137,20 +146,18 @@ Produces a 1:2 figure of all SNOMED CT code vs all ICD-10 code usage. The x-axes
 
 ```{r}
 fig_all_codes_usage <- fig_snomed_all_usage / fig_icd10_all_usage + 
-	plot_layout(guides = "collect") +
 	plot_annotation(
 		tag_levels = "A",
-		theme = theme(
-			plot.title = element_text(size = 16), 
-			legend.position = "bottom",
-			legend.title = element_blank())
-	)
+		theme = theme(plot.title = element_text(size = 16))
+  )
 
 fig_all_codes_usage
-ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height = 10)
+ggsave(here("output", "figures", "fig_all_codes_usage.png"), width = 10, height = 8)
 ```
 
 ## Yearly ADHD code usage
+
+Similar code and logic to previous reports but plots are formatted differently. 
 
 ### SNOMED CT
 ```{r}
@@ -172,20 +179,22 @@ top5_snomed_usage <- snomed_diag_usage |>
 
 # Combining yearly usage for all ADHD codes combined and top 5 ADHD codes
 snomed_adhd_usage <- bind_rows(
-  summarise_yearly(snomed_diag_usage, "All ADHD diagnosis-related SNOMED CT codes"),
+  summarise_yearly(snomed_diag_usage, "All ADHD diagnosis-related primary care codes"),
   top5_snomed_usage
 )  
 
-# Plot as graph
-# None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
-  title = "ADHD diagnosis-related SNOMED CT code usage",
-  show_legend = TRUE,
+  breakdown_col = description,
+  title_label = "ADHD diagnosis-related code usage in primary care", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
+  show_legend = TRUE,
+  plot_colours = adhd_plot_colours[2:7],
+  plot_shapes = rep(c(16, 23, 25), length.out = 6),
+  legend_ncol = 1,
   n_breaks = 14
-) 
-
+)
 fig_snomed_adhd_usage
 ```
 
@@ -198,15 +207,18 @@ icd10_adhd_usage <- summarise_yearly(
 )
 
 # Plot figure
-# None of these figures are going to look good until the `ggsave()` step because of scaling issues
 fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
-  title = "ADHD diagnosis-related ICD-10 code usage",
-  show_legend = TRUE,
+  breakdown_col = description,
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care", 
+  common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
-  n_breaks = 14
-) 
-
+  show_legend = TRUE,
+  plot_colours = adhd_plot_colours[8],
+  plot_shapes = 16,
+  legend_ncol = 1,
+  n_breaks = 13
+)
 fig_icd10_adhd_usage
 ```
 
@@ -215,20 +227,20 @@ fig_icd10_adhd_usage
 ```{r}
 # Combined figure for SNOMED CT and ICD-10 ADHD code usage
 fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage + 
-  plot_layout(heights = c(1.5, 1)) +
+  plot_layout(heights = c(1.3, 1)) +
 	plot_annotation(tag_levels = "A") &
 	theme(
-		plot.title = element_text(size = 20),
-		legend.title = element_blank()
+		plot.title = element_text(size = 20)
   )
 
 ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height = 11)
 ```
 
+Skip to the "ICD-10 breakdowns" section for the next figure.
 
 ## Usage counts for top 5 codes in each codelist
 
-Aim: produce table with total usage (across all years) for all codes and ADHD codes for SNOMED CT (only the top 5 codes) and ICD-10 + proportion of coding activity contributed by each code.
+Aim: produce table with total usage (across all years) for all codes and ADHD codes for SNOMED CT (only the top 5 codes) and ICD-10 + proportion of coding activity contributed by each code. Very similar code and logic to previous code usage reports. 
 
 ADHD coding only takes up 0.0068% of all SNOMED CT coding so it makes more sense to calculate the proportion of coding each of the top 5 codes take up within ADHD codes.
 
@@ -254,15 +266,15 @@ calc_total_usage <- function(data_all, data_adhd, ref_desc, ref_ignore){
 df_snomed_total_usage <- calc_total_usage(
   snomed_all_codes_usage,
   snomed_adhd_usage,
-  ref_desc = "All ADHD diagnosis-related SNOMED CT codes",
-  ref_ignore = "All SNOMED CT codes"
+  ref_desc = "All ADHD diagnosis-related primary care codes",
+  ref_ignore = "All primary care codes"
 )
 
 df_icd10_total_usage <- calc_total_usage(
   icd10_all_codes_usage,
   icd10_adhd_usage,
   ref_desc = "F90.0 Disturbance of activity and attention",
-  ref_ignore = "All ICD-10 codes"
+  ref_ignore = "All hospital admitted care diagnosis codes"
 )
 
 # Calculate usage percentage change compared to start of analysis period
@@ -306,9 +318,9 @@ df_icd10_usage_table <- inner_join(
 
 # Bind SNOMED CT and ICD10 dfs
 df_usage_table <- bind_rows(
-  tibble(description = "SNOMED CT Codes (2011-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
+  tibble(description = "Codes used in primary care (2011-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
   df_snomed_usage_table, 
-  tibble(description = "ICD-10 Codes (2012-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
+  tibble(description = "Codes used in hospital admitted patient care (2012-2025)", total_usage = NA, percentage = NA, pct_change = NA),  # header row
   df_icd10_usage_table
 )
 
@@ -383,6 +395,7 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
   mutate(
     breakdown = fct_collapse(
       breakdown,
+      # Aggregating 5-year age bands into 10-year age bands
       "age_0_4" = c("age_0", "age_1_4"),
       "age_5_9" = c("age_5_9"),
       "age_10_19" = c("age_10_14", "age_15", "age_16", "age_17", "age_18", "age_19"),
@@ -400,26 +413,34 @@ df_icd10_age_5_10_fig <- icd10_diag_breakdowns |>
   summarise(usage = sum(usage), .groups = "drop") |>
   ungroup() |>
   group_by(breakdown) |>
-    # Change age group labels from "age_x_y" to "Age x - y" and add usage count for each age group across entire time period 
+    # Change age group labels from "age_x_y" to "Age x - y"
   mutate(
     breakdown = str_replace(breakdown, "age_(\\d+)_(\\d+)", "Age \\1 - \\2"),
-    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+"),
-    breakdown = paste0("**", breakdown, "**<br>n = ", scales::comma(sum(usage)))
+    breakdown = str_replace(breakdown, "age_(\\d+)plus", "Age \\1+")
   ) |>
   ungroup() |> 
   mutate(breakdown = fct_reorder(breakdown, parse_number(breakdown)))
 
-fig_icd10_age_5_10_breakdowns <- plot_icd10_breakdowns(
-  data = df_icd10_age_5_10_fig, 
-  title = "ICD-10 F90.0 code usage: age breakdowns", 
-  legend_title = "Age group",
-  show_x = FALSE
-)
+# Get the number of breakdown factor levels for cycling through shapes
+nlevels(df_icd10_age_5_10_fig$breakdown)
+# [1] 11
 
+fig_icd10_age_5_10_breakdowns <- plot_code_usage(
+  data = df_icd10_age_5_10_fig, 
+  breakdown_col = breakdown,
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
+  common_x_limits = as.Date(c("2013-03-31", "2025-03-31")),
+  show_x = FALSE,
+  show_legend = TRUE,
+  plot_colours = viridis(11, end = 0.9, option = "H"),
+  plot_shapes = rep(c(21, 22, 24), length.out = 11),
+  legend_ncol = 6,
+  n_breaks = 13
+)
 fig_icd10_age_5_10_breakdowns
 ```
 
-I think the version with 0-4 and 5-9 as separate groups looks better and is more informative. 
+I think having ages 0-4 and 5-9 as separate groups looks better and is more informative. 
 
 ### Sex breakdowns
 
@@ -432,17 +453,25 @@ df_icd10_sex_breakdowns_fig <- icd10_diag_breakdowns |>
   group_by(breakdown) |>
   mutate(
     breakdown = str_replace(breakdown, "gender_unknown", "unknown"),
-    breakdown = str_to_title(breakdown),
-    breakdown = paste0(breakdown, " (n = ", scales::comma(sum(usage)), ")")
-  )
+    breakdown = str_to_title(breakdown)
+  ) 
 
-fig_icd10_sex_breakdowns <- plot_icd10_breakdowns(
+# Get the number of breakdown levels for cycling through shapes
+length(unique(df_icd10_sex_breakdowns_fig$breakdown))
+# [1] 3
+
+fig_icd10_sex_breakdowns <- plot_code_usage(
   data = df_icd10_sex_breakdowns_fig, 
-  title = "ICD-10 F90.0 code usage: sex breakdowns", 
-  legend_title = "Sex",
-  show_x = TRUE
+  breakdown_col = breakdown,
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care: sex breakdowns", 
+  common_x_limits = as.Date(c("2013-03-31", "2025-03-31")),
+  show_x = TRUE,
+  show_legend = TRUE,
+  plot_colours = viridis(3, end = 0.6, option = "E"),
+  plot_shapes = c(8, 9, 10),
+  legend_ncol = 3,
+  n_breaks = 13
 )
-
 fig_icd10_sex_breakdowns
 ```
 
@@ -450,12 +479,9 @@ fig_icd10_sex_breakdowns
 
 ```{r}
 fig_icd10_breakdowns <- fig_icd10_age_5_10_breakdowns / fig_icd10_sex_breakdowns + 
-  plot_layout(heights = c(1.5, 1)) +
+  plot_layout(heights = c(1, 1)) +
 	plot_annotation(tag_levels = "A") &
-	theme(
-		plot.title = element_text(size = 20),
-		legend.title = element_blank()
-  ) 
+	theme(plot.title = element_text(size = 20)) 
 
 ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 10, height = 11)
 ```

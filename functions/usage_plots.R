@@ -1,21 +1,23 @@
-# Helper functions for creating usage plots
-
-# Plots yearly code usage
+# Helper function for creating usage plots
+# Plots yearly code usage including breakdowns if specified
 plot_code_usage <- function(
   data,
-  title,
-  show_legend = TRUE,
+  breakdown_col,
+  title_label,
+  common_x_limits,
   show_x = TRUE,
+  show_legend = TRUE,
+  plot_colours,
+  plot_shapes,
+  legend_ncol,
+  n_breaks,
+  y_millions = FALSE,
   text_size = 16,
+  point_size = 4,
   x_label = "End date of yearly reporting period",
-  y_label = "Usage count",
-  n_breaks
+  y_label = "Usage"
 ) {
-  # Define common x-axis limits, this helps years align
-  common_x_limits = as.Date(c("2012-07-31", "2025-07-31"))
-
-  # Get unique dates and pick 4 evenly spaced ones for x-axis labels
-  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R`
+  # Get unique dates and picks evenly spaced ones for x-axis labels
   all_dates <- sort(unique(data$end_date))
   idx <- round(seq(1, length(all_dates), length.out = n_breaks))
   scale_x_date_breaks <- all_dates[idx]
@@ -26,115 +28,45 @@ plot_code_usage <- function(
     aes(
       x = end_date,
       y = usage,
-      colour = description,
-      shape = description,
-      fill = description
+      colour = {{ breakdown_col }},
+      shape = {{ breakdown_col }},
+      fill = {{ breakdown_col }}
     )
   ) +
-    geom_line(alpha = .5, linewidth = 2) +
-    geom_point(alpha = .7, size = 5) +
-    scale_y_continuous(
-      limits = c(0, NA),
-      labels = scales::comma,
-      expand = expansion(mult = c(0.02, 0.1))
-    ) +
+    geom_line(linewidth = 1, alpha = .2) +
+    geom_point(size = point_size) +
+    scale_colour_manual(values = plot_colours) +
+    scale_fill_manual(values = plot_colours) +
+    # Only need 3 shapes to alternate between to distinguish similar colours
+    scale_shape_manual(values = plot_shapes) +
+    # Use unit M for millions if `y_millions == TRUE`
+    (if (y_millions == TRUE) {
+      scale_y_continuous(
+        limits = c(0, NA),
+        labels = scales::label_number(
+          scale = 1e-6,
+          suffix = "M",
+          big.mark = ","
+        )
+      )
+    } else {
+      scale_y_continuous(
+        limits = c(0, NA),
+        labels = scales::comma
+      )
+    }) +
     scale_x_date(
       limits = common_x_limits,
       breaks = scale_x_date_breaks,
       # x-axis scale labels: abbreviated month (new line) YYYY
       labels = scales::label_date("%b\n%Y")
     ) +
-    # Wrapping legend label text and removing unnecessary label
-    scale_colour_viridis_d(end = .9, option = "H") +
-    # Have to manually specify shapes (and fill) for easier visualisation
-    scale_shape_manual(values = c(24, 25, 21, 22, 23, 3)) +
-    scale_fill_viridis_d(end = .9, option = "H") +
-    labs(x = x_label, y = y_label, title = title) +
+    labs(x = x_label, y = y_label, title = title_label) +
     # Using black and white theme
     theme_bw(
       base_size = text_size
     ) +
-    theme(
-      text = element_text(family = "Times New Roman"),
-      plot.title = element_text(size = 20, hjust = .5),
-      axis.title.x = element_text(size = 20),
-      axis.text.x = element_text(size = 16),
-      axis.title.y = element_text(size = 20),
-      axis.text.y = element_text(size = 16, angle = 45),
-      # panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
-      panel.grid.major.y = element_blank(),
-      panel.grid.minor.y = element_blank(),
-      # Place legend inside plot
-      legend.position = c(0.01, .99),
-      legend.box.just = "left",
-      legend.justification = c("left", "top"),
-      legend.title = element_blank(),
-      legend.text = element_text(size = 16),
-      legend.background = element_rect(
-        fill = "white",
-        linetype = "solid",
-        colour = "black"
-      )
-    ) +
-    guides(colour = guide_legend(ncol = 1))
-
-  # Common x-axis
-  if (show_x == FALSE) {
-    plot <- plot +
-      theme(
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank()
-      )
-  }
-
-  # Control legend appearance
-  if (show_legend == FALSE) {
-    plot <- plot +
-      theme(legend.position = "none")
-  }
-
-  plot
-}
-
-# This is very similar to the above function
-# Creates plots for ICD-10 breakdowns
-plot_icd10_breakdowns <- function(
-  data,
-  title_label,
-  legend_title,
-  show_x = TRUE,
-  text_size = 16,
-  point_size = 2,
-  x_label = "End date of yearly reporting period",
-  y_label = "Usage count",
-  n_breaks = 14
-) {
-  # Get unique dates and picks evenly spaced ones for x-axis labels
-  # Same as the `plot_breakdown_facet` function in `create_facet_plots.R` used for previous secondary care reports
-  all_dates <- sort(unique(data$end_date))
-  idx <- round(seq(1, length(all_dates), length.out = n_breaks))
-  scale_x_date_breaks <- all_dates[idx]
-
-  # Create plot
-  plot <- ggplot(
-    data,
-    aes(x = end_date, y = usage, colour = breakdown)
-  ) +
-    geom_line(linewidth = 2, alpha = .7) +
-    geom_point(size = point_size, alpha = .7) +
-    scale_colour_viridis_d(alpha = 0.7, end = 0.9, option = "H") +
-    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
-    scale_x_date(
-      breaks = scale_x_date_breaks,
-      # x-axis scale labels: abbreviated month (new line) YYYY
-      labels = scales::label_date("%b\n%Y")
-    ) +
-    labs(x = x_label, y = y_label, title = title_label, colour = legend_title) +
-    # Using black and white theme
-    theme_bw(
-      base_size = text_size
-    ) +
+    # Other stylistic choices
     theme(
       text = element_text(family = "Times New Roman"),
       plot.title = element_text(size = 20, hjust = .5),
@@ -147,14 +79,12 @@ plot_icd10_breakdowns <- function(
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
-      # Place legend inside plot
-      legend.position = c(.01, .99),
-      legend.box.just = "left",
-      legend.justification = c("left", "top"),
       # Enable markdown in legend labels
       legend.text = element_markdown(size = 16),
-      legend.title = element_text(family = "Times New Roman"),
+      legend.title = element_blank(),
       legend.key.spacing.y = unit(5, "pt"),
+      legend.position = "bottom",
+      legend.box = "vertical",
       legend.background = element_rect(
         fill = "white",
         linetype = "solid",
@@ -162,15 +92,26 @@ plot_icd10_breakdowns <- function(
         linewidth = 0.5
       )
     ) +
-    guides(colour = guide_legend(ncol = 2))
+    guides(
+      colour = guide_legend(
+        override.aes = list(linetype = 0),
+        ncol = legend_ncol
+      )
+    )
 
-  # Common x-axis
+  # Control x-axis appearance
   if (show_x == FALSE) {
     plot <- plot +
       theme(
         axis.title.x = element_blank(),
         axis.text.x = element_blank()
       )
+  }
+
+  # Control legend appearance
+  if (show_legend == FALSE) {
+    plot <- plot +
+      theme(legend.position = "none")
   }
 
   plot
