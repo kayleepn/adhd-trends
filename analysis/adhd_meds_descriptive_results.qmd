@@ -108,7 +108,7 @@ Will need to interpret the first year or so carefully because of missing data.
 calc_yearly_total <- function(data, yearly_measure, monthly_measure){
   data |> 
     mutate(
-      # calculate reporting year (Aug 1st - Jul 31st) from month 
+      # Calculate reporting year (Aug 1st - Jul 31st) from month 
       reporting_year = if_else(month(month) >= 8, year(month) + 1, year(month)),
       # Add end date of reporting year
       end_date = as.Date(paste0(reporting_year, "-07-31"))
@@ -129,7 +129,8 @@ df_yearly_gp_by_chemical <- calc_yearly_total(
 fig_yearly_gp_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_gp_by_chemical, 
   usage_measure = yearly_items, 
-  title_label = "Yearly GP prescribing (items)",
+  y_label = "Items",
+  title_label = "GP prescribing by chemical",
   n_breaks = 10
 )
 
@@ -145,7 +146,8 @@ df_yearly_foi_by_chemical <- calc_yearly_total(
 fig_yearly_foi_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_foi_by_chemical,  
   usage_measure = yearly_items, 
-  title_label = "Yearly private controlled drug prescribing (items)",
+  y_label = "Items",
+  title_label = "Private controlled drug prescribing by chemical",
   n_breaks = 10
 )
 
@@ -167,7 +169,8 @@ df_yearly_scmd_by_chemical <- total_scmd_over_time |>
 fig_yearly_scmd_by_chemical <- plot_med_usage_shapes(
   data = df_yearly_scmd_by_chemical, 
   usage_measure = yearly_ddd_quantity, 
-  title_label = "Yearly hospital issuing (DDD quantity)",
+  y_label = "DDD quantity",
+  title_label = "Hospital issuing by chemical",
   n_breaks = 6
 )
 
