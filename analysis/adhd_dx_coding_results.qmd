@@ -107,7 +107,7 @@ adhd_plot_colours = viridis(8, end = 0.8, option = "B")
 # Plot figure; `plot_code_usage` is in `usage_plots.R`
 fig_snomed_all_usage <- plot_code_usage(
   data = snomed_all_codes_usage, 
-  title_label = "Yearly usage of all primary care clinical codes", 
+  title_label = "Usage of all primary care clinical codes", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
@@ -115,7 +115,8 @@ fig_snomed_all_usage <- plot_code_usage(
   plot_shapes = 16,
   legend_ncol = 1,
   # `n_breaks` = 14 as there are 14 years of data
-  n_breaks = 14
+  n_breaks = 14,
+  y_millions = TRUE
 )
 fig_snomed_all_usage
 
@@ -125,7 +126,7 @@ icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
 # Plot figure
 fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
-  title_label = "Yearly usage of all hospital admitted patient care diagnosis codes", 
+  title_label = "Usage of all hospital admitted patient care diagnosis codes", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
@@ -133,7 +134,8 @@ fig_icd10_all_usage <- plot_code_usage(
   plot_shapes = 16,
   legend_ncol = 1,
   # `n_breaks` = 13 as there are 13 years of data
-  n_breaks = 13
+  n_breaks = 13,
+  y_millions = TRUE
 )
 fig_icd10_all_usage
 ```
@@ -208,7 +210,7 @@ icd10_adhd_usage <- summarise_yearly(
 fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
   breakdown_col = description,
-  title_label = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
+  title_label = "ADHD diagnosis code usage in hospital admitted patient care", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
   show_legend = TRUE,
@@ -225,13 +227,10 @@ fig_icd10_adhd_usage
 ```{r}
 # Combined figure for SNOMED CT and ICD-10 ADHD code usage
 fig_adhd_codes_usage <- fig_snomed_adhd_usage / fig_icd10_adhd_usage + 
-  plot_layout(guides = "collect", heights = c(1.3, 1)) +
+  plot_layout(heights = c(1.3, 1)) +
 	plot_annotation(tag_levels = "A") &
 	theme(
-		plot.title = element_text(size = 20),
-		legend.title = element_blank(),
-    legend.position = "bottom",
-    legend.box = "vertical"
+		plot.title = element_text(size = 20)
   )
 
 ggsave(here("output", "figures", "fig_adhd_codes_usage.png"), width = 10, height = 11)
@@ -469,7 +468,7 @@ fig_icd10_sex_breakdowns <- plot_code_usage(
   show_x = TRUE,
   show_legend = TRUE,
   plot_colours = viridis(3, end = 0.6, option = "E"),
-  plot_shapes = rep(c(8), length.out = 3),
+  plot_shapes = c(8, 9, 10),
   legend_ncol = 3,
   n_breaks = 13
 )
@@ -480,14 +479,9 @@ fig_icd10_sex_breakdowns
 
 ```{r}
 fig_icd10_breakdowns <- fig_icd10_age_5_10_breakdowns / fig_icd10_sex_breakdowns + 
-  plot_layout(guides = "collect", heights = c(1, 1)) +
+  plot_layout(heights = c(1, 1)) +
 	plot_annotation(tag_levels = "A") &
-	theme(
-		plot.title = element_text(size = 20),
-		legend.title = element_blank(),
-    legend.position = "bottom",
-    legend.box = "vertical"
-  ) 
+	theme(plot.title = element_text(size = 20)) 
 
 ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 10, height = 11)
 ```

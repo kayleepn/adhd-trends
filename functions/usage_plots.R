@@ -11,10 +11,11 @@ plot_code_usage <- function(
   plot_shapes,
   legend_ncol,
   n_breaks,
+  y_millions = FALSE,
   text_size = 16,
-  point_size = 3,
+  point_size = 4,
   x_label = "End date of yearly reporting period",
-  y_label = "Yearly usage"
+  y_label = "Usage"
 ) {
   # Get unique dates and picks evenly spaced ones for x-axis labels
   all_dates <- sort(unique(data$end_date))
@@ -32,13 +33,28 @@ plot_code_usage <- function(
       fill = {{ breakdown_col }}
     )
   ) +
-    geom_line(linewidth = 1.5, alpha = .7) +
+    geom_line(linewidth = 1, alpha = .2) +
     geom_point(size = point_size) +
     scale_colour_manual(values = plot_colours) +
     scale_fill_manual(values = plot_colours) +
     # Only need 3 shapes to alternate between to distinguish similar colours
     scale_shape_manual(values = plot_shapes) +
-    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    # Use unit M for millions if `y_millions == TRUE`
+    (if (y_millions == TRUE) {
+      scale_y_continuous(
+        limits = c(0, NA),
+        labels = scales::label_number(
+          scale = 1e-6,
+          suffix = "M",
+          big.mark = ","
+        )
+      )
+    } else {
+      scale_y_continuous(
+        limits = c(0, NA),
+        labels = scales::comma
+      )
+    }) +
     scale_x_date(
       limits = common_x_limits,
       breaks = scale_x_date_breaks,
@@ -67,6 +83,8 @@ plot_code_usage <- function(
       legend.text = element_markdown(size = 16),
       legend.title = element_blank(),
       legend.key.spacing.y = unit(5, "pt"),
+      legend.position = "bottom",
+      legend.box = "vertical",
       legend.background = element_rect(
         fill = "white",
         linetype = "solid",
