@@ -48,6 +48,13 @@ gp_adhd_prescribing <- read_parquet(
     )
 )
 
+# Calculate number of GP practices included in the newest month of data analysed
+gp_adhd_prescribing |> 
+  filter(month == as.Date("2025-07-01")) |> 
+  pull(practice) |> 
+  n_distinct()
+# [1] 6053
+
 total_gp_over_time <- read_csv(here("output", "monthly_op_gp", "adhd_gp_total.csv"))
 
 foi_adhd_prescribing <- read_csv(
