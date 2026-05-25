@@ -495,29 +495,39 @@ combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_
 ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_violins, width = 10, height = 12)
 ```
 
-### Identifying ICBs with the highest/lowest medication coding rate over the whols study period
+### Identifying ICBs with the highest/lowest medication coding rate over the whole study period
 
 ```{r}
 # Prepare dfs for combination
 gp_icb_yearly_summary <- gp_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
-  rename(yearly_per_1000_pop = items_per_1000_pop) 
+  rename(
+    yearly_per_1000_pop = items_per_1000_pop,
+    yearly_total = yearly_items
+  ) 
 
 foi_icb_yearly_summary <- foi_adhd_icb_yearly |> 
   mutate(unit = "items") |> 
-  rename(yearly_per_1000_pop = items_per_1000_pop)
+  rename(
+    yearly_per_1000_pop = items_per_1000_pop,
+    yearly_total = yearly_items
+  )
 
 scmd_icb_yearly_summary <- scmd_adhd_icb_yearly |> 
   mutate(unit = "ddd_quantity") |> 
-  rename(yearly_per_1000_pop = ddd_quantity_per_1000_pop)
+  rename(
+    yearly_per_1000_pop = ddd_quantity_per_1000_pop,
+    yearly_total = yearly_ddd_quantity
+  )
 
 # Summary df with all datasets, also useful later
 icb_yearly_summary <- bind_rows(gp_icb_yearly_summary, foi_icb_yearly_summary, scmd_icb_yearly_summary) |> 
-  select(-c(yearly_items, yearly_ddd_quantity, population)) |> 
   # Remove "Unidentified doctors"
   filter_out(is.na(icb_name))
 
+# Rank ICBs by average medication coding rate per 1000 population
 df_icbs_ranked <- icb_yearly_summary |> 
+  select(-c(yearly_total, population)) |> 
   group_by(dataset, icb_name) |> 
   # Total mean prescribing/issuing rate across entire analysis period for each dataset
   summarise(
@@ -531,11 +541,42 @@ df_icbs_ranked <- icb_yearly_summary |>
   ) |> 
   ungroup()
 
+# Filter for "Cornwall and the Isles of Scilly ICB" to use as an example in thesis
+df_icbs_ranked |> 
+  filter(icb_name == "NHS CORNWALL AND THE ISLES OF SCILLY INTEGRATED CARE BOARD")
+# Cornwall ICB ranked 34/42 in GP prescribing, 1/42 in FOI prescribing, and 41/42 in SCMD issuing.
+
 # Create summary dataframe of ICBs ranked 1st and 42th according to mean prescribing/issuing rates per 1000 population across entire study period
 df_overall_top_bottom <- df_icbs_ranked |> 
   filter(rank %in% c(1,42)) |> 
   mutate(dataset = factor(dataset, levels = c("GP", "FOI", "SCMD"))) |> 
   arrange(dataset, rank)
+
+# Calculate percentage contribution of Lincolnshire ICB to total FOI and SMCD coding rates compared to other ICBs
+# Lincolnshire ICB is an upper outlier in FOI prescribing and SCMD issuing
+lincolnshire_pct <- icb_yearly_summary |> 
+  select(-c(yearly_per_1000_pop, outlier, population)) |> 
+  group_by(dataset, icb_name, unit) |> 
+  summarise(icb_total = sum(yearly_total), .groups = "drop") |> 
+  group_by(dataset, unit) |> 
+  mutate(
+    total = sum(icb_total),
+    icb_pct = round(icb_total / total * 100, 2)
+  ) |> 
+  filter(icb_name == "NHS LINCOLNSHIRE INTEGRATED CARE BOARD")
+# Lincolnshire contributed 1.89% of GP prescribing, 20.77% of FOI prescribing, and 7.45% of SCMD issuing.
+
+# Calculate contribution of mid-2024 Lincolnshire ICB population to England's population
+lincolnshire_pop_pct <- icb_yearly_summary |> 
+  select(c(icb_name, population, end_date)) |> 
+  filter(end_date == "2024-07-31") |> 
+  distinct() |> 
+  mutate(
+    total_pop = sum(population),
+    icb_pop_pct = round(population / total_pop * 100, 2)
+  ) |> 
+  filter(icb_name == "NHS LINCOLNSHIRE INTEGRATED CARE BOARD")
+# The Lincolnshire ICB makes up 1.35% of the England population.
 ```
 
 ### Rank ICBs each year and get the top/bottom 5 for each year
