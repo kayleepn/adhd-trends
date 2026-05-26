@@ -101,7 +101,9 @@ plot_changepoints <- function(
 	show_legend = TRUE,
 	breakpoint_dates,
 	breakpoint_labels,
-	breakpoint_y_pos
+	breakpoint_y_pos,
+	label_colour,
+	label_outline
 ) {
 	# Define common x axis scale
 	common_x_scale <- scale_x_date(
@@ -177,6 +179,9 @@ plot_changepoints <- function(
 			y = breakpoint_y_pos, 
 			label = breakpoint_labels, 
 			geom = "label",
+			border.colour = label_colour,
+			text.colour = label_colour,
+			linetype = label_outline,
 			size = 6,
 			family = "Times New Roman"
 		) 
@@ -214,7 +219,9 @@ fig_gp_changepoints <- plot_changepoints(
 	breakpoint_dates = breakpoints$GP,
 	breakpoint_labels = "Aug 2020",
 	# Ensure breakpoint date labels don't overlap with data
-	breakpoint_y_pos = 225000 
+	breakpoint_y_pos = 225000,
+	label_colour = "black",
+	label_outline = "solid" 
 )
 
 fig_gp_changepoints
@@ -227,7 +234,10 @@ fig_foi_changepoints <- plot_changepoints(
 	show_x = FALSE,
 	breakpoint_dates = breakpoints$FOI,
 	breakpoint_labels = c("Aug 2020", "Dec 2020"),
-	breakpoint_y_pos = c(75000, 50000)
+	breakpoint_y_pos = c(75000, 50000),
+	# Dashed red label because change points did not survive multiple comparisons correction
+	label_colour = "red",
+	label_outline = "dashed" 
 )
 
 fig_foi_changepoints
@@ -251,7 +261,9 @@ fig_scmd_changepoints <- plot_changepoints(
 	show_legend = FALSE,
 	breakpoint_dates = breakpoints$SCMD,
 	breakpoint_labels = "Oct 2021",
-	breakpoint_y_pos = 210000
+	breakpoint_y_pos = 210000,
+	label_colour = "black",
+	label_outline = "solid" 
 ) +
 	# Add shading for COVID-19 disruption periods
 	new_scale_fill() + # `plot_changepoints` already has one 'fill' scale
@@ -266,8 +278,6 @@ fig_scmd_changepoints <- plot_changepoints(
 
 fig_scmd_changepoints
 ```
-
-The warning messages are because the SCMD data has less data available so it doesn't span the whole common x axis. This is normal and it's fine to ignore the warnings. 
 
 ## Combined figure
 
