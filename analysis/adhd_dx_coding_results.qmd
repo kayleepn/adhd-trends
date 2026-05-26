@@ -107,7 +107,7 @@ adhd_plot_colours = viridis(8, end = 0.8, option = "B")
 # Plot figure; `plot_code_usage` is in `usage_plots.R`
 fig_snomed_all_usage <- plot_code_usage(
   data = snomed_all_codes_usage, 
-  title_label = "Usage of all primary care clinical codes", 
+  title_label = "All primary care clinical code usage", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
@@ -126,7 +126,7 @@ icd10_all_codes_usage <- summarise_yearly(icd10_usage, "All ICD-10 codes")
 # Plot figure
 fig_icd10_all_usage <- plot_code_usage(
   data = icd10_all_codes_usage, 
-  title_label = "Usage of all hospital admitted patient care diagnosis codes", 
+  title_label = "All inpatient care diagnosis code usage", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_legend = FALSE, 
   show_x = TRUE,
@@ -186,7 +186,7 @@ snomed_adhd_usage <- bind_rows(
 fig_snomed_adhd_usage <- plot_code_usage(
   data = snomed_adhd_usage, 
   breakdown_col = description,
-  title_label = "ADHD diagnosis-related code usage in primary care", 
+  title_label = "All primary care ADHD diagnosis-related code usage", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
   show_legend = TRUE,
@@ -210,7 +210,7 @@ icd10_adhd_usage <- summarise_yearly(
 fig_icd10_adhd_usage <- plot_code_usage(
   data = icd10_adhd_usage, 
   breakdown_col = description,
-  title_label = "ADHD diagnosis code usage in hospital admitted patient care", 
+  title_label = "All inpatient care ADHD diagnosis code usage", 
   common_x_limits = as.Date(c("2012-07-31", "2025-07-31")),
   show_x = TRUE,
   show_legend = TRUE,
@@ -428,7 +428,7 @@ nlevels(df_icd10_age_5_10_fig$breakdown)
 fig_icd10_age_5_10_breakdowns <- plot_code_usage(
   data = df_icd10_age_5_10_fig, 
   breakdown_col = breakdown,
-  title_label = "ADHD diagnosis code usage in hospital admitted patient care: age breakdowns", 
+  title_label = "Inpatient care ADHD diagnosis code usage: age breakdowns", 
   common_x_limits = as.Date(c("2013-03-31", "2025-03-31")),
   show_x = FALSE,
   show_legend = TRUE,
@@ -463,7 +463,7 @@ length(unique(df_icd10_sex_breakdowns_fig$breakdown))
 fig_icd10_sex_breakdowns <- plot_code_usage(
   data = df_icd10_sex_breakdowns_fig, 
   breakdown_col = breakdown,
-  title_label = "ADHD diagnosis code usage in hospital admitted patient care: sex breakdowns", 
+  title_label = "Inpatient care ADHD diagnosis code usage: sex breakdowns", 
   common_x_limits = as.Date(c("2013-03-31", "2025-03-31")),
   show_x = TRUE,
   show_legend = TRUE,
