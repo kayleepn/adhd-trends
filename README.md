@@ -4,6 +4,8 @@ Project title: "Temporal trends in coded diagnoses and medications for Attention
 
 # Project description
 
+Note that author names and usernames have been redacted for blind review. As a result, code depending on functional codelist links will not work. Author names and usernames will be restored in late June 2026 after examination. 
+
 This project aims to comprehensively review publicly available ADHD data to: 
 
 1. Describe and evaluate publicly available data sources across ADHD care settings, assess their suitability and limitations for research, and contribute to open-source tools that make these data more accessible and easier to work with for future researchers;

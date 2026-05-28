@@ -1,3 +1,0 @@
-https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/adhd_cod/20250912/
-https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/66fd3a31/
-https://www.opencodelists.org/codelist/user/kayleepn/adhd-referral-assessment-and-admin-related-codes/38f84b80/

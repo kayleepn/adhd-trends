@@ -1,7 +1,7 @@
 ---
 title: "Descriptive analysis results: SNOMED CT and ICD-10 diagnosis coding"
 author:
-  - Kaylee Poon
+  - (Redacted for blind review)
 format: html
 ---
 # Overview
@@ -37,7 +37,7 @@ snomed_diag_usage <- snomed_usage |>
   filter(snomed_code %in% snomed_diag_codelist$code)
 
 # Load ICD-10 ADHD diagnosis coding activity codelist from OpenCodeCounts
-icd10_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/66fd3a31/")
+icd10_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-icd-10-test/66fd3a31/")
 
 icd10_diag_usage <- icd10_usage |>
   filter(icd10_code %in% icd10_diag_codelist$code)
@@ -71,8 +71,8 @@ For ICD-10, we extended the methods to also extract diagnosis position and demog
 
 2 codelists indicating ADHD diagnosis for SNOMED CT[^codelist-adhd-snomed] and ICD-10[^codelist-adhd-icd10] respectively were developed using OpenCodelists. Note that the ICD-10 code only has 1 code. 
 
-[^codelist-adhd-snomed]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone2/45183c88/
-[^codelist-adhd-icd10]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/66fd3a31/
+[^codelist-adhd-snomed]: https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-diagnosis-snomed-ct-clone2/45183c88/
+[^codelist-adhd-icd10]: https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-icd-10-test/66fd3a31/
 
 ### ICD-10 Breakdown variables
 
