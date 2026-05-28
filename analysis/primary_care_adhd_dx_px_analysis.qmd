@@ -1,7 +1,7 @@
 ---
 title: "Trends in SNOMED CT code usage indicating ADHD diagnosis and procedures in publicly available NHS primary care data (2012-2025)"
 author:
-  - Kaylee Poon
+  - (Redacted for blind review)
 format:
     html:
         toc: false
@@ -47,8 +47,8 @@ Two draft SNOMED CT codelists were developed using OpenCodelists. These codelist
 1. **ADHD diagnosis**[^codelist-adhd-dx]: Codes that likely indicate an ADHD diagnosis. The diagnosis codelist includes some codes under review (highlighted in @tbl-diagnosis-codes) where clinical relevance requires further discussion.
 2. **ADHD administrative activity**[^codelist-adhd-px]: Codes that capture referral, assessment, and other administrative activity related to ADHD (excluding diagnosis and treatment codes).
 
-[^codelist-adhd-dx]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone1/62ec200e/
-[^codelist-adhd-px]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-referral-assessment-and-admin-related-codes/38f84b80/
+[^codelist-adhd-dx]: https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-diagnosis-snomed-ct-clone1/62ec200e/
+[^codelist-adhd-px]: https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-referral-assessment-and-admin-related-codes/38f84b80/
 
 # Results
 
@@ -58,7 +58,7 @@ Two draft SNOMED CT codelists were developed using OpenCodelists. These codelist
 #| label: load-diagnosis-codelist
 #| output: false
 
-snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-diagnosis-snomed-ct-clone1/62ec200e/")
+snomed_diag_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-diagnosis-snomed-ct-clone1/62ec200e/")
 
 df_snomed_diag_usage <- snomed_usage |>
   filter(snomed_code %in% snomed_diag_codelist$code)
@@ -276,7 +276,7 @@ ggsave(
 #| label: load-admin-codelist
 #| output: false
 
-snomed_admin_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/kayleepn/adhd-referral-assessment-and-admin-related-codes/38f84b80/")
+snomed_admin_codelist <- get_codelist("https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-referral-assessment-and-admin-related-codes/38f84b80/")
 
 df_snomed_admin_usage <- snomed_usage |>
   filter(snomed_code %in% snomed_admin_codelist$code)

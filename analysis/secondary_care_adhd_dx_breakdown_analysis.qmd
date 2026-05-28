@@ -1,7 +1,7 @@
 ---
 title: "Age and sex breakdowns for ADHD diagnosis in NHS England open Hospital Admitted Patient Care Activity data (2012-2025)"
 author:
-  - Kaylee Poon
+  - (Redacted for blind review)
 format:
     html:
         toc: false
@@ -58,7 +58,7 @@ A draft ICD-10 codelist[^icd10-codelist-adhd-dx] including codes that likely ind
 
 This codelist is preliminary and may require refinement based on clinical review. The diagnosis codelist includes some codes under review (highlighted in @tbl-icd10-codes) where clinical relevance requires further discussion.
 
-[^icd10-codelist-adhd-dx]: https://www.opencodelists.org/codelist/user/kayleepn/adhd-icd-10-test/27569f95/
+[^icd10-codelist-adhd-dx]: https://www.opencodelists.org/codelist/user/(Redacted for blind review)/adhd-icd-10-test/27569f95/
 
 ### Breakdown variables
 
