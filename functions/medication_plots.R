@@ -85,6 +85,7 @@ plot_yearly_violins <- function(
   data,
   usage_measure, # either items or ddd_quantity
   title_label,
+  title_colour,
   x_label = "End date of yearly aggregation period",
   y_label,
   outlier_map,
@@ -167,7 +168,7 @@ plot_yearly_violins <- function(
     theme_bw() +
     theme(
       text = element_text(family = font),
-      plot.title = element_text(size = 20, hjust = .5),
+      plot.title = element_text(size = 20, hjust = .5, colour = title_colour, face = "bold"),
       axis.title.x = element_text(size = 16),
       axis.text.x = element_text(size = 16),
       axis.title.y = element_text(size = 16),
