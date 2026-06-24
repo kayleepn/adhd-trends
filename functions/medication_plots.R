@@ -90,6 +90,7 @@ plot_yearly_violins <- function(
   outlier_map,
   n_breaks,
   log_y = FALSE,
+  font,
   text_size = 16,
   point_size = 3
 ) {
@@ -165,7 +166,7 @@ plot_yearly_violins <- function(
     labs(x = x_label, y = y_label, title = title_label) +
     theme_bw() +
     theme(
-      text = element_text(family = "Times New Roman"),
+      text = element_text(family = font),
       plot.title = element_text(size = 20, hjust = .5),
       axis.title.x = element_text(size = 16),
       axis.text.x = element_text(size = 16),
