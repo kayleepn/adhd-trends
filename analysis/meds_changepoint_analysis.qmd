@@ -1,7 +1,7 @@
 ---
 title: "Change point analysis of ADHD prescribing activity"
 author:
-  - (Redacted for blind review)
+  - Kaylee Poon
 format: html
 ---
 # Overview

@@ -1,7 +1,7 @@
 ---
 title: "GP Prescribing (OpenPrescribing) analysis"
 author:
-  - (Redacted for blind review)
+  - Kaylee Poon
 format: html
 ---
 # Overview
