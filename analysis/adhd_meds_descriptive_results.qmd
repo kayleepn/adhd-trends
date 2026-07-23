@@ -508,58 +508,6 @@ combined_yearly_violins <- (fig_gp_icb_violins / fig_foi_icb_violins / fig_scmd_
 ggsave(here("output", "figures", "fig_med_icb_violins.png"), combined_yearly_violins, width = 10, height = 12)
 ```
 
-Version for blog post (different font)
-
-```{r}
-# Create plot for GP prescribing by ICB
-blog_gp_icb_violins <- plot_yearly_violins(
-  data = gp_adhd_icb_yearly,
-  usage_measure = items_per_1000_pop,
-  title_label = "GP prescribing by ICB",
-  title_colour = "#932667",
-  y_label = "Items per 1000 population",
-  outlier_map = icb_outliers_map,
-  n_breaks = 10,
-  font = "sans"
-)
-blog_gp_icb_violins
-
-# Create log-transformed plot for FOI prescribing by ICB to 'unsquish' bottom-heavy violins
-blog_foi_icb_violins <- plot_yearly_violins(
-  data = foi_adhd_icb_yearly,
-  usage_measure = items_per_1000_pop,
-  title_label = "Private controlled drug prescribing by ICB",
-  title_colour = "#000000",
-  y_label = "Items per 1000 population (log10 scale)",
-  outlier_map = icb_outliers_map,
-  n_breaks = 5,
-  log_y = TRUE,
-  font = "sans"
-)
-blog_foi_icb_violins
-
-# Create plot for SCMD issuing by ICB
-blog_scmd_icb_violins <- plot_yearly_violins(
-  data = scmd_adhd_icb_yearly,
-  usage_measure = ddd_quantity_per_1000_pop,
-  title_label = "Hospital issuing by ICB",
-  title_colour = "#F3771A",
-  y_label = "DDD quantity per 1000 population",
-  outlier_map = icb_outliers_map,
-  n_breaks = 6,
-  font = "sans"
-)
-blog_scmd_icb_violins
-
-blog_combined_yearly_violins <- (blog_gp_icb_violins / blog_foi_icb_violins / blog_scmd_icb_violins) + 
-  plot_annotation(tag_levels = "A") &
-	theme(
-		plot.tag = element_text(size = 20)
-	)
-
-ggsave(here("output", "figures", "blog_fig_med_icb_violins.png"), blog_combined_yearly_violins, width = 12, height = 12)
-```
-
 ### Identifying ICBs with the highest/lowest medication coding rate over the whole study period
 
 ```{r}
