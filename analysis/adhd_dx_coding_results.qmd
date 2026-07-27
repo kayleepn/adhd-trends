@@ -491,11 +491,18 @@ fig_icd10_age_10y_breakdowns <- plot_code_usage(
 fig_icd10_age_10y_breakdowns
 ```
 
+#### Calculating total usage acounts for groups with low usage (< 10,000)
+
+```{r}
+#| label: calc-age-low-n
+age_low_n <- df_icd10_age_10y_fig |> 
+  group_by(breakdown) |> 
+  summarise(total_usage = sum(usage), .groups = "drop") |> 
+  filter(total_usage < 10000)
+age_low_n
+```
 
 ### Sex breakdowns
-
-Male diagnoses exceeded female diagnoses until approximately 2024, when female diagnoses surpassed male.
-Gender unknown remains low throughout the period. This is again essentially the same code as the previous reports we sent to Orla. 
 
 ```{r}
 #| label: fig-icd-sex-breakdowns
@@ -528,6 +535,16 @@ fig_icd10_sex_breakdowns <- plot_code_usage(
 fig_icd10_sex_breakdowns
 ```
 
+Male diagnoses exceeded female diagnoses until approximately 2024, when female diagnoses surpassed male.
+Gender unknown remains low throughout the period. This is again essentially the same code as the previous reports we sent to Orla. 
+
+```{r}
+gender_breakdowns_total <- df_icd10_sex_breakdowns_fig |> 
+  group_by(breakdown) |> 
+  summarise(total_usage = sum(usage), .groups = "drop")
+gender_breakdowns_total
+```
+
 ### Combined figure for ICD-10 breakdowns
 
 ```{r}
@@ -543,5 +560,3 @@ fig_icd10_breakdowns
 
 ggsave(here("output", "figures", "fig_icd10_breakdowns.png"), width = 10, height = 11)
 ```
-
-Lol how did I engineer total code usage numbers for certain groups (0-4, 60-69, 70-79, 80-89, 90+, and unknown sex)? Need to reproduce this
