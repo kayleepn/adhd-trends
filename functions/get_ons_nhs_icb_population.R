@@ -1,20 +1,16 @@
----
-title: "Get ONS yearly population estimates for each ICB"
-format: html
----
-Code for getting yearly population estimates for each ICB. Heavily inspired by `analysis/build_ons_nhs_england_region_population.R` in the `bennettoxford/lithium_project25` GitHub repository. I extract ICB names instead of NHS region names and codes.
+# Code for getting yearly population estimates for each ICB. 
+# Heavily inspired by `analysis/build_ons_nhs_england_region_population.R` in the `bennettoxford/lithium_project25` GitHub repository. 
+# I extract ICB names instead of NHS region names and codes.
 
-Set up:
-
-```{r}
 library(here)
 library(tidyverse)
 library(readxl)
-```
 
-ICB-level analysis should be adjusted for population. Mid-year (30 June) population estimates for ICBs can be obtained from the [ONS](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/clinicalcommissioninggroupmidyearpopulationestimates). Select the "Mid-2022 revised (Nov 2025) to mid-2024: Integrated Care Boards, 2024 geography edition of this dataset"  and "Mid-2011 to mid-2022: Integrated Care Boards, 2024 geography edition of this dataset" editions and download the .xlsx files. The ONS named the files "sapeicb20222024.xlsx" and "sapeicb202420112022.xlsx" respectively. I have placed them in output/icb_mapping. 
+# ICB-level analysis should be adjusted for population. 
+# Mid-year (30 June) population estimates for ICBs can be obtained from the ONS as Excel files
+# (https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/clinicalcommissioninggroupmidyearpopulationestimates). Select the "Mid-2022 revised (Nov 2025) to mid-2024: Integrated Care Boards, 2024 geography edition of this dataset"  and "Mid-2011 to mid-2022: Integrated Care Boards, 2024 geography edition of this dataset" editions and download the .xlsx files. The ONS named the files "sapeicb20222024.xlsx" and "sapeicb202420112022.xlsx" respectively. I have placed them in output/icb_mapping. 
 
-```{r}
+
 # Rename Excel files
 file.rename(
   from = c(
@@ -60,11 +56,8 @@ column_config <- tibble(
   name_col = c("ICB 2024 Name", "ICB 2024 Name"),
   total_col = c("Total", "Total")
 )
-```
 
-Helper functions for reading Excel files:
-
-```{r}
+# Helper functions for reading Excel files:
 read_icb_year_sheet <- function(path, sheet, workbook_label, estimate_year, name_col, total_col) {
   df <- read_xlsx(path, sheet = sheet, skip = 3)
 
@@ -107,11 +100,8 @@ summarise_regions <- function(path, workbook_label) {
       summarise(population = sum(population, na.rm = TRUE), .groups = "drop")
   })
 }
-```
 
-Check data and write csv
-
-```{r}
+# Check data and write csv
 # `pmap` maps parallel inputs, `_dfr` combines all returned outputs into one df by rows
 pop_raw <- pmap_dfr(list(paths$path, paths$workbook_label), summarise_regions)
 
@@ -131,4 +121,3 @@ if (length(expected_regions) != 42L) {
 
 # Write csv
 write_csv(pop_long, here("output", "icb_mapping", "ons_icb_population_estimates.csv"))
-```
