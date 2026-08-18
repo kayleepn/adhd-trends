@@ -7,3 +7,4 @@ output/openprescribing/adhd_gp_prescribing_bnf.parquet
 output/openprescribing/adhd_gp_prescribing_chemical.parquet
 output/web-openprescribing-hospitals/*.csv
 openprescribing/oph_web_data/analysis_2026-03-13.zip
+*_cache/
