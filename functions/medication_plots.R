@@ -59,16 +59,16 @@ plot_med_usage_shapes <- function(
     theme(
       text = element_text(family = "Times New Roman"),
       plot.title = element_text(size = 20, hjust = .5),
-      axis.title.x = element_text(size = 16),
-      axis.text.x = element_text(size = 16),
-      axis.title.y = element_text(size = 16),
-      axis.text.y = element_text(size = 16),
+      axis.title.x = element_text(size = text_size),
+      axis.text.x = element_text(size = text_size),
+      axis.title.y = element_text(size = text_size),
+      axis.text.y = element_text(size = text_size),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
       # Enable markdown in legend labels
-      legend.text = element_markdown(size = 16),
+      legend.text = element_markdown(size = text_size),
       legend.key.spacing.y = unit(5, "pt"),
       legend.background = element_rect(
         fill = "white",
@@ -91,7 +91,6 @@ plot_yearly_violins <- function(
   outlier_map,
   n_breaks,
   log_y = FALSE,
-  font,
   text_size = 16,
   point_size = 3
 ) {
@@ -167,12 +166,12 @@ plot_yearly_violins <- function(
     labs(x = x_label, y = y_label, title = title_label) +
     theme_bw() +
     theme(
-      text = element_text(family = font),
+      text = element_text(family = "Times New Roman"),
       plot.title = element_text(size = 20, hjust = .5, colour = title_colour, face = "bold"),
-      axis.title.x = element_text(size = 16),
-      axis.text.x = element_text(size = 16),
-      axis.title.y = element_text(size = 16),
-      axis.text.y = element_text(size = 16),
+      axis.title.x = element_text(size = text_size),
+      axis.text.x = element_text(size = text_size),
+      axis.title.y = element_text(size = text_size),
+      axis.text.y = element_text(size = text_size),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_blank(),
@@ -182,8 +181,8 @@ plot_yearly_violins <- function(
         linetype = "solid",
         colour = "black"
       ),
-      legend.title = element_markdown(size = 16, hjust = 0.5),
-      legend.text = element_text(size = 16),
+      legend.title = element_markdown(size = text_size, hjust = 0.5),
+      legend.text = element_text(size = text_size),
       legend.justification.right = "left",
       legend.key.spacing.y = unit(5, "pt")
     )
